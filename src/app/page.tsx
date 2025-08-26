@@ -126,4 +126,4 @@ export default function Home() {
       </section>
     </>
   );
-} // Force redeploy with environment variables
+}
