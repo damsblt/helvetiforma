@@ -3,32 +3,19 @@
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
 import authService from '@/services/authService';
 
-export default function SetupPasswordPage() {
+export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    password: '',
-    confirmPassword: ''
+    email: '',
+    firstName: '',
+    lastName: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [token, setToken] = useState('');
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    // Get token from URL parameters
-    const tokenParam = searchParams.get('token');
-    if (tokenParam) {
-      setToken(tokenParam);
-    } else {
-      setError('Lien de configuration invalide');
-    }
-  }, [searchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -42,59 +29,36 @@ export default function SetupPasswordPage() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
-      setIsLoading(false);
-      return;
-    }
-
-    // Validate password strength
-    if (formData.password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères');
-      setIsLoading(false);
-      return;
-    }
+    setSuccess(false);
 
     try {
-      const response = await authService.setupPassword({
-        token,
-        password: formData.password
-      });
-
-      if (response.success && response.user) {
+      const response = await authService.register(formData);
+      
+      if (response.success) {
         setSuccess(true);
-        // Redirect after 3 seconds
-        setTimeout(() => {
-          if (response.user?.isAdmin) {
-            router.push('/admin');
-          } else {
-            router.push('/personal-space');
-          }
-        }, 3000);
+        setFormData({ email: '', firstName: '', lastName: '' });
       } else {
-        setError(response.message || 'Erreur lors de la configuration du mot de passe');
+        setError(response.message || 'Erreur lors de l\'inscription');
       }
     } catch (error) {
-      console.error('Setup password error:', error);
+      console.error('Register error:', error);
       setError('Une erreur s\'est produite');
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!token) {
+  if (success) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <div className="text-6xl mb-4">❌</div>
+            <div className="text-6xl mb-4">✅</div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Lien invalide
+              Compte créé avec succès !
             </h2>
             <p className="text-gray-600 mb-8">
-              Ce lien de configuration de mot de passe est invalide ou a expiré.
+              Vérifiez votre email pour configurer votre mot de passe et accéder à votre compte.
             </p>
             <Link
               href="/login"
@@ -108,34 +72,15 @@ export default function SetupPasswordPage() {
     );
   }
 
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <div className="text-6xl mb-4">✅</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Mot de passe configuré !
-            </h2>
-            <p className="text-gray-600 mb-8">
-              Votre mot de passe a été configuré avec succès. Vous allez être redirigé automatiquement...
-            </p>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Configuration du mot de passe
+            Créer votre compte
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Définissez votre mot de passe pour accéder à votre compte
+            Rejoignez Helvetiforma pour accéder à nos formations
           </p>
         </div>
         
@@ -155,36 +100,53 @@ export default function SetupPasswordPage() {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Nouveau mot de passe
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                Prénom
               </label>
               <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
+                id="firstName"
+                name="firstName"
+                type="text"
+                autoComplete="given-name"
                 required
-                value={formData.password}
+                value={formData.firstName}
                 onChange={handleInputChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Entrez votre nouveau mot de passe"
+                placeholder="Votre prénom"
               />
             </div>
             
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirmer le mot de passe
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                Nom
               </label>
               <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
+                id="lastName"
+                name="lastName"
+                type="text"
+                autoComplete="family-name"
                 required
-                value={formData.confirmPassword}
+                value={formData.lastName}
                 onChange={handleInputChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Confirmez votre mot de passe"
+                placeholder="Votre nom"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Adresse email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={handleInputChange}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="votre.email@exemple.com"
               />
             </div>
           </div>
@@ -195,17 +157,23 @@ export default function SetupPasswordPage() {
               disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Configuration...' : 'Configurer le mot de passe'}
+              {isLoading ? 'Création...' : 'Créer mon compte'}
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <Link href="/" className="text-sm text-blue-600 hover:text-blue-500">
               ← Retour à l'accueil
             </Link>
+            <div className="text-xs text-gray-500">
+              <p>Déjà un compte ?</p>
+              <Link href="/login" className="text-blue-600 hover:text-blue-500">
+                Se connecter
+              </Link>
+            </div>
           </div>
         </form>
       </div>
     </div>
   );
-} 
+}

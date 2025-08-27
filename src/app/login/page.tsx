@@ -3,8 +3,10 @@
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import authService from '@/services/authService';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -13,6 +15,19 @@ export default function LoginPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is already authenticated
+    if (authService.isAuthenticated()) {
+      const user = authService.getUser();
+      if (user?.isAdmin) {
+        router.push('/admin');
+      } else {
+        router.push('/personal-space');
+      }
+    }
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -27,11 +42,25 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    // Simulate login for demo
-    setTimeout(() => {
+    try {
+      const response = await authService.login(formData);
+      
+      if (response.success && response.user) {
+        // Redirect based on user role
+        if (response.user.isAdmin) {
+          router.push('/admin');
+        } else {
+          router.push('/personal-space');
+        }
+      } else {
+        setError(response.message || 'Erreur de connexion');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Une erreur s\'est produite');
+    } finally {
       setIsLoading(false);
-      setError('Fonctionnalité de connexion en cours de développement');
-    }, 1000);
+    }
   };
 
   return (
@@ -105,10 +134,16 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <Link href="/" className="text-sm text-blue-600 hover:text-blue-500">
               ← Retour à l'accueil
             </Link>
+            <div className="text-xs text-gray-500">
+              <p>Pas encore de compte ?</p>
+              <Link href="/register" className="text-blue-600 hover:text-blue-500">
+                Créer un compte
+              </Link>
+            </div>
           </div>
         </form>
       </div>
