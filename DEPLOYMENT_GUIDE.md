@@ -276,3 +276,4 @@ add_action('rest_api_init', function() {
 ---
 
 **Votre site sera prêt avec une architecture moderne et scalable!** 🎉
+

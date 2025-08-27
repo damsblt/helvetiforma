@@ -116,3 +116,4 @@ npm run dev
 3. **Avez-vous des questions** sur le déploiement?
 
 **Vercel est la solution la plus simple et efficace pour votre Next.js app!** 🚀
+
