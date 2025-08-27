@@ -133,3 +133,4 @@ export default function Home() {
 // Test deployment with Git integration enabled Tue Aug 26 13:58:32 CEST 2025
 // MANUAL DEPLOYMENT TEST - Tue Aug 26 13:59:42 CEST 2025
 // FORCE NEW DEPLOYMENT
+// TEST: Force redeploy with correct root directory
