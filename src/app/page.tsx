@@ -13,18 +13,18 @@ export default function Home() {
             Votre plateforme de formation en ligne
           </p>
           <div className="space-x-4">
-            <a
+            <Link
               href="/formations"
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
             >
               Voir les Formations
-            </a>
-            <a
+            </Link>
+            <Link
               href="/api-control"
               className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition"
             >
               Contrôle API
-            </a>
+            </Link>
           </div>
         </div>
       </div>
