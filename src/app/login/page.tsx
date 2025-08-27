@@ -3,9 +3,8 @@
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -14,19 +13,6 @@ export default function LoginPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    // Check for redirect parameter
-    const redirect = searchParams.get('redirect');
-    const messageParam = searchParams.get('message');
-    
-    if (messageParam === 'admin_required') {
-      setMessage('Accès administrateur requis. Veuillez vous connecter avec un compte administrateur.');
-    }
-  }, [searchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -40,68 +26,12 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    setMessage('');
 
-    try {
-      // Authenticate against Strapi user-accounts
-      const authRes = await fetch('http://localhost:1337/api/user-accounts?filters[email]=' + encodeURIComponent(formData.email), {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (authRes.ok) {
-        const authData = await authRes.json();
-        
-        if (authData.data && authData.data.length > 0) {
-          const user = authData.data[0];
-          
-          // For demo purposes, accept password "1" for any user
-          if (formData.password === '1') {
-            // Store user info in localStorage for demo
-            localStorage.setItem('user', JSON.stringify({
-              id: user.id,
-              email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              isLoggedIn: true
-            }));
-            
-            // Check if user is admin
-            const isAdmin = user.email?.includes('admin') || 
-                           user.email === 'admin@helvetiforma.com' ||
-                           user.email === 'damien@helvetiforma.com';
-            
-            // Redirect based on original request
-            const redirect = searchParams.get('redirect');
-            if (redirect && isAdmin) {
-              router.push(redirect);
-            } else if (redirect && !isAdmin) {
-              setError('Accès administrateur requis pour cette page');
-            } else {
-              // Redirect admin users to dashboard, regular users to personal space
-              if (isAdmin) {
-                router.push('/admin');
-              } else {
-                router.push('/personal-space');
-              }
-            }
-          } else {
-            setError('Email ou mot de passe incorrect');
-          }
-        } else {
-          setError('Aucun compte trouvé avec cet email');
-        }
-      } else {
-        setError('Erreur de connexion au serveur');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('Une erreur s\'est produite');
-    } finally {
+    // Simulate login for demo
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      setError('Fonctionnalité de connexion en cours de développement');
+    }, 1000);
   };
 
   return (
@@ -125,19 +55,6 @@ export default function LoginPage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-red-700">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {message && (
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <span className="text-blue-600">ℹ️</span>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-blue-700">{message}</p>
                 </div>
               </div>
             </div>
@@ -186,18 +103,6 @@ export default function LoginPage() {
             >
               {isLoading ? 'Connexion...' : 'Se connecter'}
             </button>
-          </div>
-
-          <div className="text-center space-y-2">
-            <p className="text-sm text-gray-600">
-              <span className="font-medium text-blue-600">Demo:</span> Utilisez votre email d'inscription avec le mot de passe "1"
-            </p>
-            <p className="text-xs text-gray-500">
-              <span className="font-medium">Admin:</span> admin@helvetiforma.com ou damien@helvetiforma.com
-            </p>
-            <p className="text-xs text-gray-400">
-              <span className="font-medium">Admin:</span> Redirection automatique vers /admin
-            </p>
           </div>
 
           <div className="text-center">
