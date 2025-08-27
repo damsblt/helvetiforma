@@ -135,3 +135,4 @@ export default function Home() {
 // FORCE NEW DEPLOYMENT
 // TEST: Force redeploy with correct root directory
 // TEST: Force new deployment with fixed package.json
+// FORCE VERCEL TO USE LATEST COMMIT
