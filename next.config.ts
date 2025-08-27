@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
     domains: ['api.informaniak.com', 'localhost', 'helvetiforma.ch'],
   },
+  // Force dynamic rendering to avoid static generation errors
   async headers() {
     return [
       {
