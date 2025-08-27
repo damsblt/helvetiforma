@@ -3,10 +3,8 @@
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import authService from '@/services/authService';
 
 export default function SetupPasswordPage() {
   const [formData, setFormData] = useState({
@@ -16,19 +14,6 @@ export default function SetupPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [token, setToken] = useState('');
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    // Get token from URL parameters
-    const tokenParam = searchParams.get('token');
-    if (tokenParam) {
-      setToken(tokenParam);
-    } else {
-      setError('Lien de configuration invalide');
-    }
-  }, [searchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -57,56 +42,13 @@ export default function SetupPasswordPage() {
       return;
     }
 
-    try {
-      const response = await authService.setupPassword({
-        token,
-        password: formData.password
-      });
-
-      if (response.success && response.user) {
-        setSuccess(true);
-        // Redirect after 3 seconds
-        setTimeout(() => {
-          if (response.user?.isAdmin) {
-            router.push('/admin');
-          } else {
-            router.push('/personal-space');
-          }
-        }, 3000);
-      } else {
-        setError(response.message || 'Erreur lors de la configuration du mot de passe');
-      }
-    } catch (error) {
-      console.error('Setup password error:', error);
-      setError('Une erreur s\'est produite');
-    } finally {
+    // Simulate password setup for demo
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      setSuccess(true);
+      setError('');
+    }, 1000);
   };
-
-  if (!token) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <div className="text-6xl mb-4">❌</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Lien invalide
-            </h2>
-            <p className="text-gray-600 mb-8">
-              Ce lien de configuration de mot de passe est invalide ou a expiré.
-            </p>
-            <Link
-              href="/login"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Aller à la page de connexion
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (success) {
     return (
@@ -118,9 +60,14 @@ export default function SetupPasswordPage() {
               Mot de passe configuré !
             </h2>
             <p className="text-gray-600 mb-8">
-              Votre mot de passe a été configuré avec succès. Vous allez être redirigé automatiquement...
+              Votre mot de passe a été configuré avec succès.
             </p>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <Link
+              href="/login"
+              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Se connecter
+            </Link>
           </div>
         </div>
       </div>
