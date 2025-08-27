@@ -134,3 +134,4 @@ export default function Home() {
 // MANUAL DEPLOYMENT TEST - Tue Aug 26 13:59:42 CEST 2025
 // FORCE NEW DEPLOYMENT
 // TEST: Force redeploy with correct root directory
+// TEST: Force new deployment with fixed package.json
