@@ -86,7 +86,7 @@ class AuthService {
   // Login
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/wp-json/helvetiforma/v1/auth/login`, {
+      const response = await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ class AuthService {
   // Register
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/wp-json/helvetiforma/v1/auth/register`, {
+      const response = await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -150,7 +150,7 @@ class AuthService {
       const token = this.getToken();
       
       if (token) {
-        await fetch(`${this.baseUrl}/wp-json/helvetiforma/v1/auth/logout`, {
+        await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
