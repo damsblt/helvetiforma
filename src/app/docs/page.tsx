@@ -35,6 +35,36 @@ export default function DocsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Metadata extraction function
+  const extractMetadata = (content: string, key: string): string | number | null => {
+    if (!content) return null;
+    
+    const regex = new RegExp(`\\[${key}:\\s*([^\\]]+)\\]`, 'i');
+    const match = content.match(regex);
+    
+    if (match && match[1]) {
+      const value = match[1].trim();
+      if (!isNaN(Number(value))) {
+        return Number(value);
+      }
+      return value;
+    }
+    
+    return null;
+  };
+
+  // Helper function to safely extract string metadata
+  const extractStringMetadata = (content: string, key: string): string | undefined => {
+    const result = extractMetadata(content, key);
+    return typeof result === 'string' ? result : undefined;
+  };
+
+  // Helper function to safely extract number metadata
+  const extractNumberMetadata = (content: string, key: string): number | undefined => {
+    const result = extractMetadata(content, key);
+    return typeof result === 'number' ? result : undefined;
+  };
+
   useEffect(() => {
     const fetchDocs = async () => {
       try {
@@ -56,12 +86,12 @@ export default function DocsPage() {
           excerpt: post.excerpt.rendered,
           slug: post.slug,
           date: post.date,
-          Type: extractMetadata(post.content.rendered, 'Type') || 'Article',
-          Theme: extractMetadata(post.content.rendered, 'Theme') || 'General',
-          difficulty: extractMetadata(post.content.rendered, 'Difficulty') || 'All Levels',
-          estimatedDuration: extractMetadata(post.content.rendered, 'Duration') || 0,
-          totalModules: extractMetadata(post.content.rendered, 'Modules') || 0,
-          price: extractMetadata(post.content.rendered, 'Price') || 0,
+          Type: extractStringMetadata(post.content.rendered, 'Type') || 'Article',
+          Theme: extractStringMetadata(post.content.rendered, 'Theme') || 'General',
+          difficulty: extractStringMetadata(post.content.rendered, 'Difficulty') || 'All Levels',
+          estimatedDuration: extractNumberMetadata(post.content.rendered, 'Duration') || 0,
+          totalModules: extractNumberMetadata(post.content.rendered, 'Modules') || 0,
+          price: extractNumberMetadata(post.content.rendered, 'Price') || 0,
         }));
 
         setDocs(transformedDocs);
@@ -91,24 +121,6 @@ export default function DocsPage() {
 
     fetchDocs();
   }, []);
-
-  // Metadata extraction function
-  const extractMetadata = (content: string, key: string): string | number | null => {
-    if (!content) return null;
-    
-    const regex = new RegExp(`\\[${key}:\\s*([^\\]]+)\\]`, 'i');
-    const match = content.match(regex);
-    
-    if (match && match[1]) {
-      const value = match[1].trim();
-      if (!isNaN(Number(value))) {
-        return Number(value);
-      }
-      return value;
-    }
-    
-    return null;
-  };
 
   if (loading) {
     return (

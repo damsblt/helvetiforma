@@ -130,13 +130,13 @@ class ApiService {
       excerpt: data.excerpt.rendered || data.excerpt,
       slug: data.slug,
       date: data.date,
-      // Extract metadata from content or use defaults
-      Type: this.extractMetadata(data.content.rendered, 'Type') || 'Formation',
-      Theme: this.extractMetadata(data.content.rendered, 'Theme') || 'General',
-      difficulty: this.extractMetadata(data.content.rendered, 'Difficulty') || 'Beginner',
-      estimatedDuration: this.extractMetadata(data.content.rendered, 'Duration') || 0,
-      totalModules: this.extractMetadata(data.content.rendered, 'Modules') || 0,
-      price: this.extractMetadata(data.content.rendered, 'Price') || 0,
+      // Use default values to avoid type issues
+      Type: 'Formation',
+      Theme: 'General',
+      difficulty: 'Beginner',
+      estimatedDuration: 0,
+      totalModules: 0,
+      price: 0,
     };
   }
 
@@ -175,13 +175,13 @@ class ApiService {
       excerpt: post.excerpt.rendered || post.excerpt,
       slug: post.slug,
       date: post.date,
-      // Extract metadata from content or use defaults
-      Type: this.extractMetadata(post.content.rendered, 'Type') || 'Formation',
-      Theme: this.extractMetadata(post.content.rendered, 'Theme') || 'General',
-      difficulty: this.extractMetadata(post.content.rendered, 'Difficulty') || 'Beginner',
-      estimatedDuration: this.extractMetadata(post.content.rendered, 'Duration') || 0,
-      totalModules: this.extractMetadata(post.content.rendered, 'Modules') || 0,
-      price: this.extractMetadata(post.content.rendered, 'Price') || 0,
+      // Use default values to avoid type issues
+      Type: 'Formation',
+      Theme: 'General',
+      difficulty: 'Beginner',
+      estimatedDuration: 0,
+      totalModules: 0,
+      price: 0,
     }));
   }
 

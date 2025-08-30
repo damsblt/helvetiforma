@@ -9,8 +9,8 @@ interface Formation {
   id: number;
   Title: string;
   Description: string;
-  Type: string;
-  Theme: string;
+  Type?: string;
+  Theme?: string;
   totalModules?: number;
   estimatedDuration?: number;
   difficulty?: string;
@@ -149,7 +149,7 @@ export default function FormationDetailPage({ params }: { params: Promise<{ id: 
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="text-2xl">{getThemeIcon(formation.Theme)}</span>
+                  <span className="text-2xl">{getThemeIcon(formation.Theme || '')}</span>
                   <h1 className="text-3xl font-bold text-gray-900">{formation.Title}</h1>
                 </div>
                 <p className="text-gray-600 mb-4">{formation.Description}</p>
@@ -158,7 +158,7 @@ export default function FormationDetailPage({ params }: { params: Promise<{ id: 
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                     formation.Type === 'En ligne' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                   }`}>
-                    {formation.Type}
+                    {formation.Type || 'Inconnu'}
                   </span>
                   {formation.difficulty && (
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColor(formation.difficulty)}`}>
