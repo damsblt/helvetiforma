@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import authService from '@/services/authService';
 
 interface User {
   id: number;
   email: string;
   firstName: string;
   lastName: string;
-  isLoggedIn: boolean;
+  isAdmin: boolean;
 }
 
 interface Formation {
@@ -35,18 +36,20 @@ export default function PersonalSpacePage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is logged in
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const userInfo = JSON.parse(userData);
-      if (userInfo.isLoggedIn) {
+    // Check if user is authenticated using the same method as login page
+    if (authService.isAuthenticated()) {
+      const userInfo = authService.getUser();
+      if (userInfo) {
         setUser(userInfo);
         // Fetch user's registrations
         fetchUserRegistrations(userInfo.id);
       } else {
+        // User data is invalid, redirect to login
+        authService.clearAuth();
         router.push('/login');
       }
     } else {
+      // Not authenticated, redirect to login
       router.push('/login');
     }
     setIsLoading(false);
@@ -93,8 +96,8 @@ export default function PersonalSpacePage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
+  const handleLogout = async () => {
+    await authService.logout();
     router.push('/');
   };
 
