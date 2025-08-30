@@ -55,8 +55,11 @@ export default function DocsPage() {
           const categoryNames = ['Toutes'];
           
           wpCategories.forEach((cat: any) => {
-            categoryMap.set(cat.id, cat.name);
-            categoryNames.push(cat.name);
+            // Filter out "Non classé" (Unclassified) category as it's redundant with "Toutes"
+            if (cat.name !== 'Non classé') {
+              categoryMap.set(cat.id, cat.name);
+              categoryNames.push(cat.name);
+            }
           });
           
           // Store category mapping for filtering
