@@ -43,7 +43,6 @@ export default function Navigation() {
     { href: '/formations', label: 'Formations' },
     { href: '/formation-docs', label: 'Formation Docs' },
     { href: '/docs', label: 'Coin des Docs' },
-    { href: '/ia', label: 'Interaction IA' },
     { href: '/contact', label: 'Contact' },
   ];
 
