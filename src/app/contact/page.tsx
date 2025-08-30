@@ -1,227 +1,126 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import emailjs from '@emailjs/browser';
 import { emailjsConfig } from '../../config/emailjs';
+import Image from 'next/image';
 
 export default function ContactPage() {
   const formRef = useRef<HTMLFormElement>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitMessage, setSubmitMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitStatus('idle');
+    setSubmitMessage('');
     setErrorMessage('');
-    
+
     try {
-      // Send email using EmailJS
-      const result = await emailjs.sendForm(
+      await emailjs.sendForm(
         emailjsConfig.serviceId,
         emailjsConfig.templateId,
         formRef.current!,
         emailjsConfig.publicKey
       );
-      
-      if (result.status === 200) {
-        setSubmitStatus('success');
-        setFormData({ name: '', email: '', subject: '', message: '' });
-      } else {
-        throw new Error('Failed to send email');
+      setSubmitMessage('Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.');
+      if (formRef.current) {
+        formRef.current.reset();
       }
     } catch (error) {
-      console.error('Error sending email:', error);
-      setSubmitStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : 'Erreur lors de l\'envoi du message');
+      console.error('Erreur lors de l\'envoi:', error);
+      setErrorMessage('Une erreur est survenue lors de l\'envoi de votre message. Veuillez réessayer ou nous contacter directement.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-2 md:px-0">
-      <div className="container mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Contactez-nous</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Vous avez des questions sur nos formations ou souhaitez en savoir plus ? 
-            N'hésitez pas à nous contacter, nous serons ravis de vous répondre.
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section with Background Image */}
+      <div className="relative py-20 bg-gradient-to-r from-blue-600 to-indigo-700">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/contact-hero.jpg"
+            alt="Contactez-nous"
+            fill
+            className="object-cover opacity-20"
+          />
+        </div>
+        
+        <div className="relative z-10 container mx-auto px-4 text-center">
+          <h1 className="text-5xl font-bold text-white mb-6">Contactez-nous</h1>
+          <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+            Nous sommes là pour répondre à toutes vos questions et vous accompagner 
+            dans votre parcours de formation professionnelle.
           </p>
         </div>
+      </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Information */}
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Informations de contact</h2>
-              
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Email</h3>
-                    <p className="text-gray-600">contact@helvetiforma.ch</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Localisation</h3>
-                    <p className="text-gray-600">Suisse</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Réponse rapide</h3>
-                    <p className="text-gray-600">Sous 24-48 heures</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Why Choose Us */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Pourquoi nous choisir ?</h3>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-center space-x-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Formations certifiantes</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Support personnalisé</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Flexibilité d'apprentissage</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Contact Form */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Envoyez-nous un message</h2>
+      <div className="container mx-auto max-w-6xl px-4 py-16">
+        <div className="grid lg:grid-cols-2 gap-16">
+          {/* Contact Form Section */}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+            <h2 className="text-3xl font-semibold text-gray-900 mb-8">Envoyez-nous un message</h2>
             
-            {submitStatus === 'success' && (
+            {submitMessage && (
               <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-green-800 font-medium">Message envoyé avec succès !</span>
-                </div>
-                <p className="text-green-700 text-sm mt-1">Nous vous répondrons dans les plus brefs délais.</p>
+                <p className="text-green-800">{submitMessage}</p>
               </div>
             )}
-
-            {submitStatus === 'error' && (
+            
+            {errorMessage && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                  <span className="text-red-800 font-medium">Erreur lors de l'envoi</span>
-                </div>
-                <p className="text-red-700 text-sm mt-1">{errorMessage || 'Veuillez réessayer ou nous contacter directement par email.'}</p>
+                <p className="text-red-800">{errorMessage}</p>
               </div>
             )}
 
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="from_name" className="block text-sm font-medium text-gray-700 mb-2">
                     Nom complet *
                   </label>
                   <input
                     type="text"
-                    id="name"
-                    name="name"
+                    id="from_name"
+                    name="from_name"
                     required
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="Votre nom complet"
                   />
                 </div>
-
+                
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="from_email" className="block text-sm font-medium text-gray-700 mb-2">
                     Email *
                   </label>
                   <input
                     type="email"
-                    id="email"
-                    name="email"
+                    id="from_email"
+                    name="from_email"
                     required
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="votre@email.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="votre.email@exemple.com"
                   />
                 </div>
               </div>
-
+              
               <div>
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
                   Sujet *
                 </label>
-                <select
+                <input
+                  type="text"
                   id="subject"
                   name="subject"
                   required
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                >
-                  <option value="">Sélectionnez un sujet</option>
-                  <option value="formation">Demande d'information sur une formation</option>
-                  <option value="inscription">Inscription à une formation</option>
-                  <option value="devis">Demande de devis</option>
-                  <option value="partenariat">Partenariat</option>
-                  <option value="autre">Autre</option>
-                </select>
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Sujet de votre message"
+                />
               </div>
-
+              
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                   Message *
@@ -230,55 +129,179 @@ export default function ContactPage() {
                   id="message"
                   name="message"
                   required
-                  rows={5}
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-                  placeholder="Décrivez votre demande en détail..."
+                  rows={6}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                  placeholder="Décrivez votre demande ou question..."
                 />
               </div>
-
+              
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 shadow-lg"
               >
-                {isSubmitting ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Envoi en cours...</span>
-                  </div>
-                ) : (
-                  'Envoyer le message'
-                )}
+                {isSubmitting ? 'Envoi en cours...' : 'Envoyer le message'}
               </button>
             </form>
+          </div>
+
+          {/* Contact Information Section */}
+          <div className="space-y-8">
+            {/* Contact Details */}
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Informations de contact</h3>
+              
+              <div className="space-y-6">
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Image
+                      src="/images/location-icon.png"
+                      alt="Localisation"
+                      width={24}
+                      height={24}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Adresse</h4>
+                    <p className="text-gray-600">Rue de la Formation 123<br />1200 Genève, Suisse</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Image
+                      src="/images/phone-icon.png"
+                      alt="Téléphone"
+                      width={24}
+                      height={24}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Téléphone</h4>
+                    <p className="text-gray-600">+41 22 123 45 67</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Image
+                      src="/images/email-icon.png"
+                      alt="Email"
+                      width={24}
+                      height={24}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Email</h4>
+                    <p className="text-gray-600">contact@helvetiforma.ch</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Image
+                      src="/images/clock-icon.png"
+                      alt="Horaires"
+                      width={24}
+                      height={24}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Horaires d'ouverture</h4>
+                    <p className="text-gray-600">Lun-Ven: 9h-18h<br />Sam: 9h-12h</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Why Choose Us */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-8">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Pourquoi nous choisir ?</h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-gray-700">Réponse rapide sous 24h</span>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-gray-700">Expertise en formation professionnelle</span>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-gray-700">Accompagnement personnalisé</span>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="text-gray-700">Solutions sur mesure</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-16">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Questions fréquentes</h2>
+        <div className="mt-20 bg-white rounded-2xl shadow-xl border border-gray-200 p-12">
+          <h2 className="text-3xl font-semibold text-gray-900 mb-12 text-center">Questions fréquemment posées</h2>
           
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Comment s'inscrire à une formation ?</h3>
-              <p className="text-gray-600">Contactez-nous via ce formulaire ou par email. Nous vous guiderons dans le processus d'inscription et répondrons à toutes vos questions.</p>
+            <div className="space-y-6">
+              <div className="border-l-4 border-blue-600 pl-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Comment fonctionne l'inscription ?</h3>
+                <p className="text-gray-600">
+                  L'inscription se fait en ligne via notre plateforme. Remplissez le formulaire 
+                  et notre équipe vous contactera pour finaliser votre inscription.
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-green-600 pl-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Quels sont les modes de paiement ?</h3>
+                <p className="text-gray-600">
+                  Nous acceptons les cartes de crédit, virements bancaires et échelonnement 
+                  de paiement pour certaines formations.
+                </p>
+              </div>
             </div>
-
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Les formations sont-elles certifiantes ?</h3>
-              <p className="text-gray-600">Oui, nos formations délivrent des certificats reconnus qui attestent de vos compétences acquises.</p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Quels sont les délais de réponse ?</h3>
-              <p className="text-gray-600">Nous nous engageons à répondre à toutes les demandes sous 24-48 heures maximum.</p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Proposez-vous des formations sur mesure ?</h3>
-              <p className="text-gray-600">Absolument ! Nous adaptons nos programmes aux besoins spécifiques de votre entreprise ou organisation.</p>
+            
+            <div className="space-y-6">
+              <div className="border-l-4 border-purple-600 pl-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Les formations sont-elles certifiantes ?</h3>
+                <p className="text-gray-600">
+                  Oui, toutes nos formations délivrent des certificats reconnus 
+                  qui attestent de vos compétences acquises.
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-orange-600 pl-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Y a-t-il un accompagnement post-formation ?</h3>
+                <p className="text-gray-600">
+                  Absolument ! Nous proposons un suivi post-formation pour vous accompagner 
+                  dans la mise en pratique de vos nouvelles compétences.
+                </p>
+              </div>
             </div>
           </div>
         </div>
