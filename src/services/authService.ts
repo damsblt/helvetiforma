@@ -101,8 +101,14 @@ class AuthService {
       if (response.ok) {
         const userData = await response.json();
         
+        // Debug logging to see what we're getting from WordPress
+        console.log('WordPress user data:', userData);
+        console.log('User capabilities:', userData.capabilities);
+        console.log('User roles:', userData.roles);
+        
         // Check if user has admin capabilities
         const isAdmin = userData.capabilities?.administrator || false;
+        console.log('Is admin detected:', isAdmin);
         
         const user: User = {
           id: userData.id,
@@ -113,6 +119,8 @@ class AuthService {
           roles: Object.keys(userData.capabilities || {})
         };
 
+        console.log('Final user object:', user);
+        
         // Create a simple token (or use WordPress nonce)
         const token = btoa(JSON.stringify({ id: user.id, email: user.email }));
         
