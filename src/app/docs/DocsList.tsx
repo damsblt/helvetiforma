@@ -47,9 +47,24 @@ export default function DocsList({ articles, categories }: { articles: Article[]
   };
 
   const stripHtml = (html: string) => {
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || '';
+    // First decode HTML entities
+    const decoded = html
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&rsquo;/g, "'")
+      .replace(/&ldquo;/g, '"')
+      .replace(/&rdquo;/g, '"')
+      .replace(/&#8230;/g, '…')
+      .replace(/&#8217;/g, "'")
+      .replace(/&#8216;/g, "'")
+      .replace(/&#8220;/g, '"')
+      .replace(/&#8221;/g, '"');
+    
+    // Then remove HTML tags
+    return decoded.replace(/<[^>]*>/g, '');
   };
 
   return (

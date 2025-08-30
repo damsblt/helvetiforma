@@ -28,6 +28,32 @@ interface Article {
   type: string;
 }
 
+// Utility function to decode HTML entities
+const decodeHtmlEntities = (text: string): string => {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&ldquo;/g, '"')
+    .replace(/&rdquo;/g, '"')
+    .replace(/&#8230;/g, '…')
+    .replace(/&#8217;/g, "'")
+    .replace(/&#8216;/g, "'")
+    .replace(/&#8220;/g, '"')
+    .replace(/&#8221;/g, '"');
+};
+
+// Utility function to clean HTML tags and decode entities
+const cleanHtmlContent = (html: string): string => {
+  // First decode HTML entities
+  const decoded = decodeHtmlEntities(html);
+  // Then remove HTML tags
+  return decoded.replace(/<[^>]*>/g, '');
+};
+
 export default function ArticleViewerPage({ params }: { params: Promise<{ id: string }> }) {
   const [article, setArticle] = useState<Article | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -163,7 +189,7 @@ export default function ArticleViewerPage({ params }: { params: Promise<{ id: st
           {article.excerpt && (
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <p className="text-gray-700 italic">
-                {article.excerpt.rendered.replace(/<[^>]*>/g, '')}
+                {cleanHtmlContent(article.excerpt.rendered)}
               </p>
             </div>
           )}
