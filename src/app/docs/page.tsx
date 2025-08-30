@@ -3,70 +3,38 @@
 import React, { useState, useEffect } from 'react';
 import DocsList from './DocsList';
 
-interface WordPressPost {
+interface Article {
   id: number;
   title: { rendered: string };
   content: { rendered: string };
   excerpt: { rendered: string };
   slug: string;
   date: string;
+  modified: string;
+  author: number;
+  featured_media: number;
+  comment_status: string;
+  ping_status: string;
+  sticky: boolean;
+  template: string;
+  format: string;
+  meta: any;
   categories: number[];
   tags: number[];
-}
-
-interface Formation {
-  id: number;
-  Title: string;
-  Description: string;
-  Type?: string;
-  Theme?: string;
-  totalModules?: number;
-  estimatedDuration?: number;
-  difficulty?: string;
-  price?: number;
-  slug?: string;
-  date?: string;
-  excerpt?: string;
+  link: string;
+  guid: any;
+  status: string;
+  type: string;
 }
 
 export default function DocsPage() {
-  const [docs, setDocs] = useState<Formation[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<string[]>(['Toutes']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Metadata extraction function
-  const extractMetadata = (content: string, key: string): string | number | null => {
-    if (!content) return null;
-    
-    const regex = new RegExp(`\\[${key}:\\s*([^\\]]+)\\]`, 'i');
-    const match = content.match(regex);
-    
-    if (match && match[1]) {
-      const value = match[1].trim();
-      if (!isNaN(Number(value))) {
-        return Number(value);
-      }
-      return value;
-    }
-    
-    return null;
-  };
-
-  // Helper function to safely extract string metadata
-  const extractStringMetadata = (content: string, key: string): string | undefined => {
-    const result = extractMetadata(content, key);
-    return typeof result === 'string' ? result : undefined;
-  };
-
-  // Helper function to safely extract number metadata
-  const extractNumberMetadata = (content: string, key: string): number | undefined => {
-    const result = extractMetadata(content, key);
-    return typeof result === 'number' ? result : undefined;
-  };
-
   useEffect(() => {
-    const fetchDocs = async () => {
+    const fetchArticles = async () => {
       try {
         setLoading(true);
         
@@ -76,50 +44,33 @@ export default function DocsPage() {
           throw new Error('Failed to fetch posts');
         }
         
-        const posts: WordPressPost[] = await postsResponse.json();
-        
-        // Transform posts to Formation format
-        const transformedDocs: Formation[] = posts.map(post => ({
-          id: post.id,
-          Title: post.title.rendered,
-          Description: post.content.rendered,
-          excerpt: post.excerpt.rendered,
-          slug: post.slug,
-          date: post.date,
-          Type: extractStringMetadata(post.content.rendered, 'Type') || 'Article',
-          Theme: extractStringMetadata(post.content.rendered, 'Theme') || 'General',
-          difficulty: extractStringMetadata(post.content.rendered, 'Difficulty') || 'All Levels',
-          estimatedDuration: extractNumberMetadata(post.content.rendered, 'Duration') || 0,
-          totalModules: extractNumberMetadata(post.content.rendered, 'Modules') || 0,
-          price: extractNumberMetadata(post.content.rendered, 'Price') || 0,
-        }));
-
-        setDocs(transformedDocs);
+        const posts: Article[] = await postsResponse.json();
+        setArticles(posts);
 
         // Extract unique categories from posts
         const categorySet = new Set<string>();
         categorySet.add('Toutes');
         
-        transformedDocs.forEach(doc => {
-          if (doc.Theme) {
-            categorySet.add(doc.Theme);
-          }
-          if (doc.Type) {
-            categorySet.add(doc.Type);
-          }
-        });
+        // Get categories from WordPress
+        const categoriesResponse = await fetch('https://api.helvetiforma.ch/wp-json/wp/v2/categories');
+        if (categoriesResponse.ok) {
+          const wpCategories = await categoriesResponse.json();
+          wpCategories.forEach((cat: any) => {
+            categorySet.add(cat.name);
+          });
+        }
 
         setCategories(Array.from(categorySet));
         
       } catch (err) {
-        console.error('Error fetching docs:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch documents');
+        console.error('Error fetching articles:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch articles');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDocs();
+    fetchArticles();
   }, []);
 
   if (loading) {
@@ -128,7 +79,7 @@ export default function DocsPage() {
         <div className="container mx-auto max-w-3xl">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement des documents...</p>
+            <p className="text-gray-600">Chargement des articles...</p>
           </div>
         </div>
       </div>
@@ -162,7 +113,7 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-2 md:px-0">
       <div className="container mx-auto max-w-3xl">
-        <DocsList docs={docs} categories={categories} />
+        <DocsList articles={articles} categories={categories} />
       </div>
     </div>
   );

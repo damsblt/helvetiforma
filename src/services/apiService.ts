@@ -7,20 +7,30 @@ interface ApiConfig {
   fallbackToStrapi: boolean;
 }
 
-interface Formation {
+interface Article {
   id: number;
-  Title: string;
-  Description: string;
-  Type?: string;
-  Theme?: string;
-  totalModules?: number;
-  estimatedDuration?: number;
-  difficulty?: string;
-  price?: number;
-  modules?: FormationDoc[];
-  slug?: string;
-  date?: string;
-  excerpt?: string;
+  title: { rendered: string };
+  content: { rendered: string };
+  excerpt: { rendered: string };
+  slug: string;
+  date: string;
+  modified: string;
+  author: number;
+  featured_media: number;
+  comment_status: string;
+  ping_status: string;
+  sticky: boolean;
+  template: string;
+  format: string;
+  meta: any;
+  categories: number[];
+  tags: number[];
+  // WordPress specific fields
+  _embedded?: any;
+  link: string;
+  guid: any;
+  status: string;
+  type: string;
 }
 
 interface FormationDoc {
@@ -61,21 +71,21 @@ class ApiService {
   }
 
   /**
-   * Fetch formation by ID
+   * Fetch article by ID
    */
-  public async getFormation(id: string): Promise<Formation> {
+  public async getArticle(id: string): Promise<Article> {
     try {
       if (this.config.useWordPress) {
-        return await this.getFormationFromWordPress(id);
+        return await this.getArticleFromWordPress(id);
       } else {
-        return await this.getFormationFromStrapi(id);
+        return await this.getArticleFromStrapi(id);
       }
     } catch (error) {
       console.error('Primary API failed:', error);
       
       if (this.config.fallbackToStrapi && this.config.useWordPress) {
         console.log('Falling back to Strapi...');
-        return await this.getFormationFromStrapi(id);
+        return await this.getArticleFromStrapi(id);
       }
       
       throw error;
@@ -83,25 +93,26 @@ class ApiService {
   }
 
   /**
-   * Fetch all formations
+   * Fetch all articles
    */
-  public async getFormations(filters?: {
-    theme?: string;
-    type?: string;
-    difficulty?: string;
-  }): Promise<Formation[]> {
+  public async getArticles(filters?: {
+    search?: string;
+    categories?: number[];
+    tags?: number[];
+    per_page?: number;
+  }): Promise<Article[]> {
     try {
       if (this.config.useWordPress) {
-        return await this.getFormationsFromWordPress(filters);
+        return await this.getArticlesFromWordPress(filters);
       } else {
-        return await this.getFormationsFromStrapi(filters);
+        return await this.getArticlesFromStrapi(filters);
       }
     } catch (error) {
       console.error('Primary API failed:', error);
       
       if (this.config.fallbackToStrapi && this.config.useWordPress) {
         console.log('Falling back to Strapi...');
-        return await this.getFormationsFromStrapi(filters);
+        return await this.getArticlesFromStrapi(filters);
       }
       
       throw error;
@@ -111,7 +122,7 @@ class ApiService {
   /**
    * WordPress API Methods - Using native post endpoints
    */
-  private async getFormationFromWordPress(id: string): Promise<Formation> {
+  private async getArticleFromWordPress(id: string): Promise<Article> {
     const response = await fetch(
       `${this.config.wordpressUrl}/wp-json/wp/v2/posts/${id}`
     );
@@ -122,39 +133,32 @@ class ApiService {
 
     const data = await response.json();
     
-    // Transform WordPress post data to match Formation format
-    return {
-      id: data.id,
-      Title: data.title.rendered || data.title,
-      Description: data.content.rendered || data.content,
-      excerpt: data.excerpt.rendered || data.excerpt,
-      slug: data.slug,
-      date: data.date,
-      // Use default values to avoid type issues
-      Type: 'Formation',
-      Theme: 'General',
-      difficulty: 'Beginner',
-      estimatedDuration: 0,
-      totalModules: 0,
-      price: 0,
-    };
+    // Return WordPress data directly - no transformation needed
+    return data;
   }
 
-  private async getFormationsFromWordPress(filters?: {
-    theme?: string;
-    type?: string;
-    difficulty?: string;
-  }): Promise<Formation[]> {
+  private async getArticlesFromWordPress(filters?: {
+    search?: string;
+    categories?: number[];
+    tags?: number[];
+    per_page?: number;
+  }): Promise<Article[]> {
     const params = new URLSearchParams();
-    params.append('per_page', '100'); // Get more posts
+    params.append('per_page', filters?.per_page?.toString() || '100');
     
-    // Add search if filters are provided
-    if (filters?.theme || filters?.type || filters?.difficulty) {
-      const searchTerms = [];
-      if (filters.theme) searchTerms.push(filters.theme);
-      if (filters.type) searchTerms.push(filters.type);
-      if (filters.difficulty) searchTerms.push(filters.difficulty);
-      params.append('search', searchTerms.join(' '));
+    // Add search if provided
+    if (filters?.search) {
+      params.append('search', filters.search);
+    }
+    
+    // Add categories if provided
+    if (filters?.categories && filters.categories.length > 0) {
+      params.append('categories', filters.categories.join(','));
+    }
+    
+    // Add tags if provided
+    if (filters?.tags && filters.tags.length > 0) {
+      params.append('tags', filters.tags.join(','));
     }
 
     const response = await fetch(
@@ -167,50 +171,14 @@ class ApiService {
 
     const data = await response.json();
     
-    // Transform WordPress posts to Formation format
-    return data.map((post: any) => ({
-      id: post.id,
-      Title: post.title.rendered || post.title,
-      Description: post.excerpt.rendered || post.excerpt,
-      excerpt: post.excerpt.rendered || post.excerpt,
-      slug: post.slug,
-      date: post.date,
-      // Use default values to avoid type issues
-      Type: 'Formation',
-      Theme: 'General',
-      difficulty: 'Beginner',
-      estimatedDuration: 0,
-      totalModules: 0,
-      price: 0,
-    }));
+    // Return WordPress data directly - no transformation needed
+    return data;
   }
 
   /**
-   * Extract metadata from WordPress post content
-   * Looks for patterns like [Type: Formation] or [Theme: Business]
+   * Strapi API Methods (legacy support)
    */
-  private extractMetadata(content: string, key: string): string | number | null {
-    if (!content) return null;
-    
-    const regex = new RegExp(`\\[${key}:\\s*([^\\]]+)\\]`, 'i');
-    const match = content.match(regex);
-    
-    if (match && match[1]) {
-      const value = match[1].trim();
-      // Try to convert to number if it's numeric
-      if (!isNaN(Number(value))) {
-        return Number(value);
-      }
-      return value;
-    }
-    
-    return null;
-  }
-
-  /**
-   * Strapi API Methods (existing)
-   */
-  private async getFormationFromStrapi(id: string): Promise<Formation> {
+  private async getArticleFromStrapi(id: string): Promise<Article> {
     const response = await fetch(
       `${this.config.strapiUrl}/api/formations/${id}?populate[modules][populate]=*&populate[sessions]=*`
     );
@@ -222,23 +190,42 @@ class ApiService {
     const data = await response.json();
     
     if (data.error) {
-      throw new Error('Formation not found');
+      throw new Error('Article not found');
     }
 
-    return data.data;
+    // Transform Strapi data to match Article interface
+    return {
+      id: data.data.id,
+      title: { rendered: data.data.attributes.Title || '' },
+      content: { rendered: data.data.attributes.Description || '' },
+      excerpt: { rendered: data.data.attributes.Description || '' },
+      slug: `formation-${data.data.id}`,
+      date: data.data.attributes.createdAt || new Date().toISOString(),
+      modified: data.data.attributes.updatedAt || new Date().toISOString(),
+      author: 1,
+      featured_media: 0,
+      comment_status: 'open',
+      ping_status: 'open',
+      sticky: false,
+      template: '',
+      format: 'standard',
+      meta: {},
+      categories: [],
+      tags: [],
+      link: `${this.config.strapiUrl}/formations/${data.data.id}`,
+      guid: { rendered: `${this.config.strapiUrl}/formations/${data.data.id}` },
+      status: 'publish',
+      type: 'post'
+    };
   }
 
-  private async getFormationsFromStrapi(filters?: {
-    theme?: string;
-    type?: string;
-    difficulty?: string;
-  }): Promise<Formation[]> {
+  private async getArticlesFromStrapi(filters?: any): Promise<Article[]> {
     const params = new URLSearchParams();
     params.append('populate', '*');
     
-    if (filters?.theme) params.append('filters[Theme][$eq]', filters.theme);
-    if (filters?.type) params.append('filters[Type][$eq]', filters.type);
-    if (filters?.difficulty) params.append('filters[difficulty][$eq]', filters.difficulty);
+    if (filters?.search) {
+      params.append('filters[Title][$containsi]', filters.search);
+    }
 
     const response = await fetch(
       `${this.config.strapiUrl}/api/formations?${params}`
@@ -249,7 +236,31 @@ class ApiService {
     }
 
     const data = await response.json();
-    return data.data || [];
+    
+    // Transform Strapi data to match Article interface
+    return (data.data || []).map((item: any) => ({
+      id: item.id,
+      title: { rendered: item.attributes.Title || '' },
+      content: { rendered: item.attributes.Description || '' },
+      excerpt: { rendered: item.attributes.Description || '' },
+      slug: `formation-${item.id}`,
+      date: item.attributes.createdAt || new Date().toISOString(),
+      modified: item.attributes.updatedAt || new Date().toISOString(),
+      author: 1,
+      featured_media: 0,
+      comment_status: 'open',
+      ping_status: 'open',
+      sticky: false,
+      template: '',
+      format: 'standard',
+      meta: {},
+      categories: [],
+      tags: [],
+      link: `${this.config.strapiUrl}/formations/${item.id}`,
+      guid: { rendered: `${this.config.strapiUrl}/formations/${item.id}` },
+      status: 'publish',
+      type: 'post'
+    }));
   }
 
   /**
