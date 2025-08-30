@@ -178,9 +178,9 @@ export default function ChargesSocialesFormationPage() {
               </p>
               <CalendarLink
                 theme="Assurances sociales"
-                className="block w-full bg-white text-green-600 py-3 px-6 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                className="block w-full bg-white py-3 px-6 rounded-lg font-medium hover:bg-green-600 transition-colors"
               >
-                Voir les dates
+                <span className="text-green-600 hover:text-white">Voir les dates</span>
               </CalendarLink>
             </div>
 
@@ -234,9 +234,9 @@ export default function ChargesSocialesFormationPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <CalendarLink
                 theme="Assurances sociales"
-                className="bg-white text-green-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                className="bg-white px-8 py-3 rounded-lg font-medium hover:bg-green-600 transition-colors"
               >
-                Voir les dates
+                <span className="text-green-600 hover:text-white">Voir les dates</span>
               </CalendarLink>
               <Link
                 href="/formations"

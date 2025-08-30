@@ -188,9 +188,9 @@ export default function ImpotALaSourceFormationPage() {
               </p>
               <CalendarLink
                 theme="Impôt à la source"
-                className="block w-full bg-white text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                className="block w-full bg-white py-3 px-6 rounded-lg font-medium hover:bg-purple-600 transition-colors"
               >
-                Voir les dates
+                <span className="text-purple-600 hover:text-white">Voir les dates</span>
               </CalendarLink>
             </div>
 
@@ -244,9 +244,9 @@ export default function ImpotALaSourceFormationPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <CalendarLink
                 theme="Impôt à la source"
-                className="bg-white text-purple-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                className="bg-white px-8 py-3 rounded-lg font-medium hover:bg-purple-600 transition-colors"
               >
-                Voir les dates
+                <span className="text-purple-600 hover:text-white">Voir les dates</span>
               </CalendarLink>
               <Link
                 href="/formations"

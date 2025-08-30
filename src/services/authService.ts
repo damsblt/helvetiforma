@@ -83,44 +83,51 @@ class AuthService {
     return user?.isAdmin || false;
   }
 
-  // Login using WordPress built-in authentication
+  // Login using custom WordPress authentication endpoint
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      // Use WordPress standard authentication with Basic Auth
-      // WordPress supports both username and email for authentication
-      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/users/me`, {
-        method: 'GET',
+      // Use custom WordPress authentication endpoint with secret key
+      const response = await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/login/?secret_key=oV9gdjpkmCMV2NK0pd81SawWriGEtV0K`, {
+        method: 'POST',
         headers: {
-          'Authorization': `Basic ${btoa(`${credentials.identifier}:${credentials.password}`)}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          identifier: credentials.identifier, // email or username
+          password: credentials.password
+        }),
       });
 
       if (response.ok) {
-        const userData = await response.json();
+        const data = await response.json();
         
-        // Check if user has admin capabilities
-        const isAdmin = userData.capabilities?.administrator || false;
-        
-        const user: User = {
-          id: userData.id,
-          email: userData.email || credentials.identifier, // Use the identifier if email is not available
-          firstName: userData.first_name || '',
-          lastName: userData.last_name || '',
-          isAdmin: isAdmin,
-          roles: Object.keys(userData.capabilities || {})
-        };
+        // Handle the custom response from your WordPress endpoint
+        if (data.success && data.user) {
+          const user: User = {
+            id: data.user.id || 0,
+            email: data.user.email || credentials.identifier,
+            firstName: data.user.first_name || data.user.firstName || '',
+            lastName: data.user.last_name || data.user.lastName || '',
+            isAdmin: data.user.isAdmin || data.user.capabilities?.administrator || false,
+            roles: data.user.roles || Object.keys(data.user.capabilities || {})
+          };
 
-        // Create a simple token (or use WordPress nonce)
-        const token = btoa(JSON.stringify({ id: user.id, email: user.email }));
-        
-        this.setAuth(token, user);
-        
-        return {
-          success: true,
-          user: user,
-          token: token
-        };
+          // Use the token from your custom endpoint or create one
+          const token = data.token || btoa(JSON.stringify({ id: user.id, email: user.email }));
+          
+          this.setAuth(token, user);
+          
+          return {
+            success: true,
+            user: user,
+            token: token
+          };
+        } else {
+          return {
+            success: false,
+            message: data.message || 'Identifiant ou mot de passe incorrect',
+          };
+        }
       } else {
         return {
           success: false,
@@ -136,20 +143,47 @@ class AuthService {
     }
   }
 
-  // Register using WordPress built-in user creation
+  // Register using custom WordPress registration endpoint
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
-      // Note: WordPress requires admin privileges to create users via REST API
-      // For now, we'll return an error suggesting to contact admin
-      return {
-        success: false,
-        message: 'Pour créer un compte, veuillez contacter l\'administrateur. L\'inscription automatique n\'est pas activée.',
-      };
+      // Use custom WordPress registration endpoint with secret key
+      const response = await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/register/?secret_key=oV9gdjpkmCMV2NK0pd81SawWriGEtV0K`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.success) {
+          return {
+            success: true,
+            message: data.message || 'Compte créé avec succès',
+          };
+        } else {
+          return {
+            success: false,
+            message: data.message || 'Erreur lors de la création du compte',
+          };
+        }
+      } else {
+        return {
+          success: false,
+          message: 'Erreur lors de la création du compte',
+        };
+      }
     } catch (error) {
       console.error('Register error:', error);
       return {
         success: false,
-        message: 'Erreur lors de l\'inscription',
+        message: 'Erreur de connexion au serveur',
       };
     }
   }
