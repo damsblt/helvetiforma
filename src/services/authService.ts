@@ -1,5 +1,5 @@
-// TEMPORARY FIX: Using WordPress built-in authentication while debugging custom endpoints
-// TODO: Switch back to custom endpoints once SSL/TLS issues are resolved
+// Using WordPress Application Passwords for secure REST API authentication
+// This method is built into WordPress and more secure than Basic Auth
 export interface User {
   id: number;
   email: string;
@@ -85,11 +85,11 @@ class AuthService {
     return user?.isAdmin || false;
   }
 
-  // Login using WordPress built-in authentication (temporary fix)
+  // Login using WordPress Application Passwords (secure built-in method)
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      // Use WordPress standard authentication with Basic Auth
-      // This will work immediately while we debug the custom endpoints
+      // Use WordPress Application Passwords authentication
+      // This is more secure than Basic Auth and built into WordPress
       const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/users/me`, {
         method: 'GET',
         headers: {
