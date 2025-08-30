@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import Link from 'next/link';
 
 interface Article {
   id: number;
@@ -137,9 +138,12 @@ export default function DocsList({ articles, categories }: { articles: Article[]
                       </div>
                       
                       <div className="flex gap-2">
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <Link
+                          href={`/docs/${article.id}`}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                        >
                           Lire l'article
-                        </button>
+                        </Link>
                         <a
                           href={article.link}
                           target="_blank"
