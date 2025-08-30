@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import CalendarLink from '@/components/CalendarLink';
 
 export default function SalairesFormationPage() {
   return (
@@ -150,12 +151,12 @@ export default function SalairesFormationPage() {
               <p className="text-blue-100 mb-6">
                 Inscrivez-vous à cette formation et développez vos compétences en gestion des salaires.
               </p>
-              <Link
-                href="/contact"
+              <CalendarLink
+                theme="Salaire"
                 className="block w-full bg-white text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >
-                Demander l'inscription
-              </Link>
+                Voir les dates
+              </CalendarLink>
             </div>
 
             {/* Target Audience */}
@@ -206,12 +207,12 @@ export default function SalairesFormationPage() {
               et votre entreprise. Contactez-nous pour plus d'informations.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/contact"
+              <CalendarLink
+                theme="Salaire"
                 className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >
-                Demander l'inscription
-              </Link>
+                Voir les dates
+              </CalendarLink>
               <Link
                 href="/formations"
                 className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-blue-600 transition-colors"

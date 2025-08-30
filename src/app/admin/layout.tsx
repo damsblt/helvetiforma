@@ -26,7 +26,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       // Check if user is admin (email contains 'admin' or specific admin emails)
       const isAdminUser = user.email?.includes('admin') || 
                          user.email === 'admin@helvetiforma.com' ||
-                         user.email === 'damien@helvetiforma.com';
+                         user.email === 'damien@helvetiforma.com' ||
+                         user.email === 'damien.balet@me.com';
       
       if (!isAdminUser) {
         router.push('/login?message=admin_required');
@@ -102,6 +103,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 className="text-gray-600 hover:text-blue-700 transition"
               >
                 Contrôle API
+              </Link>
+              <Link
+                href="/admin/calendar"
+                className="text-gray-600 hover:text-blue-700 transition"
+              >
+                Calendrier
               </Link>
               <button
                 onClick={() => {

@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import CalendarLink from '@/components/CalendarLink';
 
 export default function ImpotALaSourceFormationPage() {
   return (
@@ -185,12 +186,12 @@ export default function ImpotALaSourceFormationPage() {
               <p className="text-purple-100 mb-6">
                 Inscrivez-vous à cette formation spécialisée et maîtrisez l'impôt à la source.
               </p>
-              <Link
-                href="/contact"
+              <CalendarLink
+                theme="Impôt à la source"
                 className="block w-full bg-white text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >
-                Demander l'inscription
-              </Link>
+                Voir les dates
+              </CalendarLink>
             </div>
 
             {/* Target Audience */}
@@ -241,12 +242,12 @@ export default function ImpotALaSourceFormationPage() {
               de l'impôt à la source pour les travailleurs internationaux en Suisse.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/contact"
+              <CalendarLink
+                theme="Impôt à la source"
                 className="bg-white text-purple-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >
-                Demander l'inscription
-              </Link>
+                Voir les dates
+              </CalendarLink>
               <Link
                 href="/formations"
                 className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-purple-600 transition-colors"

@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 import React from 'react';
 import Link from 'next/link';
+import CalendarLink from '@/components/CalendarLink';
 
 export default function FormationsPage() {
   const formations = [
@@ -137,12 +138,19 @@ export default function FormationsPage() {
                 </div>
 
                 {/* CTA Button */}
-                <Link
-                  href={`/formations/${formation.id}`}
-                  className={`block w-full text-center py-3 px-6 rounded-lg font-medium transition-colors ${getButtonColor(formation.color)}`}
-                >
-                  Découvrir la formation
-                </Link>
+                <div className="flex gap-2">
+                  <Link
+                    href={`/formations/${formation.id}`}
+                    className={`flex-1 text-center py-3 px-6 rounded-lg font-medium transition-colors ${getButtonColor(formation.color)}`}
+                  >
+                    Découvrir la formation
+                  </Link>
+                  <CalendarLink
+                    theme={formation.id === 'salaires' ? 'Salaire' : formation.id === 'charges-sociales' ? 'Assurances sociales' : 'Impôt à la source'}
+                    variant="icon"
+                    className={`py-3 px-3 rounded-lg font-medium transition-colors ${getButtonColor(formation.color)}`}
+                  />
+                </div>
               </div>
             </div>
           ))}
