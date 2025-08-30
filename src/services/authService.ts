@@ -15,7 +15,7 @@ export interface AuthResponse {
 }
 
 export interface LoginCredentials {
-  email: string;
+  identifier: string; // Can be either email or username
   password: string;
 }
 
@@ -87,10 +87,11 @@ class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       // Use WordPress standard authentication with Basic Auth
+      // WordPress supports both username and email for authentication
       const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/users/me`, {
         method: 'GET',
         headers: {
-          'Authorization': `Basic ${btoa(`${credentials.email}:${credentials.password}`)}`,
+          'Authorization': `Basic ${btoa(`${credentials.identifier}:${credentials.password}`)}`,
           'Content-Type': 'application/json',
         },
       });
@@ -103,7 +104,7 @@ class AuthService {
         
         const user: User = {
           id: userData.id,
-          email: userData.email || credentials.email,
+          email: userData.email || credentials.identifier, // Use the identifier if email is not available
           firstName: userData.first_name || '',
           lastName: userData.last_name || '',
           isAdmin: isAdmin,
@@ -123,7 +124,7 @@ class AuthService {
       } else {
         return {
           success: false,
-          message: 'Email ou mot de passe incorrect',
+          message: 'Identifiant ou mot de passe incorrect',
         };
       }
     } catch (error) {

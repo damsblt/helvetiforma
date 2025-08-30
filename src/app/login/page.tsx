@@ -10,7 +10,7 @@ import authService from '@/services/authService';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
-    email: '',
+    identifier: '', // Can be either email or username
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -71,7 +71,7 @@ export default function LoginPage() {
             Connexion à votre compte
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Accédez à votre espace personnel ou au dashboard administrateur
+            Connectez-vous avec votre email ou nom d'utilisateur
           </p>
         </div>
         
@@ -91,19 +91,19 @@ export default function LoginPage() {
 
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Adresse email
+              <label htmlFor="identifier" className="sr-only">
+                Email ou nom d'utilisateur
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="identifier"
+                name="identifier"
+                type="text"
+                autoComplete="username"
                 required
-                value={formData.email}
+                value={formData.identifier}
                 onChange={handleInputChange}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Adresse email"
+                placeholder="Email ou nom d'utilisateur"
               />
             </div>
             <div>
