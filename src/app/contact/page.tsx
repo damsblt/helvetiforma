@@ -1,8 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import emailjs from '@emailjs/browser';
+import { emailjsConfig } from '../../config/emailjs';
 
 export default function ContactPage() {
+  const formRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -11,6 +14,7 @@ export default function ContactPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -23,14 +27,28 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitStatus('idle');
+    setErrorMessage('');
     
-    // Simulate form submission (replace with actual contact form logic)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      // Send email using EmailJS
+      const result = await emailjs.sendForm(
+        emailjsConfig.serviceId,
+        emailjsConfig.templateId,
+        formRef.current!,
+        emailjsConfig.publicKey
+      );
+      
+      if (result.status === 200) {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        throw new Error('Failed to send email');
+      }
     } catch (error) {
+      console.error('Error sending email:', error);
       setSubmitStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'Erreur lors de l\'envoi du message');
     } finally {
       setIsSubmitting(false);
     }
@@ -144,11 +162,11 @@ export default function ContactPage() {
                   </svg>
                   <span className="text-red-800 font-medium">Erreur lors de l'envoi</span>
                 </div>
-                <p className="text-red-700 text-sm mt-1">Veuillez réessayer ou nous contacter directement par email.</p>
+                <p className="text-red-700 text-sm mt-1">{errorMessage || 'Veuillez réessayer ou nous contacter directement par email.'}</p>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">

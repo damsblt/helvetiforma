@@ -11,6 +11,7 @@
     "deploy:gh-pages": "npm run build:static && touch out/.nojekyll"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "axios": "^1.11.0",
     "next": "15.3.4",
     "pdfjs-dist": "^5.4.54",
