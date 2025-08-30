@@ -163,14 +163,6 @@ export default function DocsList({ articles, categories }: { articles: Article[]
                         >
                           Lire l'article
                         </Link>
-                        <a
-                          href={article.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                        >
-                          Voir sur WordPress
-                        </a>
                       </div>
                     </div>
                   </div>
