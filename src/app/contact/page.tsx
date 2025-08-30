@@ -17,12 +17,14 @@ export default function ContactPage() {
     setErrorMessage('');
 
     try {
-      await emailjs.sendForm(
+      const result = await emailjs.sendForm(
         emailjsConfig.serviceId,
         emailjsConfig.templateId,
         formRef.current!,
         emailjsConfig.publicKey
       );
+      
+      console.log('EmailJS result:', result);
       setSubmitMessage('Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.');
       if (formRef.current) {
         formRef.current.reset();
@@ -143,7 +145,7 @@ export default function ContactPage() {
                   </svg>
                   <span className="text-red-800 font-medium">Erreur lors de l'envoi</span>
                 </div>
-                <p className="text-red-700 text-sm mt-1">{errorMessage || 'Veuillez réessayer ou nous contacter directement par email.'}</p>
+                <p className="text-red-700 text-sm mt-1">{errorMessage}</p>
               </div>
             )}
 
@@ -182,19 +184,14 @@ export default function ContactPage() {
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
                   Sujet *
                 </label>
-                <select
+                <input
+                  type="text"
                   id="subject"
                   name="subject"
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                >
-                  <option value="">Sélectionnez un sujet</option>
-                  <option value="formation">Demande d'information sur une formation</option>
-                  <option value="inscription">Inscription à une formation</option>
-                  <option value="devis">Demande de devis</option>
-                  <option value="partenariat">Partenariat</option>
-                  <option value="autre">Autre</option>
-                </select>
+                  placeholder="Sujet de votre message"
+                />
               </div>
 
               <div>
