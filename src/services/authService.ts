@@ -83,26 +83,47 @@ class AuthService {
     return user?.isAdmin || false;
   }
 
-  // Login
+  // Login using WordPress built-in authentication
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/login`, {
-        method: 'POST',
+      // Use WordPress standard authentication with Basic Auth
+      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/users/me`, {
+        method: 'GET',
         headers: {
+          'Authorization': `Basic ${btoa(`${credentials.email}:${credentials.password}`)}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(credentials),
       });
 
-      const data = await response.json();
+      if (response.ok) {
+        const userData = await response.json();
+        
+        // Check if user has admin capabilities
+        const isAdmin = userData.capabilities?.administrator || false;
+        
+        const user: User = {
+          id: userData.id,
+          email: userData.email || credentials.email,
+          firstName: userData.first_name || '',
+          lastName: userData.last_name || '',
+          isAdmin: isAdmin,
+          roles: Object.keys(userData.capabilities || {})
+        };
 
-      if (data.success && data.token && data.user) {
-        this.setAuth(data.token, data.user);
-        return data;
+        // Create a simple token (or use WordPress nonce)
+        const token = btoa(JSON.stringify({ id: user.id, email: user.email }));
+        
+        this.setAuth(token, user);
+        
+        return {
+          success: true,
+          user: user,
+          token: token
+        };
       } else {
         return {
           success: false,
-          message: data.message || 'Erreur de connexion',
+          message: 'Email ou mot de passe incorrect',
         };
       }
     } catch (error) {
@@ -114,51 +135,27 @@ class AuthService {
     }
   }
 
-  // Register
+  // Register using WordPress built-in user creation
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        return data;
-      } else {
-        return {
-          success: false,
-          message: data.message || 'Erreur lors de l\'inscription',
-        };
-      }
+      // Note: WordPress requires admin privileges to create users via REST API
+      // For now, we'll return an error suggesting to contact admin
+      return {
+        success: false,
+        message: 'Pour créer un compte, veuillez contacter l\'administrateur. L\'inscription automatique n\'est pas activée.',
+      };
     } catch (error) {
       console.error('Register error:', error);
       return {
         success: false,
-        message: 'Erreur de connexion au serveur',
+        message: 'Erreur lors de l\'inscription',
       };
     }
   }
 
-  // Logout
+  // Logout (just clear local storage)
   async logout(): Promise<AuthResponse> {
     try {
-      const token = this.getToken();
-      
-      if (token) {
-        await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-      }
-
       this.clearAuth();
       
       return {
