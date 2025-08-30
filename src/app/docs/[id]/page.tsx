@@ -28,23 +28,7 @@ interface Article {
   type: string;
 }
 
-// Utility function to decode HTML entities
-const decodeHtmlEntities = (text: string): string => {
-  return text
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&rsquo;/g, "'")
-    .replace(/&ldquo;/g, '"')
-    .replace(/&rdquo;/g, '"')
-    .replace(/&#8230;/g, '…')
-    .replace(/&#8217;/g, "'")
-    .replace(/&#8216;/g, "'")
-    .replace(/&#8220;/g, '"')
-    .replace(/&#8221;/g, '"');
-};
+
 
 
 
@@ -185,7 +169,12 @@ export default function ArticleViewerPage({ params }: { params: Promise<{ id: st
         {/* Article Content */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
           <div className="prose prose-lg max-w-none text-gray-700">
-            <div dangerouslySetInnerHTML={{ __html: article.content.rendered }} />
+            <div 
+              className="wordpress-content"
+              dangerouslySetInnerHTML={{ 
+                __html: article.content.rendered 
+              }} 
+            />
           </div>
         </div>
 
