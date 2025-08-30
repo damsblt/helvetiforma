@@ -30,9 +30,7 @@ interface Registration {
 
 export default function PersonalSpacePage() {
   const [user, setUser] = useState<User | null>(null);
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingFormations, setIsLoadingFormations] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -41,8 +39,13 @@ export default function PersonalSpacePage() {
       const userInfo = authService.getUser();
       if (userInfo) {
         setUser(userInfo);
-        // Fetch user's registrations
-        fetchUserRegistrations(userInfo.id);
+        
+        // If user is admin, redirect to admin area where they can manage calendar
+        if (userInfo.isAdmin) {
+          console.log('User is admin, redirecting to admin area');
+          router.push('/admin');
+          return;
+        }
       } else {
         // User data is invalid, redirect to login
         authService.clearAuth();
@@ -54,47 +57,6 @@ export default function PersonalSpacePage() {
     }
     setIsLoading(false);
   }, [router]);
-
-  const fetchUserRegistrations = async (userId: number) => {
-    try {
-      // Fetch user's registrations with formation data (avoiding sessions field)
-      const res = await fetch(`http://localhost:1337/api/registrations?filters[userAccount][id][$eq]=${userId}&populate[formation][fields]=Title,Description,Type,Theme`, {
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        console.log('User registrations:', data);
-        
-        if (data.data && data.data.length > 0) {
-          const userRegistrations = data.data.map((reg: any) => ({
-            id: reg.id,
-            formation: {
-              id: reg.formation.id,
-              Title: reg.formation.Title || 'Formation sans titre',
-              Description: reg.formation.Description || '',
-              Type: reg.formation.Type || 'En ligne',
-              Theme: reg.formation.Theme || ''
-            },
-            status: reg.status || 'pending',
-            createdAt: reg.createdAt
-          }));
-          setRegistrations(userRegistrations);
-        }
-      } else {
-        console.error('Failed to fetch registrations:', res.status);
-        const errorText = await res.text();
-        console.error('Error details:', errorText);
-      }
-    } catch (error) {
-      console.error('Error fetching registrations:', error);
-    } finally {
-      setIsLoadingFormations(false);
-    }
-  };
 
   const handleLogout = async () => {
     await authService.logout();
@@ -140,6 +102,21 @@ export default function PersonalSpacePage() {
 
   if (!user) {
     return null; // Will redirect to login
+  }
+
+  // If user is admin, show admin message
+  if (user.isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-2 md:px-0">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Redirection...</h1>
+            <p className="text-gray-600">Redirection vers la zone d'administration</p>
+            <p className="text-sm text-gray-400 mt-2">Vous avez accès administrateur</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -190,7 +167,7 @@ export default function PersonalSpacePage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Formations inscrites</label>
-                  <p className="text-gray-900 font-semibold">{registrations.length}</p>
+                  <p className="text-gray-900 font-semibold">{0}</p>
                 </div>
               </div>
             </div>
@@ -202,89 +179,21 @@ export default function PersonalSpacePage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Mes Formations</h2>
 
-              {isLoadingFormations ? (
-                <div className="text-center py-8">
-                  <div className="text-gray-400 mb-4">
-                    <svg className="mx-auto h-8 w-8 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  </div>
-                  <p className="text-gray-600">Chargement de vos formations...</p>
+              <div className="text-center py-8">
+                <div className="text-gray-400 mb-4">
+                  <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
                 </div>
-              ) : registrations.length > 0 ? (
-                <div className="space-y-4">
-                  {registrations.map((registration) => (
-                    <div key={registration.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1">
-                            {registration.formation.Title}
-                          </h3>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {registration.formation.Description}
-                          </p>
-                          <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <span>Type: {registration.formation.Type}</span>
-                            {registration.formation.Theme && (
-                              <span>Thème: {registration.formation.Theme}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          {getStatusBadge(registration.status)}
-                          <span className="text-xs text-gray-400">
-                            Inscrit le {formatDate(registration.createdAt)}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-2 mt-3">
-                        <Link
-                          href={`/formations/${registration.formation.id}`}
-                          className="text-sm text-blue-600 hover:text-blue-800 underline"
-                        >
-                          Voir les détails
-                        </Link>
-                        {registration.status === 'confirmed' && (
-                          <Link
-                            href={`/formation-docs/${registration.formation.id}`}
-                            className="text-sm text-green-600 hover:text-green-800 underline"
-                          >
-                            Accéder aux documents
-                          </Link>
-                        )}
-                        {registration.status === 'pending' && (
-                          <span className="text-sm text-yellow-600">
-                            ⏳ En attente d'approbation
-                          </span>
-                        )}
-                        {registration.status === 'cancelled' && (
-                          <span className="text-sm text-red-600">
-                            ❌ Inscription annulée
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="text-gray-400 mb-4">
-                    <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune formation inscrite</h3>
-                  <p className="text-gray-600 mb-4">Vous n'avez pas encore de formations inscrites.</p>
-                  <Link
-                    href="/formations"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                  >
-                    Découvrir nos formations
-                  </Link>
-                </div>
-              )}
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune formation inscrite</h3>
+                <p className="text-gray-600 mb-4">Vous n'avez pas encore de formations inscrites.</p>
+                <Link
+                  href="/formations"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  Découvrir nos formations
+                </Link>
+              </div>
             </div>
 
             {/* My Documents */}
