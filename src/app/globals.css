@@ -111,3 +111,32 @@
 .wordpress-content > *:last-child {
   @apply mb-0;
 }
+
+/* Article Preview Card Enhancements */
+.article-preview-card {
+  @apply transition-all duration-200 hover:shadow-lg;
+}
+
+.article-preview-card h2 {
+  @apply font-semibold text-gray-900 leading-tight;
+}
+
+.article-preview-card p {
+  @apply text-gray-600 leading-relaxed;
+}
+
+.article-preview-card .status-tags {
+  @apply flex flex-wrap gap-2 mb-3;
+}
+
+.article-preview-card .status-tag {
+  @apply px-2 py-1 rounded-md text-xs font-medium;
+}
+
+.article-preview-card .metadata {
+  @apply flex items-center gap-4 text-sm text-gray-500;
+}
+
+.article-preview-card .action-buttons {
+  @apply flex gap-2;
+}

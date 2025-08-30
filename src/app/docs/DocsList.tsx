@@ -61,7 +61,11 @@ export default function DocsList({ articles, categories }: { articles: Article[]
       .replace(/&#8217;/g, "'")
       .replace(/&#8216;/g, "'")
       .replace(/&#8220;/g, '"')
-      .replace(/&#8221;/g, '"');
+      .replace(/&#8221;/g, '"')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&hellip;/g, '…')
+      .replace(/&mdash;/g, '—')
+      .replace(/&ndash;/g, '–');
     
     // Then remove HTML tags
     return decoded.replace(/<[^>]*>/g, '');
@@ -102,7 +106,7 @@ export default function DocsList({ articles, categories }: { articles: Article[]
             const cleanContent = article.content ? stripHtml(article.content.rendered) : '';
 
             return (
-              <article key={article.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+              <article key={article.id} className="article-preview-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* Article Icon */}
                   <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -114,7 +118,7 @@ export default function DocsList({ articles, categories }: { articles: Article[]
                   {/* Article Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-3">
-                      <h2 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                      <h2 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
                         {article.title.rendered}
                       </h2>
                       <div className="flex items-center gap-2 ml-4">
@@ -125,34 +129,34 @@ export default function DocsList({ articles, categories }: { articles: Article[]
                     </div>
 
                     {/* Article Status */}
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-medium">
+                    <div className="status-tags">
+                      <span className="status-tag bg-blue-100 text-blue-800">
                         {article.status}
                       </span>
-                      <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-xs font-medium">
+                      <span className="status-tag bg-purple-100 text-purple-800">
                         {article.format}
                       </span>
                       {article.sticky && (
-                        <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md text-xs font-medium">
+                        <span className="status-tag bg-yellow-100 text-yellow-800">
                           Épinglé
                         </span>
                       )}
                     </div>
 
                     {/* Excerpt */}
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
                       {cleanExcerpt || cleanContent || 'Aucun extrait disponible pour cet article.'}
                     </p>
 
                     {/* Footer */}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="metadata">
                         <span>📅 {article.date ? formatDate(article.date) : 'Date inconnue'}</span>
                         <span>✏️ {article.modified ? formatDate(article.modified) : 'Non modifié'}</span>
                         <span>🔗 {article.slug}</span>
                       </div>
                       
-                      <div className="flex gap-2">
+                      <div className="action-buttons">
                         <Link
                           href={`/docs/${article.id}`}
                           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
