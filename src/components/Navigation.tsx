@@ -20,7 +20,7 @@ export default function Navigation() {
   }, []);
 
   useEffect(() => {
-    // Close mobile menu when clicking outside
+    // Close mobile menu when clicking outside or on escape key
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
       if (isMobileMenuOpen && !target.closest('nav')) {
@@ -28,12 +28,24 @@ export default function Navigation() {
       }
     };
 
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
     if (isMobileMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      // Restore body scroll when menu is closed
+      document.body.style.overflow = 'unset';
     };
   }, [isMobileMenuOpen]);
 
@@ -96,8 +108,8 @@ export default function Navigation() {
             onClick={() => setIsMobileMenuOpen(false)}
           />
           {/* Menu */}
-          <div className="absolute top-full left-0 right-0 bg-white shadow-lg border border-gray-200 rounded-b-lg lg:hidden z-50 mt-1">
-            <div className="px-4 py-2 space-y-1">
+          <div className="fixed top-16 left-0 right-0 bg-white shadow-lg border border-gray-200 lg:hidden z-50 animate-in slide-in-from-top-2 duration-200">
+            <div className="px-4 py-3 space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -105,9 +117,9 @@ export default function Navigation() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`block px-3 py-2 rounded-md transition-colors ${
+                    className={`block px-4 py-3 rounded-lg transition-colors text-base font-medium ${
                       isActive
-                        ? 'bg-blue-50 text-blue-700 font-medium'
+                        ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700'
                         : 'text-gray-700 hover:bg-gray-50 hover:text-blue-700'
                     }`}
                   >
