@@ -17,6 +17,14 @@ export default function ContactPage() {
     setErrorMessage('');
 
     try {
+      console.log('EmailJS Config:', {
+        serviceId: emailjsConfig.serviceId,
+        templateId: emailjsConfig.templateId,
+        publicKey: emailjsConfig.publicKey
+      });
+      
+      console.log('Form Data:', formRef.current);
+      
       const result = await emailjs.sendForm(
         emailjsConfig.serviceId,
         emailjsConfig.templateId,
@@ -31,7 +39,12 @@ export default function ContactPage() {
       }
     } catch (error) {
       console.error('Erreur lors de l\'envoi:', error);
-      setErrorMessage('Une erreur est survenue lors de l\'envoi de votre message. Veuillez réessayer ou nous contacter directement.');
+      console.error('Error details:', {
+        message: error.message,
+        status: error.status,
+        response: error.response
+      });
+      setErrorMessage(`Une erreur est survenue lors de l'envoi de votre message: ${error.message}. Veuillez réessayer ou nous contacter directement.`);
     } finally {
       setIsSubmitting(false);
     }
