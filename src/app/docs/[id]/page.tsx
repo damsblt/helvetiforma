@@ -46,13 +46,7 @@ const decodeHtmlEntities = (text: string): string => {
     .replace(/&#8221;/g, '"');
 };
 
-// Utility function to clean HTML tags and decode entities
-const cleanHtmlContent = (html: string): string => {
-  // First decode HTML entities
-  const decoded = decodeHtmlEntities(html);
-  // Then remove HTML tags
-  return decoded.replace(/<[^>]*>/g, '');
-};
+
 
 export default function ArticleViewerPage({ params }: { params: Promise<{ id: string }> }) {
   const [article, setArticle] = useState<Article | null>(null);
@@ -185,14 +179,7 @@ export default function ArticleViewerPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          {/* Article Excerpt */}
-          {article.excerpt && (
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <p className="text-gray-700 italic">
-                {cleanHtmlContent(article.excerpt.rendered)}
-              </p>
-            </div>
-          )}
+
         </div>
 
         {/* Article Content */}
