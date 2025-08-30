@@ -1,5 +1,5 @@
-// Using WordPress Application Passwords for secure REST API authentication
-// This method is built into WordPress and more secure than Basic Auth
+// Using custom WordPress endpoints for authentication with user capabilities
+// This ensures proper admin detection and secure authentication
 export interface User {
   id: number;
   email: string;
@@ -85,52 +85,57 @@ class AuthService {
     return user?.isAdmin || false;
   }
 
-  // Login using WordPress Application Passwords (secure built-in method)
+  // Login using custom WordPress authentication endpoint
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      // Use WordPress Application Passwords authentication
-      // This is more secure than Basic Auth and built into WordPress
-      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/users/me`, {
-        method: 'GET',
+      // Use custom WordPress authentication endpoint with secret key
+      // This endpoint returns user capabilities for proper admin detection
+      const response = await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/login/?secret_key=oV9gdjpkmCMV2NK0pd81SawWriGEtV0K`, {
+        method: 'POST',
         headers: {
-          'Authorization': `Basic ${btoa(`${credentials.identifier}:${credentials.password}`)}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          identifier: credentials.identifier, // email or username
+          password: credentials.password
+        }),
       });
 
       if (response.ok) {
-        const userData = await response.json();
+        const data = await response.json();
         
-        // Debug logging to see what we're getting from WordPress
-        console.log('WordPress user data:', userData);
-        console.log('User capabilities:', userData.capabilities);
-        console.log('User roles:', userData.roles);
+        // Debug logging to see what we're getting from custom endpoint
+        console.log('Custom endpoint response:', data);
         
-        // Check if user has admin capabilities
-        const isAdmin = userData.capabilities?.administrator || false;
-        console.log('Is admin detected:', isAdmin);
-        
-        const user: User = {
-          id: userData.id,
-          email: userData.email || credentials.identifier,
-          firstName: userData.first_name || '',
-          lastName: userData.last_name || '',
-          isAdmin: isAdmin,
-          roles: Object.keys(userData.capabilities || {})
-        };
+        // Handle the custom response from your WordPress endpoint
+        if (data.success && data.user) {
+          const user: User = {
+            id: data.user.id || 0,
+            email: data.user.email || credentials.identifier,
+            firstName: data.user.first_name || data.user.firstName || '',
+            lastName: data.user.last_name || data.user.lastName || '',
+            isAdmin: data.user.isAdmin || data.user.capabilities?.administrator || false,
+            roles: data.user.roles || Object.keys(data.user.capabilities || {})
+          };
 
-        console.log('Final user object:', user);
-        
-        // Create a simple token (or use WordPress nonce)
-        const token = btoa(JSON.stringify({ id: user.id, email: user.email }));
-        
-        this.setAuth(token, user);
-        
-        return {
-          success: true,
-          user: user,
-          token: token
-        };
+          console.log('Final user object from custom endpoint:', user);
+          
+          // Use the token from your custom endpoint or create one
+          const token = data.token || btoa(JSON.stringify({ id: user.id, email: user.email }));
+          
+          this.setAuth(token, user);
+          
+          return {
+            success: true,
+            user: user,
+            token: token
+          };
+        } else {
+          return {
+            success: false,
+            message: data.message || 'Identifiant ou mot de passe incorrect',
+          };
+        }
       } else {
         return {
           success: false,
