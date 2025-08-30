@@ -39,12 +39,23 @@ export default function ContactPage() {
       }
     } catch (error) {
       console.error('Erreur lors de l\'envoi:', error);
-      console.error('Error details:', {
-        message: error.message,
-        status: error.status,
-        response: error.response
-      });
-      setErrorMessage(`Une erreur est survenue lors de l'envoi de votre message: ${error.message}. Veuillez réessayer ou nous contacter directement.`);
+      
+      // Handle error safely with proper typing
+      let errorMessage = 'Une erreur est survenue lors de l\'envoi de votre message.';
+      
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        });
+        errorMessage = `Une erreur est survenue lors de l'envoi de votre message: ${error.message}`;
+      } else if (typeof error === 'object' && error !== null) {
+        console.error('Error details:', error);
+        errorMessage = 'Une erreur inconnue est survenue lors de l\'envoi de votre message.';
+      }
+      
+      setErrorMessage(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
