@@ -11,13 +11,16 @@ interface Formation {
   id: number;
   Title: string;
   Description: string;
-  Type: string;
-  Theme: string;
+  Type?: string;
+  Theme?: string;
   totalModules?: number;
   estimatedDuration?: number;
   difficulty?: string;
   price?: number;
   modules?: FormationDoc[];
+  slug?: string;
+  date?: string;
+  excerpt?: string;
 }
 
 interface FormationDoc {
@@ -36,7 +39,7 @@ class ApiService {
   constructor() {
     this.config = {
       strapiUrl: process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337',
-      wordpressUrl: process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://yourdomain.com',
+      wordpressUrl: process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch',
       useWordPress: process.env.NEXT_PUBLIC_USE_WORDPRESS === 'true',
       fallbackToStrapi: process.env.NEXT_PUBLIC_FALLBACK_TO_STRAPI === 'true',
     };
@@ -106,11 +109,11 @@ class ApiService {
   }
 
   /**
-   * WordPress API Methods
+   * WordPress API Methods - Using native post endpoints
    */
   private async getFormationFromWordPress(id: string): Promise<Formation> {
     const response = await fetch(
-      `${this.config.wordpressUrl}/wp-json/helvetiforma/v1/formations/${id}`
+      `${this.config.wordpressUrl}/wp-json/wp/v2/posts/${id}`
     );
 
     if (!response.ok) {
@@ -119,25 +122,21 @@ class ApiService {
 
     const data = await response.json();
     
-    // Transform WordPress data to match Strapi format
+    // Transform WordPress post data to match Formation format
     return {
       id: data.id,
-      Title: data.Title,
-      Description: data.Description,
-      Type: data.Type,
-      Theme: data.Theme,
-      totalModules: data.total_modules,
-      estimatedDuration: data.estimated_duration,
-      difficulty: data.difficulty,
-      modules: data.modules?.map((module: any) => ({
-        id: module.id,
-        title: module.title,
-        description: module.description,
-        module: module.module,
-        order: module.order,
-        estimatedDuration: module.estimatedDuration,
-        isRequired: module.isRequired,
-      })),
+      Title: data.title.rendered || data.title,
+      Description: data.content.rendered || data.content,
+      excerpt: data.excerpt.rendered || data.excerpt,
+      slug: data.slug,
+      date: data.date,
+      // Extract metadata from content or use defaults
+      Type: this.extractMetadata(data.content.rendered, 'Type') || 'Formation',
+      Theme: this.extractMetadata(data.content.rendered, 'Theme') || 'General',
+      difficulty: this.extractMetadata(data.content.rendered, 'Difficulty') || 'Beginner',
+      estimatedDuration: this.extractMetadata(data.content.rendered, 'Duration') || 0,
+      totalModules: this.extractMetadata(data.content.rendered, 'Modules') || 0,
+      price: this.extractMetadata(data.content.rendered, 'Price') || 0,
     };
   }
 
@@ -147,13 +146,19 @@ class ApiService {
     difficulty?: string;
   }): Promise<Formation[]> {
     const params = new URLSearchParams();
+    params.append('per_page', '100'); // Get more posts
     
-    if (filters?.theme) params.append('theme', filters.theme);
-    if (filters?.type) params.append('type', filters.type);
-    if (filters?.difficulty) params.append('difficulty', filters.difficulty);
+    // Add search if filters are provided
+    if (filters?.theme || filters?.type || filters?.difficulty) {
+      const searchTerms = [];
+      if (filters.theme) searchTerms.push(filters.theme);
+      if (filters.type) searchTerms.push(filters.type);
+      if (filters.difficulty) searchTerms.push(filters.difficulty);
+      params.append('search', searchTerms.join(' '));
+    }
 
     const response = await fetch(
-      `${this.config.wordpressUrl}/wp-json/helvetiforma/v1/formations?${params}`
+      `${this.config.wordpressUrl}/wp-json/wp/v2/posts?${params}`
     );
 
     if (!response.ok) {
@@ -162,17 +167,44 @@ class ApiService {
 
     const data = await response.json();
     
-    // Transform WordPress data to match Strapi format
-    return data.map((formation: any) => ({
-      id: formation.id,
-      Title: formation.Title,
-      Description: formation.Description,
-      Type: formation.Type,
-      Theme: formation.Theme,
-      totalModules: formation.total_modules,
-      estimatedDuration: formation.estimated_duration,
-      difficulty: formation.difficulty,
+    // Transform WordPress posts to Formation format
+    return data.map((post: any) => ({
+      id: post.id,
+      Title: post.title.rendered || post.title,
+      Description: post.excerpt.rendered || post.excerpt,
+      excerpt: post.excerpt.rendered || post.excerpt,
+      slug: post.slug,
+      date: post.date,
+      // Extract metadata from content or use defaults
+      Type: this.extractMetadata(post.content.rendered, 'Type') || 'Formation',
+      Theme: this.extractMetadata(post.content.rendered, 'Theme') || 'General',
+      difficulty: this.extractMetadata(post.content.rendered, 'Difficulty') || 'Beginner',
+      estimatedDuration: this.extractMetadata(post.content.rendered, 'Duration') || 0,
+      totalModules: this.extractMetadata(post.content.rendered, 'Modules') || 0,
+      price: this.extractMetadata(post.content.rendered, 'Price') || 0,
     }));
+  }
+
+  /**
+   * Extract metadata from WordPress post content
+   * Looks for patterns like [Type: Formation] or [Theme: Business]
+   */
+  private extractMetadata(content: string, key: string): string | number | null {
+    if (!content) return null;
+    
+    const regex = new RegExp(`\\[${key}:\\s*([^\\]]+)\\]`, 'i');
+    const match = content.match(regex);
+    
+    if (match && match[1]) {
+      const value = match[1].trim();
+      // Try to convert to number if it's numeric
+      if (!isNaN(Number(value))) {
+        return Number(value);
+      }
+      return value;
+    }
+    
+    return null;
   }
 
   /**
@@ -241,7 +273,7 @@ class ApiService {
   private async checkWordPressHealth(): Promise<boolean> {
     try {
       const response = await fetch(
-        `${this.config.wordpressUrl}/wp-json/wp/v2/`,
+        `${this.config.wordpressUrl}/wp-json/wp/v2/posts`,
         { method: 'HEAD' }
       );
       return response.ok;
@@ -263,45 +295,39 @@ class ApiService {
   }
 
   /**
-   * Migrate data from Strapi to WordPress
+   * Get WordPress categories and tags for filtering
    */
-  public async migrateFormationToWordPress(strapiId: string): Promise<boolean> {
+  public async getWordPressCategories(): Promise<any[]> {
     try {
-      // Get formation from Strapi
-      const formation = await this.getFormationFromStrapi(strapiId);
-      
-      // Create formation in WordPress via REST API
       const response = await fetch(
-        `${this.config.wordpressUrl}/wp-json/wp/v2/formation`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_WORDPRESS_TOKEN}`,
-          },
-          body: JSON.stringify({
-            title: formation.Title,
-            content: formation.Description,
-            excerpt: formation.Description,
-            status: 'publish',
-            meta: {
-              _estimated_duration: formation.estimatedDuration,
-              _total_modules: formation.totalModules,
-              _price: formation.price,
-              _formation_id: strapiId, // Keep reference to Strapi ID
-            },
-          }),
-        }
+        `${this.config.wordpressUrl}/wp-json/wp/v2/categories`
       );
-
+      
       if (!response.ok) {
-        throw new Error(`Migration failed: ${response.status}`);
+        throw new Error(`WordPress API error: ${response.status}`);
       }
-
-      return true;
+      
+      return await response.json();
     } catch (error) {
-      console.error('Migration failed:', error);
-      return false;
+      console.error('Failed to fetch WordPress categories:', error);
+      return [];
+    }
+  }
+
+  public async getWordPressTags(): Promise<any[]> {
+    try {
+      const response = await fetch(
+        `${this.config.wordpressUrl}/wp-json/wp/v2/tags`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`WordPress API error: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch WordPress tags:', error);
+      return [];
     }
   }
 }
