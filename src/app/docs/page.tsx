@@ -47,20 +47,25 @@ export default function DocsPage() {
         const posts: Article[] = await postsResponse.json();
         setArticles(posts);
 
-        // Extract unique categories from posts
-        const categorySet = new Set<string>();
-        categorySet.add('Toutes');
-        
         // Get categories from WordPress
         const categoriesResponse = await fetch('https://api.helvetiforma.ch/wp-json/wp/v2/categories');
         if (categoriesResponse.ok) {
           const wpCategories = await categoriesResponse.json();
+          const categoryMap = new Map<number, string>();
+          const categoryNames = ['Toutes'];
+          
           wpCategories.forEach((cat: any) => {
-            categorySet.add(cat.name);
+            categoryMap.set(cat.id, cat.name);
+            categoryNames.push(cat.name);
           });
+          
+          // Store category mapping for filtering
+          setCategories(categoryNames);
+          // Store the full category data for filtering
+          (window as any).categoryMap = categoryMap;
+        } else {
+          setCategories(['Toutes']);
         }
-
-        setCategories(Array.from(categorySet));
         
       } catch (err) {
         console.error('Error fetching articles:', err);
