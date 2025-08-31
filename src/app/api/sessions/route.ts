@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-// Try to use Vercel KV, fallback to local storage
+// Try to use Supabase, fallback to local storage
 async function getStorage() {
   try {
-    const { kv } = await import('@vercel/kv');
-    return { type: 'kv' as const, client: kv };
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      return { type: 'supabase' as const, client: supabase };
+    }
   } catch {
-    return { type: 'local' as const, client: null };
+    // Fallback to local storage
   }
+  return { type: 'local' as const, client: null };
 }
 
 // Local fallback storage
@@ -17,10 +24,21 @@ let localSessions: any[] = [];
 async function saveSession(session: any) {
   const storage = await getStorage();
   
-  if (storage.type === 'kv' && storage.client) {
-    await storage.client.hset('sessions', { [session.id.toString()]: JSON.stringify(session) });
+  if (storage.type === 'supabase' && storage.client) {
+    const { data, error } = await storage.client
+      .from('sessions')
+      .insert([session])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+    return data;
   } else {
     localSessions.push(session);
+    return session;
   }
 }
 
@@ -28,11 +46,17 @@ async function saveSession(session: any) {
 async function loadSessions() {
   const storage = await getStorage();
   
-  if (storage.type === 'kv' && storage.client) {
-    const sessionsData = await storage.client.hgetall('sessions');
-    return Object.values(sessionsData || {}).map((sessionStr: any) => 
-      typeof sessionStr === 'string' ? JSON.parse(sessionStr) : sessionStr
-    );
+  if (storage.type === 'supabase' && storage.client) {
+    const { data, error } = await storage.client
+      .from('sessions')
+      .select('*')
+      .order('date', { ascending: true });
+    
+    if (error) {
+      console.error('Supabase error:', error);
+      return [];
+    }
+    return data || [];
   } else {
     return [...localSessions];
   }
@@ -42,9 +66,15 @@ async function loadSessions() {
 async function getSession(id: number) {
   const storage = await getStorage();
   
-  if (storage.type === 'kv' && storage.client) {
-    const sessionStr = await storage.client.hget('sessions', id.toString());
-    return sessionStr ? (typeof sessionStr === 'string' ? JSON.parse(sessionStr) : sessionStr) : null;
+  if (storage.type === 'supabase' && storage.client) {
+    const { data, error } = await storage.client
+      .from('sessions')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) return null;
+    return data;
   } else {
     return localSessions.find(s => s.id === id) || null;
   }
@@ -54,13 +84,16 @@ async function getSession(id: number) {
 async function updateSession(id: number, updates: any) {
   const storage = await getStorage();
   
-  if (storage.type === 'kv' && storage.client) {
-    const existingSession = await getSession(id);
-    if (!existingSession) return null;
+  if (storage.type === 'supabase' && storage.client) {
+    const { data, error } = await storage.client
+      .from('sessions')
+      .update({ ...updates, updatedAt: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
     
-    const updatedSession = { ...existingSession, ...updates, updatedAt: new Date().toISOString() };
-    await storage.client.hset('sessions', { [id.toString()]: JSON.stringify(updatedSession) });
-    return updatedSession;
+    if (error) return null;
+    return data;
   } else {
     const index = localSessions.findIndex(s => s.id === id);
     if (index === -1) return null;
@@ -74,8 +107,15 @@ async function updateSession(id: number, updates: any) {
 async function deleteSession(id: number) {
   const storage = await getStorage();
   
-  if (storage.type === 'kv' && storage.client) {
-    await storage.client.hdel('sessions', id.toString());
+  if (storage.type === 'supabase' && storage.client) {
+    const { error } = await storage.client
+      .from('sessions')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Supabase error:', error);
+    }
   } else {
     const index = localSessions.findIndex(s => s.id === id);
     if (index !== -1) {
@@ -107,13 +147,13 @@ export async function POST(request: NextRequest) {
     };
 
     // Save session
-    await saveSession(newSession);
+    const savedSession = await saveSession(newSession);
 
-    console.log('Session created:', newSession);
+    console.log('Session created:', savedSession);
 
     return NextResponse.json({
       success: true,
-      data: newSession
+      data: savedSession
     }, { status: 201 });
 
   } catch (error) {

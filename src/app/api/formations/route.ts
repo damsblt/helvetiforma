@@ -1,24 +1,37 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-// Try to use Vercel KV, fallback to local storage
+// Try to use Supabase, fallback to local storage
 async function getStorage() {
   try {
-    const { kv } = await import('@vercel/kv');
-    return { type: 'kv' as const, client: kv };
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      return { type: 'supabase' as const, client: supabase };
+    }
   } catch {
-    return { type: 'local' as const, client: null };
+    // Fallback to local storage
   }
+  return { type: 'local' as const, client: null };
 }
 
 // Load sessions from storage
 async function loadSessions() {
   const storage = await getStorage();
   
-  if (storage.type === 'kv' && storage.client) {
-    const sessionsData = await storage.client.hgetall('sessions');
-    return Object.values(sessionsData || {}).map((sessionStr: any) => 
-      typeof sessionStr === 'string' ? JSON.parse(sessionStr) : sessionStr
-    );
+  if (storage.type === 'supabase' && storage.client) {
+    const { data, error } = await storage.client
+      .from('sessions')
+      .select('*')
+      .order('date', { ascending: true });
+    
+    if (error) {
+      console.error('Supabase error:', error);
+      return [];
+    }
+    return data || [];
   } else {
     return [];
   }
