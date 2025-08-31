@@ -1,5 +1,5 @@
 // WordPress API utility functions
-const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://www.helvetiforma.ch/wp-json';
+const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://api.www.helvetiforma.ch/wp-json';
 
 export interface WordPressPage {
   id: number;
