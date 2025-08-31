@@ -1,4 +1,20 @@
 import { NextResponse } from 'next/server';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+// File path for storing sessions data
+const SESSIONS_FILE = path.join(process.cwd(), 'data', 'sessions.json');
+
+// Load sessions from file
+async function loadSessions() {
+  try {
+    const data = await fs.readFile(SESSIONS_FILE, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    // If file doesn't exist or is invalid, return empty array
+    return [];
+  }
+}
 
 // Mock formations data (in production, this would come from WordPress or database)
 const formations = [
@@ -10,23 +26,7 @@ const formations = [
       Description: "Formation complète sur la gestion des salaires",
       Type: "Présentiel",
       difficulty: "Intermédiaire",
-      estimatedDuration: 2,
-      sessions: [
-        {
-          id: 1,
-          attributes: {
-            date: "2025-09-01T10:30:00.000Z",
-            formation: 1
-          }
-        },
-        {
-          id: 2,
-          attributes: {
-            date: "2025-09-03T14:00:00.000Z",
-            formation: 1
-          }
-        }
-      ]
+      estimatedDuration: 2
     }
   },
   {
@@ -37,16 +37,7 @@ const formations = [
       Description: "Formation sur les charges sociales et assurances",
       Type: "Présentiel",
       difficulty: "Avancé",
-      estimatedDuration: 3,
-      sessions: [
-        {
-          id: 3,
-          attributes: {
-            date: "2025-09-02T09:00:00.000Z",
-            formation: 2
-          }
-        }
-      ]
+      estimatedDuration: 3
     }
   },
   {
@@ -57,25 +48,34 @@ const formations = [
       Description: "Formation sur l'impôt à la source",
       Type: "En ligne",
       difficulty: "Débutant",
-      estimatedDuration: 2,
-      sessions: [
-        {
-          id: 4,
-          attributes: {
-            date: "2025-09-04T11:00:00.000Z",
-            formation: 3
-          }
-        }
-      ]
+      estimatedDuration: 2
     }
   }
 ];
 
 export async function GET() {
   try {
+    // Load sessions from file
+    const sessions = await loadSessions();
+
+    // Merge formations with their sessions
+    const formationsWithSessions = formations.map(formation => ({
+      ...formation,
+      attributes: {
+        ...formation.attributes,
+        sessions: sessions.filter((session: any) => session.formation === formation.id).map((session: any) => ({
+          id: session.id,
+          attributes: {
+            date: session.date,
+            formation: formation.id
+          }
+        }))
+      }
+    }));
+
     // Simulate WordPress API response format
     return NextResponse.json({
-      data: formations,
+      data: formationsWithSessions,
       meta: {
         pagination: {
           page: 1,

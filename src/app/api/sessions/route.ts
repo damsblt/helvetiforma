@@ -1,7 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { promises as fs } from 'fs';
+import path from 'path';
 
-// Mock data store for sessions (in production, this would be a database)
-const sessions: any[] = [];
+// File path for storing sessions data
+const SESSIONS_FILE = path.join(process.cwd(), 'data', 'sessions.json');
+
+// Ensure data directory exists
+async function ensureDataDir() {
+  const dataDir = path.dirname(SESSIONS_FILE);
+  try {
+    await fs.access(dataDir);
+  } catch {
+    await fs.mkdir(dataDir, { recursive: true });
+  }
+}
+
+// Load sessions from file
+async function loadSessions() {
+  try {
+    await ensureDataDir();
+    const data = await fs.readFile(SESSIONS_FILE, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    // If file doesn't exist or is invalid, return empty array
+    return [];
+  }
+}
+
+// Save sessions to file
+async function saveSessions(sessions: any[]) {
+  try {
+    await ensureDataDir();
+    await fs.writeFile(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
+  } catch (error) {
+    console.error('Error saving sessions:', error);
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +50,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Load existing sessions
+    const sessions = await loadSessions();
+
     // Create new session
     const newSession = {
       id: Date.now(), // Simple ID generation
@@ -27,6 +64,9 @@ export async function POST(request: NextRequest) {
 
     // Add to sessions array
     sessions.push(newSession);
+
+    // Save to file
+    await saveSessions(sessions);
 
     console.log('Session created:', newSession);
 
@@ -46,6 +86,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
+    const sessions = await loadSessions();
     return NextResponse.json({
       success: true,
       data: sessions
@@ -71,7 +112,9 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const sessionIndex = sessions.findIndex(s => s.id === id);
+    const sessions = await loadSessions();
+    const sessionIndex = sessions.findIndex((s: any) => s.id === id);
+    
     if (sessionIndex === -1) {
       return NextResponse.json(
         { error: 'Session not found' },
@@ -85,6 +128,9 @@ export async function PUT(request: NextRequest) {
       ...data,
       updatedAt: new Date().toISOString()
     };
+
+    // Save to file
+    await saveSessions(sessions);
 
     return NextResponse.json({
       success: true,
@@ -112,7 +158,9 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const sessionIndex = sessions.findIndex(s => s.id === parseInt(id));
+    const sessions = await loadSessions();
+    const sessionIndex = sessions.findIndex((s: any) => s.id === parseInt(id));
+    
     if (sessionIndex === -1) {
       return NextResponse.json(
         { error: 'Session not found' },
@@ -122,6 +170,9 @@ export async function DELETE(request: NextRequest) {
 
     // Remove session
     const deletedSession = sessions.splice(sessionIndex, 1)[0];
+
+    // Save to file
+    await saveSessions(sessions);
 
     return NextResponse.json({
       success: true,
