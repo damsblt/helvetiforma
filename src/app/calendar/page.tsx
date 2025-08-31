@@ -385,11 +385,49 @@ export default function CalendarPage() {
               setShowRegistrationForm(false);
               setSelectedEvent(null);
             }}
-            onSubmit={(formData) => {
-              console.log('Registration submitted:', formData);
-              alert('Inscription soumise avec succès ! Nous vous contacterons bientôt pour confirmer votre inscription.');
-              setShowRegistrationForm(false);
-              setSelectedEvent(null);
+            onSubmit={async (formData) => {
+              try {
+                // Get session and formation info from the selected event
+                const sessionId = selectedEvent?.event.extendedProps.sessionId;
+                const formationId = selectedEvent?.event.extendedProps.formationId;
+                
+                if (!sessionId || !formationId) {
+                  alert('Erreur: Informations de session manquantes');
+                  return;
+                }
+
+                // Prepare registration data for API
+                const registrationData = {
+                  session_id: sessionId,
+                  formation_id: formationId,
+                  user_first_name: formData.firstName,
+                  user_last_name: formData.lastName,
+                  user_email: formData.email,
+                  user_phone: formData.phone
+                };
+
+                // Submit to API
+                const response = await fetch('/api/registrations', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(registrationData),
+                });
+
+                if (response.ok) {
+                  const result = await response.json();
+                  alert('Inscription soumise avec succès ! Nous vous contacterons bientôt pour confirmer votre inscription.');
+                  setShowRegistrationForm(false);
+                  setSelectedEvent(null);
+                } else {
+                  const error = await response.json();
+                  alert(`Erreur lors de l'inscription: ${error.error || 'Erreur inconnue'}`);
+                }
+              } catch (error) {
+                console.error('Error submitting registration:', error);
+                alert('Erreur lors de l\'inscription. Veuillez réessayer.');
+              }
             }}
           />
         )}

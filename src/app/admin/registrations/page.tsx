@@ -41,44 +41,27 @@ export default function AdminRegistrationsPage() {
 
   const fetchRegistrations = async () => {
     try {
-      // For now, use sample data since we don't have a registrations API yet
-      // In the future, you can create /api/registrations endpoint
-      const sampleRegistrations: Registration[] = [
-        {
-          id: 1,
-          firstName: 'Marie',
-          lastName: 'Dupont',
-          email: 'marie.dupont@example.com',
-          status: 'pending',
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          formation: { id: 1, Title: 'Formation Salaires' },
-          userAccount: { id: 1, email: 'marie.dupont@example.com', firstName: 'Marie', lastName: 'Dupont' }
-        },
-        {
-          id: 2,
-          firstName: 'Pierre',
-          lastName: 'Martin',
-          email: 'pierre.martin@example.com',
-          status: 'confirmed',
-          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          formation: { id: 2, Title: 'Charges Sociales' },
-          userAccount: { id: 2, email: 'pierre.martin@example.com', firstName: 'Pierre', lastName: 'Martin' }
-        },
-        {
-          id: 3,
-          firstName: 'Sophie',
-          lastName: 'Bernard',
-          email: 'sophie.bernard@example.com',
-          status: 'pending',
-          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          formation: { id: 3, Title: 'Impôt à la Source' },
-          userAccount: { id: 3, email: 'sophie.bernard@example.com', firstName: 'Sophie', lastName: 'Bernard' }
-        }
-      ];
-      
-      setRegistrations(sampleRegistrations);
+      const response = await fetch('/api/registrations');
+      if (response.ok) {
+        const data = await response.json();
+        // Transform the data to match our interface
+        const transformedRegistrations: Registration[] = data.data.map((reg: any) => ({
+          id: reg.id,
+          firstName: reg.user_first_name,
+          lastName: reg.user_last_name,
+          email: reg.user_email,
+          status: reg.status,
+          createdAt: reg.created_at,
+          formation: { id: reg.formation_id, Title: `Formation ${reg.formation_id}` }, // We'll need to fetch formation details
+          userAccount: { id: reg.id, email: reg.user_email, firstName: reg.user_first_name, lastName: reg.user_last_name }
+        }));
+        setRegistrations(transformedRegistrations);
+      } else {
+        console.error('Failed to fetch registrations');
+        setRegistrations([]);
+      }
     } catch (error) {
-      console.error('Error setting up sample registrations:', error);
+      console.error('Error fetching registrations:', error);
       setRegistrations([]);
     } finally {
       setIsLoading(false);
@@ -87,15 +70,26 @@ export default function AdminRegistrationsPage() {
 
   const approveRegistration = async (id: number) => {
     try {
-      // For now, simulate approval with sample data
-      // In the future, you can create /api/registrations/[id]/approve endpoint
-      alert('Registration approved successfully! (Sample data)');
-      // Update the local state to show the change
-      setRegistrations(prev => prev.map(reg => 
-        reg.id === id 
-          ? { ...reg, status: 'confirmed' }
-          : reg
-      ));
+      const response = await fetch('/api/registrations', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, status: 'confirmed' }),
+      });
+
+      if (response.ok) {
+        alert('Registration approved successfully!');
+        // Update the local state to show the change
+        setRegistrations(prev => prev.map(reg => 
+          reg.id === id 
+            ? { ...reg, status: 'confirmed' }
+            : reg
+        ));
+      } else {
+        const error = await response.json();
+        alert(`Error approving registration: ${error.error}`);
+      }
     } catch (error) {
       console.error('Error approving registration:', error);
       alert('Error approving registration');
@@ -104,18 +98,29 @@ export default function AdminRegistrationsPage() {
 
   const rejectRegistration = async (id: number) => {
     try {
-      // For now, simulate rejection with sample data
-      // In the future, you can create /api/registrations/[id]/reject endpoint
-      alert('Registration rejected successfully! (Sample data)');
-      setShowRejectModal(false);
-      setRejectReason('');
-      setSelectedRegistration(null);
-      // Update the local state to show the change
-      setRegistrations(prev => prev.map(reg => 
-        reg.id === id 
-          ? { ...reg, status: 'rejected' }
-          : reg
-      ));
+      const response = await fetch('/api/registrations', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, status: 'rejected' }),
+      });
+
+      if (response.ok) {
+        alert('Registration rejected successfully!');
+        setShowRejectModal(false);
+        setRejectReason('');
+        setSelectedRegistration(null);
+        // Update the local state to show the change
+        setRegistrations(prev => prev.map(reg => 
+          reg.id === id 
+            ? { ...reg, status: 'rejected' }
+            : reg
+        ));
+      } else {
+        const error = await response.json();
+        alert(`Error rejecting registration: ${error.error}`);
+      }
     } catch (error) {
       console.error('Error rejecting registration:', error);
       alert('Error rejecting registration');

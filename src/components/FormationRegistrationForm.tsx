@@ -16,12 +16,6 @@ interface RegistrationFormData {
   lastName: string;
   email: string;
   phone: string;
-  company: string;
-  position: string;
-  experience: string;
-  expectations: string;
-  dietaryRestrictions: string;
-  specialNeeds: string;
 }
 
 export default function FormationRegistrationForm({
@@ -37,12 +31,6 @@ export default function FormationRegistrationForm({
     lastName: '',
     email: '',
     phone: '',
-    company: '',
-    position: '',
-    experience: '',
-    expectations: '',
-    dietaryRestrictions: '',
-    specialNeeds: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,7 +47,6 @@ export default function FormationRegistrationForm({
       newErrors.email = 'L\'email n\'est pas valide';
     }
     if (!formData.phone.trim()) newErrors.phone = 'Le téléphone est requis';
-    if (!formData.company.trim()) newErrors.company = 'L\'entreprise est requise';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -97,7 +84,7 @@ export default function FormationRegistrationForm({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100 px-6 py-6">
           <div className="flex justify-between items-start">
@@ -130,9 +117,9 @@ export default function FormationRegistrationForm({
             </button>
           </div>
         </div>
-
+        
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">
+        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
           {/* Personal Information */}
           <div>
             <h4 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
@@ -166,162 +153,78 @@ export default function FormationRegistrationForm({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Nom *
                 </label>
                 <input
                   type="text"
                   value={formData.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.lastName ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    errors.lastName ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                   placeholder="Votre nom"
                 />
                 {errors.lastName && (
-                  <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+                  <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {errors.lastName}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Email *
                 </label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.email ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    errors.email ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                   placeholder="votre.email@exemple.com"
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                  <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {errors.email}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Téléphone *
                 </label>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.phone ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
-                  placeholder="+41 XX XXX XX XX"
+                  placeholder="Votre numéro de téléphone"
                 />
                 {errors.phone && (
-                  <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                  <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {errors.phone}
+                  </p>
                 )}
-              </div>
-            </div>
-          </div>
-
-          {/* Professional Information */}
-          <div>
-            <h4 className="text-md font-semibold text-gray-900 mb-4">Informations Professionnelles</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Entreprise *
-                </label>
-                <input
-                  type="text"
-                  value={formData.company}
-                  onChange={(e) => handleInputChange('company', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.company ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Nom de votre entreprise"
-                />
-                {errors.company && (
-                  <p className="text-red-500 text-sm mt-1">{errors.company}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Poste
-                </label>
-                <input
-                  type="text"
-                  value={formData.position}
-                  onChange={(e) => handleInputChange('position', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Votre poste actuel"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Additional Information */}
-          <div>
-            <h4 className="text-md font-semibold text-gray-900 mb-4">Informations Complémentaires</h4>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Expérience dans le domaine
-                </label>
-                <select
-                  value={formData.experience}
-                  onChange={(e) => handleInputChange('experience', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Sélectionnez votre niveau d'expérience</option>
-                  <option value="débutant">Débutant (0-2 ans)</option>
-                  <option value="intermédiaire">Intermédiaire (3-5 ans)</option>
-                  <option value="avancé">Avancé (6-10 ans)</option>
-                  <option value="expert">Expert (10+ ans)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Attentes de la formation
-                </label>
-                <textarea
-                  value={formData.expectations}
-                  onChange={(e) => handleInputChange('expectations', e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Que souhaitez-vous apprendre ou améliorer ?"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Restrictions alimentaires
-                </label>
-                <input
-                  type="text"
-                  value={formData.dietaryRestrictions}
-                  onChange={(e) => handleInputChange('dietaryRestrictions', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Aucune restriction (ou précisez vos besoins)"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Besoins particuliers
-                </label>
-                <textarea
-                  value={formData.specialNeeds}
-                  onChange={(e) => handleInputChange('specialNeeds', e.target.value)}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Accessibilité, aménagements particuliers..."
-                />
               </div>
             </div>
           </div>
 
           {/* Terms and Submit */}
-          <div className="border-t border-gray-100 pt-8">
+          <div className="border-t border-gray-100 pt-6">
             <div className="flex items-start mb-6">
               <input
                 type="checkbox"
