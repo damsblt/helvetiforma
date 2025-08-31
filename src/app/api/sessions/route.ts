@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Mock data store for sessions (in production, this would be a database)
-let sessions: any[] = [];
+const sessions: any[] = [];
 
 export async function POST(request: NextRequest) {
   try {
