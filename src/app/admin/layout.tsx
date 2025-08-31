@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { authService } from '@/services/authService';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -11,34 +12,21 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Check admin authentication
-    const userData = localStorage.getItem('user');
-    if (!userData) {
+    // Simple admin check using authService
+    if (!authService.isAuthenticated()) {
       router.push('/login?redirect=/admin');
       return;
     }
 
-    try {
-      const user = JSON.parse(userData);
-      // Check if user is admin using the isAdmin property from our auth service
-      const isAdminUser = user.isAdmin === true;
-      
-      if (!isAdminUser) {
-        router.push('/login?message=admin_required');
-        return;
-      }
-
-      setIsAdmin(true);
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      router.push('/login?redirect=/admin');
+    const user = authService.getUser();
+    if (!user || !user.isAdmin) {
+      router.push('/login?message=admin_required');
       return;
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   }, [router]);
 
   if (isLoading) {
@@ -51,10 +39,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </div>
     );
-  }
-
-  if (!isAdmin) {
-    return null; // Will redirect
   }
 
   return (
@@ -108,8 +92,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 Calendrier
               </Link>
               <button
-                onClick={() => {
-                  localStorage.removeItem('user');
+                onClick={async () => {
+                  await authService.logout();
                   router.push('/');
                 }}
                 className="text-red-600 hover:text-red-800 transition"
@@ -122,7 +106,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </header>
 
       {/* Admin Content */}
-      <main className="py-8">
+      <main className="container mx-auto px-4 py-8">
         {children}
       </main>
     </div>
