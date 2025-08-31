@@ -29,7 +29,7 @@ export default function AdminCalendarPage() {
   const [formations, setFormations] = useState<Formation[]>([]);
   const [filteredFormations, setFilteredFormations] = useState<Formation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedView, setSelectedView] = useState<'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'>('timeGridWeek');
+
   const [selectedEvent, setSelectedEvent] = useState<EventClickArg | null>(null);
   const [showCreateSession, setShowCreateSession] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -120,9 +120,7 @@ export default function AdminCalendarPage() {
     // For now, we'll just log the drop
   };
 
-  const handleViewChange = (view: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek') => {
-    setSelectedView(view);
-  };
+
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
@@ -298,89 +296,26 @@ export default function AdminCalendarPage() {
 
         {/* Active Filters Display */}
         {(selectedCategory !== 'all' || searchTerm) && (
-          <div className="mb-4 flex flex-wrap gap-2 items-center">
-            <span className="text-sm text-gray-600">Filtres actifs:</span>
+          <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
+            <span>Filtres actifs:</span>
             {selectedCategory !== 'all' && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
                 {selectedCategory}
-                <button
-                  onClick={() => handleCategoryChange('all')}
-                  className="ml-2 text-blue-600 hover:text-blue-800"
-                >
-                  ×
-                </button>
               </span>
             )}
             {searchTerm && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">
                 "{searchTerm}"
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="ml-2 text-green-600 hover:text-green-800"
-                >
-                  ×
-                </button>
               </span>
             )}
+            <button
+              onClick={clearFilters}
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Effacer tous les filtres
+            </button>
           </div>
         )}
-
-        {/* Results Count */}
-        <div className="mb-4 text-sm text-gray-600">
-          {filteredFormations.length === 0 ? (
-            <p>Aucune formation trouvée avec les filtres actuels.</p>
-          ) : (
-            <p>
-              Affichage de {filteredFormations.length} formation{filteredFormations.length > 1 ? 's' : ''} 
-              {selectedCategory !== 'all' && ` dans la catégorie "${selectedCategory}"`}
-              {searchTerm && ` correspondant à "${searchTerm}"`}
-            </p>
-          )}
-        </div>
-
-        {/* View Selector */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          <button
-            onClick={() => handleViewChange('dayGridMonth')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedView === 'dayGridMonth'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-            }`}
-          >
-            Vue Mensuelle
-          </button>
-          <button
-            onClick={() => handleViewChange('timeGridWeek')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedView === 'timeGridWeek'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-            }`}
-          >
-            Vue Hebdomadaire
-          </button>
-          <button
-            onClick={() => handleViewChange('timeGridDay')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedView === 'timeGridDay'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-            }`}
-          >
-            Vue Journalière
-          </button>
-          <button
-            onClick={() => handleViewChange('listWeek')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedView === 'listWeek'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-            }`}
-          >
-            Vue Liste
-          </button>
-        </div>
 
         {/* Legend */}
         <div className="mb-6 flex flex-wrap gap-4 text-sm">
@@ -402,7 +337,6 @@ export default function AdminCalendarPage() {
             onDateSelect={handleDateSelect}
             onEventChange={handleEventChange}
             onEventDrop={handleEventDrop}
-            view={selectedView}
             height="700px"
           />
         </div>

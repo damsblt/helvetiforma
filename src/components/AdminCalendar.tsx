@@ -36,7 +36,6 @@ interface AdminCalendarProps {
   onEventChange?: (changeInfo: EventChangeArg) => void;
   onEventDrop?: (dropInfo: EventDropArg) => void;
   height?: string;
-  view?: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek';
 }
 
 const AdminCalendar: React.FC<AdminCalendarProps> = ({
@@ -46,7 +45,6 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
   onEventChange,
   onEventDrop,
   height = '700px',
-  view = 'timeGridWeek',
 }) => {
   const [events, setEvents] = useState<EventInput[]>([]);
 
@@ -146,7 +144,7 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
         }}
-        initialView={view}
+        initialView="timeGridWeek"
         editable={true}
         selectable={true}
         selectMirror={true}
