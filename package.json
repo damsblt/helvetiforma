@@ -19,6 +19,7 @@
     "@fullcalendar/react": "^6.1.19",
     "@fullcalendar/timegrid": "^6.1.19",
     "@tailwindcss/typography": "^0.5.16",
+    "@vercel/kv": "^3.0.0",
     "axios": "^1.11.0",
     "next": "15.3.4",
     "pdfjs-dist": "^5.4.54",

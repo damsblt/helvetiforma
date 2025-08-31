@@ -1,39 +1,86 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
 
-// File path for storing sessions data
-const SESSIONS_FILE = path.join(process.cwd(), 'data', 'sessions.json');
-
-// Ensure data directory exists
-async function ensureDataDir() {
-  const dataDir = path.dirname(SESSIONS_FILE);
+// Try to use Vercel KV, fallback to local storage
+async function getStorage() {
   try {
-    await fs.access(dataDir);
+    const { kv } = await import('@vercel/kv');
+    return { type: 'kv' as const, client: kv };
   } catch {
-    await fs.mkdir(dataDir, { recursive: true });
+    return { type: 'local' as const, client: null };
   }
 }
 
-// Load sessions from file
+// Local fallback storage
+let localSessions: any[] = [];
+
+// Save session
+async function saveSession(session: any) {
+  const storage = await getStorage();
+  
+  if (storage.type === 'kv' && storage.client) {
+    await storage.client.hset('sessions', { [session.id.toString()]: JSON.stringify(session) });
+  } else {
+    localSessions.push(session);
+  }
+}
+
+// Load all sessions
 async function loadSessions() {
-  try {
-    await ensureDataDir();
-    const data = await fs.readFile(SESSIONS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    // If file doesn't exist or is invalid, return empty array
-    return [];
+  const storage = await getStorage();
+  
+  if (storage.type === 'kv' && storage.client) {
+    const sessionsData = await storage.client.hgetall('sessions');
+    return Object.values(sessionsData || {}).map((sessionStr: any) => 
+      typeof sessionStr === 'string' ? JSON.parse(sessionStr) : sessionStr
+    );
+  } else {
+    return [...localSessions];
   }
 }
 
-// Save sessions to file
-async function saveSessions(sessions: any[]) {
-  try {
-    await ensureDataDir();
-    await fs.writeFile(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
-  } catch (error) {
-    console.error('Error saving sessions:', error);
+// Get single session
+async function getSession(id: number) {
+  const storage = await getStorage();
+  
+  if (storage.type === 'kv' && storage.client) {
+    const sessionStr = await storage.client.hget('sessions', id.toString());
+    return sessionStr ? (typeof sessionStr === 'string' ? JSON.parse(sessionStr) : sessionStr) : null;
+  } else {
+    return localSessions.find(s => s.id === id) || null;
+  }
+}
+
+// Update session
+async function updateSession(id: number, updates: any) {
+  const storage = await getStorage();
+  
+  if (storage.type === 'kv' && storage.client) {
+    const existingSession = await getSession(id);
+    if (!existingSession) return null;
+    
+    const updatedSession = { ...existingSession, ...updates, updatedAt: new Date().toISOString() };
+    await storage.client.hset('sessions', { [id.toString()]: JSON.stringify(updatedSession) });
+    return updatedSession;
+  } else {
+    const index = localSessions.findIndex(s => s.id === id);
+    if (index === -1) return null;
+    
+    localSessions[index] = { ...localSessions[index], ...updates, updatedAt: new Date().toISOString() };
+    return localSessions[index];
+  }
+}
+
+// Delete session
+async function deleteSession(id: number) {
+  const storage = await getStorage();
+  
+  if (storage.type === 'kv' && storage.client) {
+    await storage.client.hdel('sessions', id.toString());
+  } else {
+    const index = localSessions.findIndex(s => s.id === id);
+    if (index !== -1) {
+      localSessions.splice(index, 1);
+    }
   }
 }
 
@@ -50,9 +97,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Load existing sessions
-    const sessions = await loadSessions();
-
     // Create new session
     const newSession = {
       id: Date.now(), // Simple ID generation
@@ -62,11 +106,8 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString()
     };
 
-    // Add to sessions array
-    sessions.push(newSession);
-
-    // Save to file
-    await saveSessions(sessions);
+    // Save session
+    await saveSession(newSession);
 
     console.log('Session created:', newSession);
 
@@ -87,6 +128,7 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     const sessions = await loadSessions();
+    
     return NextResponse.json({
       success: true,
       data: sessions
@@ -112,29 +154,17 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const sessions = await loadSessions();
-    const sessionIndex = sessions.findIndex((s: any) => s.id === id);
-    
-    if (sessionIndex === -1) {
+    const updatedSession = await updateSession(id, data);
+    if (!updatedSession) {
       return NextResponse.json(
         { error: 'Session not found' },
         { status: 404 }
       );
     }
 
-    // Update session
-    sessions[sessionIndex] = {
-      ...sessions[sessionIndex],
-      ...data,
-      updatedAt: new Date().toISOString()
-    };
-
-    // Save to file
-    await saveSessions(sessions);
-
     return NextResponse.json({
       success: true,
-      data: sessions[sessionIndex]
+      data: updatedSession
     });
 
   } catch (error) {
@@ -158,25 +188,11 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const sessions = await loadSessions();
-    const sessionIndex = sessions.findIndex((s: any) => s.id === parseInt(id));
-    
-    if (sessionIndex === -1) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      );
-    }
-
-    // Remove session
-    const deletedSession = sessions.splice(sessionIndex, 1)[0];
-
-    // Save to file
-    await saveSessions(sessions);
+    await deleteSession(parseInt(id));
 
     return NextResponse.json({
       success: true,
-      data: deletedSession
+      data: { id: parseInt(id) }
     });
 
   } catch (error) {

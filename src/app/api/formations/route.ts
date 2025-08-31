@@ -1,17 +1,25 @@
 import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
 
-// File path for storing sessions data
-const SESSIONS_FILE = path.join(process.cwd(), 'data', 'sessions.json');
-
-// Load sessions from file
-async function loadSessions() {
+// Try to use Vercel KV, fallback to local storage
+async function getStorage() {
   try {
-    const data = await fs.readFile(SESSIONS_FILE, 'utf-8');
-    return JSON.parse(data);
+    const { kv } = await import('@vercel/kv');
+    return { type: 'kv' as const, client: kv };
   } catch {
-    // If file doesn't exist or is invalid, return empty array
+    return { type: 'local' as const, client: null };
+  }
+}
+
+// Load sessions from storage
+async function loadSessions() {
+  const storage = await getStorage();
+  
+  if (storage.type === 'kv' && storage.client) {
+    const sessionsData = await storage.client.hgetall('sessions');
+    return Object.values(sessionsData || {}).map((sessionStr: any) => 
+      typeof sessionStr === 'string' ? JSON.parse(sessionStr) : sessionStr
+    );
+  } else {
     return [];
   }
 }
@@ -55,7 +63,7 @@ const formations = [
 
 export async function GET() {
   try {
-    // Load sessions from file
+    // Load sessions from storage
     const sessions = await loadSessions();
 
     // Merge formations with their sessions
