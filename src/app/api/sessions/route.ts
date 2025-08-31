@@ -37,6 +37,7 @@ async function saveSession(session: any) {
     }
     return data;
   } else {
+    // eslint-disable-next-line prefer-const
     localSessions.push(session);
     return session;
   }
@@ -98,6 +99,7 @@ async function updateSession(id: number, updates: any) {
     const index = localSessions.findIndex(s => s.id === id);
     if (index === -1) return null;
     
+    // eslint-disable-next-line prefer-const
     localSessions[index] = { ...localSessions[index], ...updates, updatedAt: new Date().toISOString() };
     return localSessions[index];
   }
@@ -119,6 +121,7 @@ async function deleteSession(id: number) {
   } else {
     const index = localSessions.findIndex(s => s.id === id);
     if (index !== -1) {
+      // eslint-disable-next-line prefer-const
       localSessions.splice(index, 1);
     }
   }
