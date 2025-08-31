@@ -35,6 +35,13 @@ export default function AdminCalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Session creation form state
+  const [sessionForm, setSessionForm] = useState({
+    formationId: '',
+    date: '',
+    duration: 2
+  });
 
   // Get category from URL query parameter
   useEffect(() => {
@@ -91,7 +98,13 @@ export default function AdminCalendarPage() {
   };
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
-    setSelectedDate(new Date(selectInfo.start));
+    const selectedDate = new Date(selectInfo.start);
+    setSelectedDate(selectedDate);
+    setSessionForm({
+      formationId: '',
+      date: selectedDate.toISOString().slice(0, 16),
+      duration: 2
+    });
     setShowCreateSession(true);
   };
 
@@ -497,6 +510,7 @@ export default function AdminCalendarPage() {
                   onClick={() => {
                     setShowCreateSession(false);
                     setSelectedDate(null);
+                    setSessionForm({ formationId: '', date: '', duration: 2 });
                   }}
                   className="text-gray-400 hover:text-gray-600"
                 >
@@ -511,7 +525,12 @@ export default function AdminCalendarPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Formation
                   </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={sessionForm.formationId}
+                    onChange={(e) => setSessionForm(prev => ({ ...prev, formationId: e.target.value }))}
+                  >
+                    <option value="">Sélectionnez une formation</option>
                     {formations.map((formation) => (
                       <option key={formation.id} value={formation.id}>
                         {formation.attributes.Title} ({formation.attributes.Theme})
@@ -527,7 +546,8 @@ export default function AdminCalendarPage() {
                   <input
                     type="datetime-local"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    defaultValue={selectedDate.toISOString().slice(0, 16)}
+                    value={sessionForm.date}
+                    onChange={(e) => setSessionForm(prev => ({ ...prev, date: e.target.value }))}
                   />
                 </div>
                 
@@ -540,7 +560,8 @@ export default function AdminCalendarPage() {
                     min="1"
                     max="8"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    defaultValue="2"
+                    value={sessionForm.duration}
+                    onChange={(e) => setSessionForm(prev => ({ ...prev, duration: parseInt(e.target.value) || 2 }))}
                   />
                 </div>
               </div>
@@ -550,6 +571,7 @@ export default function AdminCalendarPage() {
                   onClick={() => {
                     setShowCreateSession(false);
                     setSelectedDate(null);
+                    setSessionForm({ formationId: '', date: '', duration: 2 });
                   }}
                   className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
                 >
@@ -557,17 +579,14 @@ export default function AdminCalendarPage() {
                 </button>
                 <button
                   onClick={() => {
-                    // Handle session creation
-                    const formationSelect = document.querySelector('select') as HTMLSelectElement;
-                    const dateInput = document.querySelector('input[type="datetime-local"]') as HTMLInputElement;
-                    const durationInput = document.querySelector('input[type="number"]') as HTMLInputElement;
-                    
-                    if (formationSelect && dateInput && durationInput) {
+                    if (sessionForm.formationId && sessionForm.date) {
                       handleCreateSession(
-                        parseInt(formationSelect.value),
-                        dateInput.value,
-                        parseInt(durationInput.value)
+                        parseInt(sessionForm.formationId),
+                        sessionForm.date,
+                        sessionForm.duration
                       );
+                    } else {
+                      alert('Veuillez sélectionner une formation et une date');
                     }
                   }}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
