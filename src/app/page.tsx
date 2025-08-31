@@ -140,7 +140,7 @@ function extractHeroTitle(htmlContent: string): string {
   }
   
   // Fallback: look for content between specific markers
-  const titleMatch = htmlContent.match(/<!--hero-title-->(.*?)<!--\/hero-title-->/s);
+  const titleMatch = htmlContent.match(/<!--hero-title-->(.*?)<!--\/hero-title-->/);
   if (titleMatch) {
     return titleMatch[1].trim();
   }
@@ -157,7 +157,7 @@ function extractHeroDescription(htmlContent: string): string {
   }
   
   // Fallback: look for content between specific markers
-  const descMatch = htmlContent.match(/<!--hero-description-->(.*?)<!--\/hero-description-->/s);
+  const descMatch = htmlContent.match(/<!--hero-description-->(.*?)<!--\/hero-description-->/);
   if (descMatch) {
     return descMatch[1].trim();
   }
