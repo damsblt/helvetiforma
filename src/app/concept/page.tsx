@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { contentService, WebsiteContent } from '@/services/contentService';
 
 export default function Concept() {
@@ -133,18 +134,18 @@ export default function Concept() {
             Rejoignez des centaines de professionnels qui ont déjà choisi Helvetiforma pour leur formation continue.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
+            <Link
               href="/formations"
               className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
             >
               Découvrir nos formations
-            </a>
-            <a
+            </Link>
+            <Link
               href="/contact"
               className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-blue-600 transition-colors"
             >
               Nous contacter
-            </a>
+            </Link>
           </div>
         </div>
       </div>
