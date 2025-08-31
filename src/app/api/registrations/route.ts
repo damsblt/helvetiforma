@@ -1,122 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Enhanced storage detection with environment awareness
-async function getStorage() {
-  try {
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    const isLocalhost = process.env.NEXT_PUBLIC_USE_LOCAL_STORAGE === 'true';
-
-    // Try to use Supabase first (production priority)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (supabaseUrl && supabaseKey) {
-      try {
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        // Test the connection
-        const { data, error } = await supabase.from('registrations').select('count').limit(1);
-        if (!error) {
-          console.log('Using Supabase for registrations (production)');
-          return { type: 'supabase' as const, client: supabase };
-        }
-      } catch (supabaseError) {
-        console.log('Supabase connection test failed for registrations:', supabaseError);
-      }
-    }
-
-    // Use local storage for development if explicitly requested
-    if (isDevelopment && isLocalhost) {
-      console.log('Using local storage for registrations (development)');
-      return { type: 'local' as const, client: null };
-    }
-
-    // In production, if Supabase fails, we should fail gracefully
-    if (!isDevelopment) {
-      console.error('CRITICAL: Supabase connection failed in production');
-      throw new Error('Database connection failed in production');
-    }
-
-  } catch (error) {
-    console.error('Storage detection error:', error);
+// Simple Supabase client creation
+function createSupabaseClient() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase credentials');
   }
-
-  // Fallback to local storage only in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Using local storage fallback (development only)');
-    return { type: 'local' as const, client: null };
-  }
-
-  // In production, we must have Supabase
-  throw new Error('Supabase connection required for production');
+  
+  return createClient(supabaseUrl, supabaseKey);
 }
 
-// Enhanced local storage with persistence across API calls
-const localStorage = {
-  registrations: [] as any[],
 
-  // Add some sample registrations for development
-  init() {
-    if (this.registrations.length === 0) {
-      const now = new Date();
-      this.registrations = [
-        {
-          id: 1,
-          session_id: 1,
-          formation_id: 1,
-          user_first_name: 'Marie',
-          user_last_name: 'Dupont',
-          user_email: 'marie.dupont@example.com',
-          user_phone: '0123456789',
-          status: 'pending',
-          created_at: now.toISOString()
-        }
-      ];
-      console.log('Initialized local storage with sample registration');
-    }
-  }
-};
 
-// Initialize local storage
-localStorage.init();
-
-// Save registration to storage
+// Save registration to Supabase
 async function saveRegistration(registrationData: any) {
-  const storage = await getStorage();
-  
-  if (storage.type === 'supabase') {
-    const { data, error } = await storage.client
+  try {
+    const supabase = createSupabaseClient();
+    console.log('Attempting to save to Supabase:', registrationData);
+    
+    const { data, error } = await supabase
       .from('registrations')
       .insert([registrationData])
       .select();
     
     if (error) {
       console.error('Error saving registration to Supabase:', error);
-      throw new Error('Failed to save registration');
+      throw new Error(`Failed to save registration: ${error.message}`);
     }
     
     console.log('Registration saved to Supabase:', data);
     return data[0];
-  } else {
-    // Local storage
-    const newRegistration = {
-      id: localStorage.registrations.length + 1,
-      ...registrationData,
-      created_at: new Date().toISOString()
-    };
-    
-    localStorage.registrations.push(newRegistration);
-    console.log('Registration saved to local storage:', newRegistration);
-    return newRegistration;
+  } catch (error) {
+    console.error('Error in saveRegistration:', error);
+    throw error;
   }
 }
 
-// Load registrations from storage
+// Load registrations from Supabase
 async function loadRegistrations() {
-  const storage = await getStorage();
-  
-  if (storage.type === 'supabase') {
-    const { data, error } = await storage.client
+  try {
+    const supabase = createSupabaseClient();
+    
+    const { data, error } = await supabase
       .from('registrations')
       .select('*')
       .order('created_at', { ascending: false });
@@ -127,18 +55,18 @@ async function loadRegistrations() {
     }
     
     return data || [];
-  } else {
-    // Local storage
-    return localStorage.registrations;
+  } catch (error) {
+    console.error('Error in loadRegistrations:', error);
+    throw error;
   }
 }
 
 // Update registration status
 async function updateRegistrationStatus(id: number, status: string) {
-  const storage = await getStorage();
-  
-  if (storage.type === 'supabase') {
-    const { data, error } = await storage.client
+  try {
+    const supabase = createSupabaseClient();
+    
+    const { data, error } = await supabase
       .from('registrations')
       .update({ status })
       .eq('id', id)
@@ -150,14 +78,9 @@ async function updateRegistrationStatus(id: number, status: string) {
     }
     
     return data[0];
-  } else {
-    // Local storage
-    const registration = localStorage.registrations.find(r => r.id === id);
-    if (registration) {
-      registration.status = status;
-      return registration;
-    }
-    throw new Error('Registration not found');
+  } catch (error) {
+    console.error('Error in updateRegistrationStatus:', error);
+    throw error;
   }
 }
 
@@ -179,11 +102,13 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('POST request body:', body);
     
     // Validate required fields
     const requiredFields = ['session_id', 'formation_id', 'user_first_name', 'user_last_name', 'user_email', 'user_phone'];
     for (const field of requiredFields) {
       if (!body[field]) {
+        console.log(`Missing field: ${field}`);
         return NextResponse.json(
           { error: `Missing required field: ${field}` },
           { status: 400 }
@@ -202,6 +127,8 @@ export async function POST(request: NextRequest) {
       status: 'pending'
     };
 
+    console.log('Registration data prepared:', registrationData);
+
     // Save registration
     const savedRegistration = await saveRegistration(registrationData);
 
@@ -216,7 +143,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating registration:', error);
     return NextResponse.json(
-      { error: 'Failed to create registration' },
+      { error: `Failed to create registration: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }

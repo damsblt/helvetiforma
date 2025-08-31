@@ -391,6 +391,10 @@ export default function CalendarPage() {
                 const sessionId = selectedEvent?.event.extendedProps.sessionId;
                 const formationId = selectedEvent?.event.extendedProps.formationId;
                 
+                console.log('Debug - Event extendedProps:', selectedEvent?.event.extendedProps);
+                console.log('Debug - sessionId:', sessionId);
+                console.log('Debug - formationId:', formationId);
+                
                 if (!sessionId || !formationId) {
                   alert('Erreur: Informations de session manquantes');
                   return;
@@ -406,6 +410,8 @@ export default function CalendarPage() {
                   user_phone: formData.phone
                 };
 
+                console.log('Debug - Registration data being sent:', registrationData);
+
                 // Submit to API
                 const response = await fetch('/api/registrations', {
                   method: 'POST',
@@ -415,13 +421,18 @@ export default function CalendarPage() {
                   body: JSON.stringify(registrationData),
                 });
 
+                console.log('Debug - API response status:', response.status);
+                console.log('Debug - API response ok:', response.ok);
+
                 if (response.ok) {
                   const result = await response.json();
+                  console.log('Debug - API success result:', result);
                   alert('Inscription soumise avec succès ! Nous vous contacterons bientôt pour confirmer votre inscription.');
                   setShowRegistrationForm(false);
                   setSelectedEvent(null);
                 } else {
                   const error = await response.json();
+                  console.log('Debug - API error:', error);
                   alert(`Erreur lors de l'inscription: ${error.error || 'Erreur inconnue'}`);
                 }
               } catch (error) {
