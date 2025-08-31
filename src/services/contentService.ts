@@ -117,6 +117,11 @@ class ContentService {
     return { ...defaultContent };
   }
   
+  // Refresh content from localStorage
+  refreshContent(): void {
+    this.content = this.loadContent();
+  }
+
   // Get all content
   getContent(): WebsiteContent {
     return { ...this.content };

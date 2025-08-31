@@ -370,7 +370,7 @@ export default function ContentManagement() {
         ...section,
         fields: section.fields.map(field => ({
           ...field,
-          value: existingContent[field.name as keyof WebsiteContent] || field.value
+          value: existingContent[field.name as keyof WebsiteContent] || ''
         }))
       }));
       setSections(sectionsWithContent);
@@ -422,6 +422,10 @@ export default function ContentManagement() {
       
       // Save merged content to localStorage
       localStorage.setItem('websiteContent', JSON.stringify(mergedContent));
+      
+      // Refresh contentService to ensure consistency
+      contentService.refreshContent();
+      
       console.log('Content saved successfully:', mergedContent);
       
       // Simulate API call delay
