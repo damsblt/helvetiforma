@@ -403,16 +403,26 @@ export default function ContentManagement() {
     setSaveStatus('saving');
     
     try {
-      // Save content to localStorage
-      const contentData = sections.reduce((acc, section) => {
+      // Get existing content first
+      const existingContent = contentService.getContent();
+      
+      // Create new content data for current page
+      const newContentData = sections.reduce((acc, section) => {
         section.fields.forEach(field => {
           acc[field.name] = field.value;
         });
         return acc;
       }, {} as Record<string, string>);
       
-      localStorage.setItem('websiteContent', JSON.stringify(contentData));
-      console.log('Content saved successfully:', contentData);
+      // Merge new content with existing content (don't overwrite other pages)
+      const mergedContent = {
+        ...existingContent,
+        ...newContentData
+      };
+      
+      // Save merged content to localStorage
+      localStorage.setItem('websiteContent', JSON.stringify(mergedContent));
+      console.log('Content saved successfully:', mergedContent);
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
