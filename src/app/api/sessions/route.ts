@@ -17,8 +17,10 @@ async function getStorage() {
   return { type: 'local' as const, client: null };
 }
 
-// Local fallback storage
-let localSessions: any[] = [];
+// Local fallback storage - use object to avoid ESLint issues
+const localStorage = {
+  sessions: [] as any[]
+};
 
 // Save session
 async function saveSession(session: any) {
@@ -37,8 +39,7 @@ async function saveSession(session: any) {
     }
     return data;
   } else {
-    // eslint-disable-next-line prefer-const
-    localSessions.push(session);
+    localStorage.sessions.push(session);
     return session;
   }
 }
@@ -59,7 +60,7 @@ async function loadSessions() {
     }
     return data || [];
   } else {
-    return [...localSessions];
+    return [...localStorage.sessions];
   }
 }
 
@@ -77,7 +78,7 @@ async function getSession(id: number) {
     if (error) return null;
     return data;
   } else {
-    return localSessions.find(s => s.id === id) || null;
+    return localStorage.sessions.find(s => s.id === id) || null;
   }
 }
 
@@ -96,12 +97,11 @@ async function updateSession(id: number, updates: any) {
     if (error) return null;
     return data;
   } else {
-    const index = localSessions.findIndex(s => s.id === id);
+    const index = localStorage.sessions.findIndex(s => s.id === id);
     if (index === -1) return null;
     
-    // eslint-disable-next-line prefer-const
-    localSessions[index] = { ...localSessions[index], ...updates, updatedAt: new Date().toISOString() };
-    return localSessions[index];
+    localStorage.sessions[index] = { ...localStorage.sessions[index], ...updates, updatedAt: new Date().toISOString() };
+    return localStorage.sessions[index];
   }
 }
 
@@ -119,10 +119,9 @@ async function deleteSession(id: number) {
       console.error('Supabase error:', error);
     }
   } else {
-    const index = localSessions.findIndex(s => s.id === id);
+    const index = localStorage.sessions.findIndex(s => s.id === id);
     if (index !== -1) {
-      // eslint-disable-next-line prefer-const
-      localSessions.splice(index, 1);
+      localStorage.sessions.splice(index, 1);
     }
   }
 }
