@@ -36,6 +36,7 @@ interface AdminCalendarProps {
   onEventChange?: (changeInfo: EventChangeArg) => void;
   onEventDrop?: (dropInfo: EventDropArg) => void;
   height?: string;
+  view?: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek';
 }
 
 const AdminCalendar: React.FC<AdminCalendarProps> = ({
@@ -45,6 +46,7 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
   onEventChange,
   onEventDrop,
   height = '700px',
+  view = 'timeGridWeek',
 }) => {
   const [events, setEvents] = useState<EventInput[]>([]);
 
@@ -137,6 +139,216 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
         </p>
       </div>
       
+      {/* Custom CSS for FullCalendar styling */}
+      <style jsx global>{`
+        /* Custom FullCalendar styling to match website design */
+        .fc {
+          font-family: inherit;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Header toolbar styling */
+        .fc-toolbar {
+          background: white;
+          padding: 16px 20px;
+          border-bottom: 1px solid #e5e7eb;
+          border-radius: 12px 12px 0 0;
+        }
+        
+        .fc-toolbar-title {
+          font-size: 1.25rem !important;
+          font-weight: 600 !important;
+          color: #374151 !important;
+        }
+        
+        /* Button styling */
+        .fc-button {
+          border-radius: 8px !important;
+          border: 1px solid #d1d5db !important;
+          font-weight: 500 !important;
+          transition: all 0.2s ease !important;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+        }
+        
+        .fc-button:hover {
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .fc-button-primary {
+          background-color: #6b7280 !important;
+          border-color: #6b7280 !important;
+          color: white !important;
+        }
+        
+        .fc-button-primary:hover {
+          background-color: #4b5563 !important;
+          border-color: #4b5563 !important;
+        }
+        
+        .fc-button-active {
+          background-color: #374151 !important;
+          border-color: #374151 !important;
+        }
+        
+        /* Today button special styling */
+        .fc-today-button {
+          background-color: #6b7280 !important;
+          border-color: #6b7280 !important;
+        }
+        
+        /* Calendar grid styling */
+        .fc-daygrid-day {
+          border-color: #f3f4f6 !important;
+        }
+        
+        .fc-timegrid-col {
+          border-color: #f3f4f6 !important;
+        }
+        
+        .fc-timegrid-slot {
+          border-color: #f9fafb !important;
+        }
+        
+        /* Month view specific styling */
+        .fc-dayGridMonth-view .fc-daygrid-day {
+          border-radius: 8px !important;
+          margin: 2px !important;
+          overflow: hidden !important;
+        }
+        
+        .fc-dayGridMonth-view .fc-daygrid-day-frame {
+          border-radius: 8px !important;
+          border: 1px solid #f3f4f6 !important;
+          background: white !important;
+          transition: all 0.2s ease !important;
+        }
+        
+        .fc-dayGridMonth-view .fc-daygrid-day:hover .fc-daygrid-day-frame {
+          border-color: #d1d5db !important;
+          box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .fc-dayGridMonth-view .fc-daygrid-day-number {
+          border-radius: 6px !important;
+          padding: 4px 8px !important;
+          font-weight: 500 !important;
+          color: #374151 !important;
+        }
+        
+        .fc-dayGridMonth-view .fc-day-today .fc-daygrid-day-frame {
+          border-color: #3b82f6 !important;
+          background-color: #eff6ff !important;
+        }
+        
+        .fc-dayGridMonth-view .fc-day-today .fc-daygrid-day-number {
+          background-color: #3b82f6 !important;
+          color: white !important;
+        }
+        
+        /* Weekend styling */
+        .fc-day-sun {
+          background-color: #fef3c7 !important;
+        }
+        
+        .fc-day-sat {
+          background-color: #fef3c7 !important;
+        }
+        
+        .fc-day-sun .fc-daygrid-day-frame,
+        .fc-day-sat .fc-daygrid-day-frame {
+          background-color: #fef3c7 !important;
+        }
+        
+        /* Event styling with rounded corners */
+        .fc-event {
+          border-radius: 8px !important;
+          border: none !important;
+          box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+          transition: all 0.2s ease !important;
+        }
+        
+        .fc-event:hover {
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        /* Session colors based on formation themes */
+        .fc-event[data-formation="1"] {
+          background-color: #2563eb !important; /* Blue for Salaires */
+          border-color: #1d4ed8 !important;
+        }
+        
+        .fc-event[data-formation="2"] {
+          background-color: #16a34a !important; /* Green for Charges Sociales */
+          border-color: #15803d !important;
+        }
+        
+        .fc-event[data-formation="3"] {
+          background-color: #9333ea !important; /* Purple for Impôt à la Source */
+          border-color: #7c3aed !important;
+        }
+        
+        /* Event text styling */
+        .fc-event-title {
+          font-weight: 500 !important;
+          font-size: 0.875rem !important;
+        }
+        
+        .fc-event-time {
+          font-weight: 400 !important;
+          font-size: 0.75rem !important;
+        }
+        
+        /* Time column styling */
+        .fc-timegrid-axis {
+          background-color: #f9fafb !important;
+          border-color: #e5e7eb !important;
+        }
+        
+        .fc-timegrid-slot-label {
+          color: #6b7280 !important;
+          font-weight: 500 !important;
+        }
+        
+        /* Day header styling */
+        .fc-col-header-cell {
+          background-color: #f9fafb !important;
+          border-color: #e5e7eb !important;
+        }
+        
+        .fc-col-header-cell-cushion {
+          color: #374151 !important;
+          font-weight: 600 !important;
+          text-decoration: none !important;
+        }
+        
+        /* List view styling */
+        .fc-list-event {
+          border-radius: 8px !important;
+          margin: 4px 0 !important;
+          border: 1px solid #e5e7eb !important;
+        }
+        
+        .fc-list-event:hover {
+          background-color: #f9fafb !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .fc-toolbar {
+            flex-direction: column;
+            gap: 12px;
+          }
+          
+          .fc-toolbar-chunk {
+            justify-content: center;
+          }
+        }
+      `}</style>
+      
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
         headerToolbar={{
@@ -197,6 +409,12 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
           const theme = event.extendedProps.theme;
           const type = event.extendedProps.type;
           const difficulty = event.extendedProps.difficulty;
+          
+          // Add data-formation attribute for CSS styling
+          const formationId = event.extendedProps.formation;
+          if (formationId) {
+            info.el.setAttribute('data-formation', formationId.toString());
+          }
           
           info.el.title = `${event.extendedProps.originalTitle || event.title}\nThème: ${theme}\nType: ${type}\nDifficulté: ${difficulty}`;
         }}
