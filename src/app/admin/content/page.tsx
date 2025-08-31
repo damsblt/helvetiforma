@@ -67,6 +67,13 @@ export default function ContentManagement() {
             type: 'textarea',
             value: 'Helvetiforma révolutionne l\'apprentissage professionnel en combinant la flexibilité du digital avec l\'efficacité de l\'enseignement traditionnel.',
             placeholder: 'Contenu de la section à propos'
+          },
+          {
+            name: 'aboutSubContent',
+            label: 'Contenu supplémentaire',
+            type: 'textarea',
+            value: 'Notre plateforme vous offre un accès à des ressources de qualité, des modules interactifs et un suivi personnalisé pour maximiser vos chances de réussite.',
+            placeholder: 'Contenu supplémentaire de la section à propos'
           }
         ]
       },
@@ -122,6 +129,88 @@ export default function ContentManagement() {
             type: 'textarea',
             value: 'Bénéficiez d\'un accompagnement sur mesure avec nos formateurs experts et notre équipe dédiée à votre réussite.',
             placeholder: 'Description de la troisième fonctionnalité'
+          }
+        ]
+      },
+      {
+        id: 'stats',
+        title: 'Section Statistiques',
+        fields: [
+          {
+            name: 'statsTitle',
+            label: 'Titre de la section',
+            type: 'text',
+            value: 'Nos chiffres parlent d\'eux-mêmes',
+            placeholder: 'Titre de la section statistiques'
+          },
+          {
+            name: 'statsSubtitle',
+            label: 'Sous-titre de la section',
+            type: 'text',
+            value: 'Une croissance constante et des résultats probants',
+            placeholder: 'Sous-titre de la section statistiques'
+          },
+          {
+            name: 'statsLearners',
+            label: 'Apprenants formés',
+            type: 'text',
+            value: '500+',
+            placeholder: 'Nombre d\'apprenants formés'
+          },
+          {
+            name: 'statsFormations',
+            label: 'Formations disponibles',
+            type: 'text',
+            value: '50+',
+            placeholder: 'Nombre de formations disponibles'
+          },
+          {
+            name: 'statsSatisfaction',
+            label: 'Taux de satisfaction',
+            type: 'text',
+            value: '95%',
+            placeholder: 'Taux de satisfaction'
+          },
+          {
+            name: 'statsSupport',
+            label: 'Support disponible',
+            type: 'text',
+            value: '24/7',
+            placeholder: 'Disponibilité du support'
+          }
+        ]
+      },
+      {
+        id: 'cta',
+        title: 'Section Appel à l\'action (CTA)',
+        fields: [
+          {
+            name: 'ctaTitle',
+            label: 'Titre de la section',
+            type: 'text',
+            value: 'Prêt à développer vos compétences ?',
+            placeholder: 'Titre de la section CTA'
+          },
+          {
+            name: 'ctaSubtitle',
+            label: 'Sous-titre de la section',
+            type: 'text',
+            value: 'Rejoignez des centaines de professionnels qui ont déjà choisi Helvetiforma pour leur formation continue.',
+            placeholder: 'Sous-titre de la section CTA'
+          },
+          {
+            name: 'ctaButton1',
+            label: 'Bouton 1 - Texte',
+            type: 'text',
+            value: 'Consulter nos ressources',
+            placeholder: 'Texte du premier bouton'
+          },
+          {
+            name: 'ctaButton2',
+            label: 'Bouton 2 - Texte',
+            type: 'text',
+            value: 'Nous contacter',
+            placeholder: 'Texte du deuxième bouton'
           }
         ]
       },

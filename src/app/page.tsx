@@ -94,9 +94,7 @@ export default function Home() {
                 {content.aboutContent}
               </p>
               <p className="text-gray-600 mb-8">
-                Notre plateforme vous offre un accès à des ressources de qualité, 
-                des modules interactifs et un suivi personnalisé pour maximiser 
-                vos chances de réussite.
+                {content.aboutSubContent}
               </p>
               <Link
                 href="/concept"
@@ -126,7 +124,7 @@ export default function Home() {
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
@@ -204,27 +202,27 @@ export default function Home() {
       <div className="py-20 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-6">
-            Nos chiffres parlent d'eux-mêmes
+            {content.statsTitle}
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Une croissance constante et des résultats probants
+            {content.statsSubtitle}
           </p>
           
           <div className="grid md:grid-cols-4 gap-8">
             <div className="text-center text-white">
-              <div className="text-4xl font-bold mb-2">500+</div>
+              <div className="text-4xl font-bold mb-2">{content.statsLearners}</div>
               <div className="text-blue-200">Apprenants formés</div>
             </div>
             <div className="text-center text-white">
-              <div className="text-4xl font-bold mb-2">50+</div>
+              <div className="text-4xl font-bold mb-2">{content.statsFormations}</div>
               <div className="text-blue-200">Formations disponibles</div>
             </div>
             <div className="text-center text-white">
-              <div className="text-4xl font-bold mb-2">95%</div>
+              <div className="text-4xl font-bold mb-2">{content.statsSatisfaction}</div>
               <div className="text-blue-200">Taux de satisfaction</div>
             </div>
             <div className="text-center text-white">
-              <div className="text-4xl font-bold mb-2">24/7</div>
+              <div className="text-4xl font-bold mb-2">{content.statsSupport}</div>
               <div className="text-blue-200">Support disponible</div>
             </div>
           </div>
@@ -235,24 +233,23 @@ export default function Home() {
       <div className="py-20 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-6">
-            Prêt à développer vos compétences ?
+            {content.ctaTitle}
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Rejoignez des centaines de professionnels qui ont déjà choisi 
-            Helvetiforma pour leur formation continue.
+            {content.ctaSubtitle}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/docs"
               className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-50 transition-all transform hover:scale-105 font-medium text-lg shadow-lg"
             >
-              Consulter nos ressources
+              {content.ctaButton1}
             </Link>
             <Link
               href="/contact"
               className="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 transition-all transform hover:scale-105 font-medium text-lg shadow-lg"
             >
-              Nous contacter
+              {content.ctaButton2}
             </Link>
           </div>
         </div>

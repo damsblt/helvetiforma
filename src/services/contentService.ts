@@ -7,6 +7,7 @@ export interface WebsiteContent {
   // About Section
   aboutTitle: string;
   aboutContent: string;
+  aboutSubContent: string;
   
   // Features Section
   featuresTitle: string;
@@ -16,6 +17,20 @@ export interface WebsiteContent {
   feature2Description: string;
   feature3Title: string;
   feature3Description: string;
+  
+  // Stats Section
+  statsTitle: string;
+  statsSubtitle: string;
+  statsLearners: string;
+  statsFormations: string;
+  statsSatisfaction: string;
+  statsSupport: string;
+  
+  // CTA Section
+  ctaTitle: string;
+  ctaSubtitle: string;
+  ctaButton1: string;
+  ctaButton2: string;
   
   // Formations
   formationSalairesTitle: string;
@@ -37,6 +52,7 @@ const defaultContent: WebsiteContent = {
   
   aboutTitle: 'Une approche moderne de la formation',
   aboutContent: 'Helvetiforma révolutionne l\'apprentissage professionnel en combinant la flexibilité du digital avec l\'efficacité de l\'enseignement traditionnel.',
+  aboutSubContent: 'Notre plateforme vous offre un accès à des ressources de qualité, des modules interactifs et un suivi personnalisé pour maximiser vos chances de réussite.',
   
   featuresTitle: 'Pourquoi choisir Helvetiforma ?',
   feature1Title: 'Formations Certifiantes',
@@ -45,6 +61,18 @@ const defaultContent: WebsiteContent = {
   feature2Description: 'Combinez cours en ligne et sessions en présentiel selon vos disponibilités. Apprenez à votre rythme, où et quand vous voulez.',
   feature3Title: 'Support Personnalisé',
   feature3Description: 'Bénéficiez d\'un accompagnement sur mesure avec nos formateurs experts et notre équipe dédiée à votre réussite.',
+  
+  statsTitle: 'Nos chiffres parlent d\'eux-mêmes',
+  statsSubtitle: 'Une croissance constante et des résultats probants',
+  statsLearners: '500+',
+  statsFormations: '50+',
+  statsSatisfaction: '95%',
+  statsSupport: '24/7',
+  
+  ctaTitle: 'Prêt à développer vos compétences ?',
+  ctaSubtitle: 'Rejoignez des centaines de professionnels qui ont déjà choisi Helvetiforma pour leur formation continue.',
+  ctaButton1: 'Consulter nos ressources',
+  ctaButton2: 'Nous contacter',
   
   formationSalairesTitle: 'Formation Salaires',
   formationSalairesDescription: 'Formation complète sur la gestion des salaires en Suisse',
