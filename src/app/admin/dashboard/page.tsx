@@ -49,7 +49,7 @@ export default function AdminDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-2 md:px-0">
+      <div className="py-8 px-2 md:px-0">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Chargement...</h1>
@@ -61,13 +61,10 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-2 md:px-0">
+    <div className="py-8 px-2 md:px-0">
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/" className="text-blue-600 hover:text-blue-800 mb-4 inline-block">
-            ← Retour à l'accueil
-          </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Tableau de Bord Administrateur</h1>
           <p className="text-gray-600">Gérez votre plateforme de formations</p>
         </div>
@@ -77,7 +74,7 @@ export default function AdminDashboardPage() {
         {/* Admin Sections */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Registrations Management */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
             <div className="flex items-center mb-4">
               <span className="text-blue-600 text-2xl mr-3">📋</span>
               <h3 className="text-lg font-semibold text-gray-900">Inscriptions</h3>
@@ -94,7 +91,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Content Management */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
             <div className="flex items-center mb-4">
               <span className="text-green-600 text-2xl mr-3">📝</span>
               <h3 className="text-lg font-semibold text-gray-900">Contenu</h3>
@@ -113,7 +110,7 @@ export default function AdminDashboardPage() {
 
 
           {/* Calendar Management */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
             <div className="flex items-center mb-4">
               <span className="text-orange-600 text-2xl mr-3">📅</span>
               <h3 className="text-lg font-semibold text-gray-900">Calendrier</h3>
