@@ -119,6 +119,120 @@ const FormationCalendar: React.FC<FormationCalendarProps> = ({
 
   return (
     <div className="w-full">
+      {/* Custom CSS for FullCalendar mobile responsiveness */}
+      <style jsx global>{`
+        /* Mobile-responsive FullCalendar styling */
+        @media (max-width: 768px) {
+          .fc-toolbar {
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px 16px;
+          }
+          
+          .fc-toolbar-chunk {
+            justify-content: center;
+          }
+          
+          .fc-toolbar-title {
+            font-size: 1rem !important;
+            text-align: center;
+          }
+          
+          /* Mobile-optimized buttons */
+          .fc-button {
+            padding: 8px 12px !important;
+            font-size: 0.875rem !important;
+            min-height: 44px !important;
+          }
+          
+          /* Mobile calendar grid */
+          .fc-timegrid-axis {
+            min-width: 60px !important;
+            font-size: 0.75rem !important;
+          }
+          
+          .fc-timegrid-slot-label {
+            font-size: 0.75rem !important;
+            padding: 4px 8px !important;
+          }
+          
+          .fc-col-header-cell {
+            min-width: 80px !important;
+            font-size: 0.75rem !important;
+          }
+          
+          .fc-col-header-cell-cushion {
+            font-size: 0.75rem !important;
+            padding: 8px 4px !important;
+          }
+          
+          /* Mobile event styling */
+          .fc-event {
+            font-size: 0.75rem !important;
+            padding: 2px 4px !important;
+            margin: 1px !important;
+          }
+          
+          .fc-event-title {
+            font-size: 0.75rem !important;
+            line-height: 1.2 !important;
+          }
+          
+          .fc-event-time {
+            font-size: 0.625rem !important;
+          }
+          
+          /* Mobile month view */
+          .fc-daygrid-day {
+            min-height: 60px !important;
+          }
+          
+          .fc-daygrid-day-number {
+            font-size: 0.875rem !important;
+            padding: 4px !important;
+          }
+          
+          /* Mobile list view */
+          .fc-list-event {
+            padding: 8px 12px !important;
+          }
+          
+          .fc-list-event-title {
+            font-size: 0.875rem !important;
+          }
+        }
+        
+        /* Extra small mobile devices */
+        @media (max-width: 480px) {
+          .fc-toolbar {
+            padding: 8px 12px;
+          }
+          
+          .fc-toolbar-title {
+            font-size: 0.875rem !important;
+          }
+          
+          .fc-button {
+            padding: 6px 8px !important;
+            font-size: 0.75rem !important;
+            min-height: 40px !important;
+          }
+          
+          .fc-timegrid-axis {
+            min-width: 50px !important;
+          }
+          
+          .fc-col-header-cell {
+            min-width: 70px !important;
+          }
+          
+          .fc-event {
+            font-size: 0.625rem !important;
+            padding: 1px 2px !important;
+          }
+        }
+      `}</style>
+      
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
         headerToolbar={{
@@ -167,6 +281,10 @@ const FormationCalendar: React.FC<FormationCalendarProps> = ({
           
           info.el.title = `${event.title}\nThème: ${theme}\nType: ${type}\nDifficulté: ${difficulty}`;
         }}
+        /* Mobile optimizations */
+        aspectRatio={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.8 : 1.35}
+        handleWindowResize={true}
+        windowResizeDelay={100}
       />
     </div>
   );

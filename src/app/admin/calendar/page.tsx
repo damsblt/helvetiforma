@@ -204,42 +204,42 @@ export default function AdminCalendarPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Calendrier Administrateur</h1>
-          <p className="text-gray-600">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Calendrier Administrateur</h1>
+          <p className="text-sm md:text-base text-gray-600">
             Gérez les formations et sessions. Glissez-déposez pour modifier les horaires.
           </p>
         </div>
 
         {/* Category Statistics */}
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-            <div className="text-sm text-gray-600">Total Sessions</div>
+        <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div className="bg-white p-3 md:p-4 rounded-lg shadow border border-gray-200">
+            <div className="text-lg md:text-2xl font-bold text-blue-600">{stats.total}</div>
+            <div className="text-xs md:text-sm text-gray-600">Total Sessions</div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-2xl font-bold text-blue-600">{stats['Salaire']}</div>
-            <div className="text-sm text-gray-600">Salaires</div>
+          <div className="bg-white p-3 md:p-4 rounded-lg shadow border border-gray-200">
+            <div className="text-lg md:text-2xl font-bold text-blue-600">{stats['Salaire']}</div>
+            <div className="text-xs md:text-sm text-gray-600">Salaires</div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-2xl font-bold text-green-600">{stats['Assurances sociales']}</div>
-            <div className="text-sm text-gray-600">Charges Sociales</div>
+          <div className="bg-white p-3 md:p-4 rounded-lg shadow border border-gray-200">
+            <div className="text-lg md:text-2xl font-bold text-green-600">{stats['Assurances sociales']}</div>
+            <div className="text-xs md:text-sm text-gray-600">Charges Sociales</div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-2xl font-bold text-purple-600">{stats['Impôt à la source']}</div>
-            <div className="text-sm text-gray-600">Impôt à la Source</div>
+          <div className="bg-white p-3 md:p-4 rounded-lg shadow border border-gray-200">
+            <div className="text-lg md:text-2xl font-bold text-purple-600">{stats['Impôt à la source']}</div>
+            <div className="text-xs md:text-sm text-gray-600">Impôt à la Source</div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mb-6 bg-white rounded-lg shadow-lg p-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <div className="mb-6 bg-white rounded-lg shadow-lg p-4 md:p-6">
+          <div className="flex flex-col gap-4">
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => handleCategoryChange('all')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-colors text-sm md:text-base ${
                   selectedCategory === 'all'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -249,7 +249,7 @@ export default function AdminCalendarPage() {
               </button>
               <button
                 onClick={() => handleCategoryChange('Salaire')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-colors text-sm md:text-base ${
                   selectedCategory === 'Salaire'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -259,7 +259,7 @@ export default function AdminCalendarPage() {
               </button>
               <button
                 onClick={() => handleCategoryChange('Assurances sociales')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-colors text-sm md:text-base ${
                   selectedCategory === 'Assurances sociales'
                     ? 'bg-green-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -269,7 +269,7 @@ export default function AdminCalendarPage() {
               </button>
               <button
                 onClick={() => handleCategoryChange('Impôt à la source')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-colors text-sm md:text-base ${
                   selectedCategory === 'Impôt à la source'
                     ? 'bg-purple-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -279,17 +279,17 @@ export default function AdminCalendarPage() {
               </button>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 placeholder="Rechercher une formation..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
               />
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm md:text-base"
               >
                 Effacer
               </button>
