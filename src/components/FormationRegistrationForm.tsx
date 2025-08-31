@@ -97,24 +97,32 @@ export default function FormationRegistrationForm({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100 px-6 py-6">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-3">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 5.477 5.754 5 7.5 5s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.523 18.246 19 16.5 19c-1.746 0-3.332-.477-4.5-1.253" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
                 Inscription à la Formation
               </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {formationTitle} - {formationTheme}
+              <p className="text-base text-gray-700 font-medium mb-1">
+                {formationTitle}
+              </p>
+              <p className="text-sm text-gray-600 mb-1">
+                Thème: {formationTheme}
               </p>
               <p className="text-sm text-gray-600">
-                {sessionDate} à {sessionTime}
+                📅 {sessionDate} à {sessionTime}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-white"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -124,26 +132,36 @@ export default function FormationRegistrationForm({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">
           {/* Personal Information */}
           <div>
-            <h4 className="text-md font-semibold text-gray-900 mb-4">Informations Personnelles</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h4 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+              <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Informations Personnelles
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Prénom *
                 </label>
                 <input
                   type="text"
                   value={formData.firstName}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.firstName ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    errors.firstName ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                   placeholder="Votre prénom"
                 />
                 {errors.firstName && (
-                  <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+                  <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {errors.firstName}
+                  </p>
                 )}
               </div>
 
@@ -303,38 +321,38 @@ export default function FormationRegistrationForm({
           </div>
 
           {/* Terms and Submit */}
-          <div className="border-t border-gray-200 pt-6">
-            <div className="flex items-start mb-4">
+          <div className="border-t border-gray-100 pt-8">
+            <div className="flex items-start mb-6">
               <input
                 type="checkbox"
                 id="terms"
-                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 required
               />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
+              <label htmlFor="terms" className="ml-3 text-sm text-gray-700">
                 J'accepte les{' '}
-                <a href="/cgu" className="text-blue-600 hover:text-blue-800 underline">
+                <a href="/cgu" className="text-blue-600 hover:text-blue-800 underline font-medium">
                   conditions générales d'utilisation
                 </a>{' '}
                 et la{' '}
-                <a href="/mentions" className="text-blue-600 hover:text-blue-800 underline">
+                <a href="/mentions" className="text-blue-600 hover:text-blue-800 underline font-medium">
                   politique de confidentialité
                 </a>
               </label>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-3 bg-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-400 transition-colors"
+                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200 hover:shadow-md"
               >
                 Annuler
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center">
@@ -345,7 +363,12 @@ export default function FormationRegistrationForm({
                     Inscription en cours...
                   </span>
                 ) : (
-                  'Confirmer l\'inscription'
+                  <span className="flex items-center justify-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Confirmer l'inscription
+                  </span>
                 )}
               </button>
             </div>
