@@ -56,8 +56,11 @@ export default function HeaderButtons() {
         <div className="hidden sm:inline-block px-3 py-2 text-gray-400">
           Chargement...
         </div>
-        <div className="px-3 py-2 bg-gray-400 text-white rounded text-sm">
-          Se connecter
+        <div className="px-3 py-2 text-gray-400 text-sm">
+          Calendrier
+        </div>
+        <div className="px-3 py-2 text-gray-400 text-sm">
+          Coin des Docs
         </div>
       </div>
     );
@@ -65,9 +68,21 @@ export default function HeaderButtons() {
 
   if (user) {
     if (isAdmin) {
-      // Admin user - show dashboard link and logout
+      // Admin user - show dashboard link, calendar, docs, and logout
       return (
         <div className="flex items-center space-x-2 lg:space-x-4">
+          <Link
+            href="/calendar"
+            className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+          >
+            Calendrier
+          </Link>
+          <Link
+            href="/docs"
+            className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+          >
+            Coin des Docs
+          </Link>
           <Link
             href="/admin"
             className="hidden sm:inline-block px-3 py-2 text-blue-700 hover:text-blue-800 transition text-sm font-medium"
@@ -86,9 +101,21 @@ export default function HeaderButtons() {
         </div>
       );
     } else {
-      // Regular user - show personal space and logout
-            return (
+      // Regular user - show personal space, calendar, docs, and logout
+      return (
         <div className="flex items-center space-x-2 lg:space-x-4">
+          <Link
+            href="/calendar"
+            className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+          >
+            Calendrier
+          </Link>
+          <Link
+            href="/docs"
+            className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+          >
+            Coin des Docs
+          </Link>
           <Link
             href="/personal-space"
             className="inline-block px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm"
@@ -109,14 +136,20 @@ export default function HeaderButtons() {
     }
   }
 
-  // Not logged in - show login button
+  // Not logged in - show calendar and docs buttons
   return (
     <div className="flex items-center space-x-2 lg:space-x-4">
       <Link
-        href="/login"
-        className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
+        href="/calendar"
+        className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
       >
-        Se connecter
+        Calendrier
+      </Link>
+      <Link
+        href="/docs"
+        className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+      >
+        Coin des Docs
       </Link>
     </div>
   );

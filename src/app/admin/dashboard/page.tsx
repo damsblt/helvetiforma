@@ -198,7 +198,7 @@ export default function AdminDashboardPage() {
               <h3 className="text-lg font-semibold text-gray-900">Contenu</h3>
             </div>
             <p className="text-gray-600 mb-4">
-              Créez et modifiez les formations directement dans votre interface.
+              Modifiez le contenu de votre site web directement depuis cette interface.
             </p>
             <Link 
               href="/admin/content"
@@ -225,59 +225,21 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
 
-          {/* Analytics */}
+          {/* Calendar Management */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center mb-4">
-              <span className="text-orange-600 text-2xl mr-3">📊</span>
-              <h3 className="text-lg font-semibold text-gray-900">Analytics</h3>
+              <span className="text-orange-600 text-2xl mr-3">📅</span>
+              <h3 className="text-lg font-semibold text-gray-900">Calendrier</h3>
             </div>
             <p className="text-gray-600 mb-4">
-              Consultez les statistiques et rapports de votre plateforme.
+              Créez et gérez les sessions de formation dans le calendrier.
             </p>
-            <button className="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-md hover:bg-orange-700">
-              Voir les analytics
-            </button>
-          </div>
-
-          {/* Settings */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center mb-4">
-              <span className="text-gray-600 text-2xl mr-3">⚙️</span>
-              <h3 className="text-lg font-semibold text-gray-900">Paramètres</h3>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Accès aux paramètres avancés de la plateforme.
-            </p>
-            <a 
-              href="http://localhost:1337/admin"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700"
+            <Link 
+              href="/admin/calendar"
+              className="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-md hover:bg-orange-700"
             >
-              Paramètres avancés
-            </a>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center mb-4">
-              <span className="text-red-600 text-2xl mr-3">⚡</span>
-              <h3 className="text-lg font-semibold text-gray-900">Actions Rapides</h3>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Accès rapide aux actions les plus fréquentes.
-            </p>
-            <div className="space-y-2">
-              <Link href="/admin/content" className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded block">
-                + Nouvelle formation
-              </Link>
-              <Link href="/admin/registrations" className="w-full text-left px-3 py-2 text-sm text-green-600 hover:bg-green-50 rounded block">
-                Gérer inscriptions
-              </Link>
-              <Link href="/admin/users" className="w-full text-left px-3 py-2 text-sm text-purple-600 hover:bg-purple-50 rounded block">
-                Voir utilisateurs
-              </Link>
-            </div>
+              Gérer le calendrier
+            </Link>
           </div>
         </div>
 

@@ -55,42 +55,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
             
             <div className="flex items-center space-x-4">
-              <Link
-                href="/admin/dashboard"
-                className="text-gray-600 hover:text-blue-700 transition"
-              >
-                Tableau de bord
-              </Link>
-              <Link
-                href="/admin/registrations"
-                className="text-gray-600 hover:text-blue-700 transition"
-              >
-                Inscriptions
-              </Link>
-              <Link
-                href="/admin/content"
-                className="text-gray-600 hover:text-blue-700 transition"
-              >
-                Contenu
-              </Link>
-              <Link
-                href="/admin/users"
-                className="text-gray-600 hover:text-blue-700 transition"
-              >
-                Utilisateurs
-              </Link>
-              <Link
-                href="/admin/api-control"
-                className="text-gray-600 hover:text-blue-700 transition"
-              >
-                Contrôle API
-              </Link>
-              <Link
-                href="/admin/calendar"
-                className="text-gray-600 hover:text-blue-700 transition"
-              >
-                Calendrier
-              </Link>
               <button
                 onClick={async () => {
                   await authService.logout();

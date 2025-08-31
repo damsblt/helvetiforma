@@ -53,8 +53,6 @@ export default function Navigation() {
     { href: '/', label: 'Accueil' },
     { href: '/concept', label: 'Concept' },
     { href: '/formations', label: 'Formations' },
-    { href: '/calendar', label: 'Calendrier' },
-    { href: '/docs', label: 'Coin des Docs' },
     { href: '/contact', label: 'Contact' },
   ];
 
