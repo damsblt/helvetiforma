@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { contentService, WebsiteContent } from '@/services/contentService';
 
 interface ContentSection {
   id: string;
@@ -17,321 +18,368 @@ interface ContentField {
   placeholder?: string;
 }
 
+interface PageOption {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  sections: ContentSection[];
+}
+
 export default function ContentManagement() {
   const router = useRouter();
+  const [selectedPage, setSelectedPage] = useState<string | null>(null);
   const [sections, setSections] = useState<ContentSection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  useEffect(() => {
-    // Initialize content sections with current website content
-    initializeContentSections();
-  }, []);
-
-  const initializeContentSections = () => {
-    // Try to load existing content from localStorage first
-    let existingContent: Record<string, string> = {};
-    try {
-      const savedContent = localStorage.getItem('websiteContent');
-      if (savedContent) {
-        existingContent = JSON.parse(savedContent);
-        console.log('Loaded existing content:', existingContent);
-      }
-    } catch (error) {
-      console.error('Error loading existing content:', error);
+  // Define all available pages with their content sections
+  const pageOptions: PageOption[] = [
+    {
+      id: 'accueil',
+      title: 'Page d\'Accueil',
+      description: 'Modifiez le contenu de la page principale : titre, description, sections à propos, fonctionnalités, statistiques et CTA.',
+      icon: '🏠',
+      color: 'blue',
+      sections: [
+        {
+          id: 'hero',
+          title: 'Section Hero',
+          fields: [
+            {
+              name: 'heroTitle',
+              label: 'Titre principal',
+              type: 'html',
+              value: '',
+              placeholder: 'Titre principal de la page d\'accueil'
+            },
+            {
+              name: 'heroDescription',
+              label: 'Description',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description sous le titre principal'
+            }
+          ]
+        },
+        {
+          id: 'about',
+          title: 'Section À propos',
+          fields: [
+            {
+              name: 'aboutTitle',
+              label: 'Titre de la section',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la section à propos'
+            },
+            {
+              name: 'aboutContent',
+              label: 'Contenu',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Contenu de la section à propos'
+            },
+            {
+              name: 'aboutSubContent',
+              label: 'Contenu supplémentaire',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Contenu supplémentaire de la section à propos'
+            }
+          ]
+        },
+        {
+          id: 'features',
+          title: 'Section Fonctionnalités',
+          fields: [
+            {
+              name: 'featuresTitle',
+              label: 'Titre de la section',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la section fonctionnalités'
+            },
+            {
+              name: 'feature1Title',
+              label: 'Fonctionnalité 1 - Titre',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la première fonctionnalité'
+            },
+            {
+              name: 'feature1Description',
+              label: 'Fonctionnalité 1 - Description',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description de la première fonctionnalité'
+            },
+            {
+              name: 'feature2Title',
+              label: 'Fonctionnalité 2 - Titre',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la deuxième fonctionnalité'
+            },
+            {
+              name: 'feature2Description',
+              label: 'Fonctionnalité 2 - Description',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description de la deuxième fonctionnalité'
+            },
+            {
+              name: 'feature3Title',
+              label: 'Fonctionnalité 3 - Titre',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la troisième fonctionnalité'
+            },
+            {
+              name: 'feature3Description',
+              label: 'Fonctionnalité 3 - Description',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description de la troisième fonctionnalité'
+            }
+          ]
+        },
+        {
+          id: 'stats',
+          title: 'Section Statistiques',
+          fields: [
+            {
+              name: 'statsTitle',
+              label: 'Titre de la section',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la section statistiques'
+            },
+            {
+              name: 'statsSubtitle',
+              label: 'Sous-titre de la section',
+              type: 'text',
+              value: '',
+              placeholder: 'Sous-titre de la section statistiques'
+            },
+            {
+              name: 'statsLearners',
+              label: 'Apprenants formés',
+              type: 'text',
+              value: '',
+              placeholder: 'Nombre d\'apprenants formés'
+            },
+            {
+              name: 'statsFormations',
+              label: 'Formations disponibles',
+              type: 'text',
+              value: '',
+              placeholder: 'Nombre de formations disponibles'
+            },
+            {
+              name: 'statsSatisfaction',
+              label: 'Taux de satisfaction',
+              type: 'text',
+              value: '',
+              placeholder: 'Taux de satisfaction'
+            },
+            {
+              name: 'statsSupport',
+              label: 'Support disponible',
+              type: 'text',
+              value: '',
+              placeholder: 'Disponibilité du support'
+            }
+          ]
+        },
+        {
+          id: 'cta',
+          title: 'Section Appel à l\'action (CTA)',
+          fields: [
+            {
+              name: 'ctaTitle',
+              label: 'Titre de la section',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la section CTA'
+            },
+            {
+              name: 'ctaSubtitle',
+              label: 'Sous-titre de la section',
+              type: 'text',
+              value: '',
+              placeholder: 'Sous-titre de la section CTA'
+            },
+            {
+              name: 'ctaButton1',
+              label: 'Bouton 1 - Texte',
+              type: 'text',
+              value: '',
+              placeholder: 'Texte du premier bouton'
+            },
+            {
+              name: 'ctaButton2',
+              label: 'Bouton 2 - Texte',
+              type: 'text',
+              value: '',
+              placeholder: 'Texte du deuxième bouton'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'concept',
+      title: 'Page Concept',
+      description: 'Modifiez le contenu de la page concept : titre, sous-titre, contenu principal et fonctionnalités.',
+      icon: '💡',
+      color: 'green',
+      sections: [
+        {
+          id: 'concept',
+          title: 'Section Concept',
+          fields: [
+            {
+              name: 'conceptTitle',
+              label: 'Titre de la section',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la section concept'
+            },
+            {
+              name: 'conceptSubtitle',
+              label: 'Sous-titre de la section',
+              type: 'text',
+              value: '',
+              placeholder: 'Sous-titre de la section concept'
+            },
+            {
+              name: 'conceptContent',
+              label: 'Contenu principal',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Contenu principal de la section concept'
+            },
+            {
+              name: 'conceptFeatures',
+              label: 'Fonctionnalités du concept',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Fonctionnalités du concept (une par ligne)'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'formations',
+      title: 'Page Formations',
+      description: 'Modifiez le contenu des formations : titres et descriptions des différentes formations disponibles.',
+      icon: '📚',
+      color: 'purple',
+      sections: [
+        {
+          id: 'formations',
+          title: 'Gestion des Formations',
+          fields: [
+            {
+              name: 'formationSalairesTitle',
+              label: 'Formation Salaires - Titre',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la formation salaires'
+            },
+            {
+              name: 'formationSalairesDescription',
+              label: 'Formation Salaires - Description',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description de la formation salaires'
+            },
+            {
+              name: 'formationChargesTitle',
+              label: 'Formation Charges Sociales - Titre',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la formation charges sociales'
+            },
+            {
+              name: 'formationChargesDescription',
+              label: 'Formation Charges Sociales - Description',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description de la formation charges sociales'
+            },
+            {
+              name: 'formationImpotTitle',
+              label: 'Formation Impôt à la Source - Titre',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la formation impôt à la source'
+            },
+            {
+              name: 'formationImpotDescription',
+              label: 'Formation Impôt à la Source - Description',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description de la formation impôt à la source'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'contact',
+      title: 'Page Contact',
+      description: 'Modifiez le contenu de la page contact : titre et description de la section contact.',
+      icon: '📞',
+      color: 'orange',
+      sections: [
+        {
+          id: 'contact',
+          title: 'Section Contact',
+          fields: [
+            {
+              name: 'contactTitle',
+              label: 'Titre de la section contact',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la section contact'
+            },
+            {
+              name: 'contactDescription',
+              label: 'Description de la section contact',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description de la section contact'
+            }
+          ]
+        }
+      ]
     }
+  ];
 
-    const initialSections: ContentSection[] = [
-      {
-        id: 'hero',
-        title: 'Section Hero (Page d\'accueil)',
-        fields: [
-          {
-            name: 'heroTitle',
-            label: 'Titre principal',
-            type: 'html',
-            value: existingContent.heroTitle || 'Bienvenue sur <span class="text-blue-400">Helvetiforma</span>',
-            placeholder: 'Titre principal de la page d\'accueil'
-          },
-          {
-            name: 'heroDescription',
-            label: 'Description',
-            type: 'textarea',
-            value: existingContent.heroDescription || 'Votre plateforme de formation professionnelle en Suisse. Découvrez nos formations spécialisées et développez vos compétences avec une approche moderne et flexible.',
-            placeholder: 'Description sous le titre principal'
-          }
-        ]
-      },
-      {
-        id: 'about',
-        title: 'Section À propos',
-        fields: [
-          {
-            name: 'aboutTitle',
-            label: 'Titre de la section',
-            type: 'text',
-            value: existingContent.aboutTitle || 'Une approche moderne de la formation',
-            placeholder: 'Titre de la section à propos'
-          },
-          {
-            name: 'aboutContent',
-            label: 'Contenu',
-            type: 'textarea',
-            value: existingContent.aboutContent || 'Helvetiforma révolutionne l\'apprentissage professionnel en combinant la flexibilité du digital avec l\'efficacité de l\'enseignement traditionnel.',
-            placeholder: 'Contenu de la section à propos'
-          },
-          {
-            name: 'aboutSubContent',
-            label: 'Contenu supplémentaire',
-            type: 'textarea',
-            value: existingContent.aboutSubContent || 'Notre plateforme vous offre un accès à des ressources de qualité, des modules interactifs et un suivi personnalisé pour maximiser vos chances de réussite.',
-            placeholder: 'Contenu supplémentaire de la section à propos'
-          }
-        ]
-      },
-      {
-        id: 'features',
-        title: 'Section Fonctionnalités',
-        fields: [
-          {
-            name: 'featuresTitle',
-            label: 'Titre de la section',
-            type: 'text',
-            value: existingContent.featuresTitle || 'Pourquoi choisir Helvetiforma ?',
-            placeholder: 'Titre de la section fonctionnalités'
-          },
-          {
-            name: 'feature1Title',
-            label: 'Fonctionnalité 1 - Titre',
-            type: 'text',
-            value: existingContent.feature1Title || 'Formations Certifiantes',
-            placeholder: 'Titre de la première fonctionnalité'
-          },
-          {
-            name: 'feature1Description',
-            label: 'Fonctionnalité 1 - Description',
-            type: 'textarea',
-            value: existingContent.feature1Description || 'Nos programmes délivrent des certificats reconnus qui attestent de vos compétences acquises et valorisent votre CV.',
-            placeholder: 'Description de la première fonctionnalité'
-          },
-          {
-            name: 'feature2Title',
-            label: 'Fonctionnalité 2 - Titre',
-            type: 'text',
-            value: existingContent.feature2Title || 'Apprentissage Flexible',
-            placeholder: 'Titre de la deuxième fonctionnalité'
-          },
-          {
-            name: 'feature2Description',
-            label: 'Fonctionnalité 2 - Description',
-            type: 'textarea',
-            value: existingContent.feature2Description || 'Combinez cours en ligne et sessions en présentiel selon vos disponibilités. Apprenez à votre rythme, où et quand vous voulez.',
-            placeholder: 'Description de la deuxième fonctionnalité'
-          },
-          {
-            name: 'feature3Title',
-            label: 'Fonctionnalité 3 - Titre',
-            type: 'text',
-            value: existingContent.feature3Title || 'Support Personnalisé',
-            placeholder: 'Titre de la troisième fonctionnalité'
-          },
-          {
-            name: 'feature3Description',
-            label: 'Fonctionnalité 3 - Description',
-            type: 'textarea',
-            value: existingContent.feature3Description || 'Bénéficiez d\'un accompagnement sur mesure avec nos formateurs experts et notre équipe dédiée à votre réussite.',
-            placeholder: 'Description de la troisième fonctionnalité'
-          }
-        ]
-      },
-      {
-        id: 'stats',
-        title: 'Section Statistiques',
-        fields: [
-          {
-            name: 'statsTitle',
-            label: 'Titre de la section',
-            type: 'text',
-            value: existingContent.statsTitle || 'Nos chiffres parlent d\'eux-mêmes',
-            placeholder: 'Titre de la section statistiques'
-          },
-          {
-            name: 'statsSubtitle',
-            label: 'Sous-titre de la section',
-            type: 'text',
-            value: existingContent.statsSubtitle || 'Une croissance constante et des résultats probants',
-            placeholder: 'Sous-titre de la section statistiques'
-          },
-          {
-            name: 'statsLearners',
-            label: 'Apprenants formés',
-            type: 'text',
-            value: existingContent.statsLearners || '500+',
-            placeholder: 'Nombre d\'apprenants formés'
-          },
-          {
-            name: 'statsFormations',
-            label: 'Formations disponibles',
-            type: 'text',
-            value: existingContent.statsFormations || '50+',
-            placeholder: 'Nombre de formations disponibles'
-          },
-          {
-            name: 'statsSatisfaction',
-            label: 'Taux de satisfaction',
-            type: 'text',
-            value: existingContent.statsSatisfaction || '95%',
-            placeholder: 'Taux de satisfaction'
-          },
-          {
-            name: 'statsSupport',
-            label: 'Support disponible',
-            type: 'text',
-            value: existingContent.statsSupport || '24/7',
-            placeholder: 'Disponibilité du support'
-          }
-        ]
-      },
-      {
-        id: 'cta',
-        title: 'Section Appel à l\'action (CTA)',
-        fields: [
-          {
-            name: 'ctaTitle',
-            label: 'Titre de la section',
-            type: 'text',
-            value: existingContent.ctaTitle || 'Prêt à développer vos compétences ?',
-            placeholder: 'Titre de la section CTA'
-          },
-          {
-            name: 'ctaSubtitle',
-            label: 'Sous-titre de la section',
-            type: 'text',
-            value: existingContent.ctaSubtitle || 'Rejoignez des centaines de professionnels qui ont déjà choisi Helvetiforma pour leur formation continue.',
-            placeholder: 'Sous-titre de la section CTA'
-          },
-          {
-            name: 'ctaButton1',
-            label: 'Bouton 1 - Texte',
-            type: 'text',
-            value: existingContent.ctaButton1 || 'Consulter nos ressources',
-            placeholder: 'Texte du premier bouton'
-          },
-          {
-            name: 'ctaButton2',
-            label: 'Bouton 2 - Texte',
-            type: 'text',
-            value: existingContent.ctaButton2 || 'Nous contacter',
-            placeholder: 'Texte du deuxième bouton'
-          }
-        ]
-      },
-      {
-        id: 'formations',
-        title: 'Gestion des Formations',
-        fields: [
-          {
-            name: 'formationSalairesTitle',
-            label: 'Formation Salaires - Titre',
-            type: 'text',
-            value: existingContent.formationSalairesTitle || 'Formation Salaires',
-            placeholder: 'Titre de la formation salaires'
-          },
-          {
-            name: 'formationSalairesDescription',
-            label: 'Formation Salaires - Description',
-            type: 'textarea',
-            value: existingContent.formationSalairesDescription || 'Formation complète sur la gestion des salaires en Suisse',
-            placeholder: 'Description de la formation salaires'
-          },
-          {
-            name: 'formationChargesTitle',
-            label: 'Formation Charges Sociales - Titre',
-            type: 'text',
-            value: existingContent.formationChargesTitle || 'Charges Sociales',
-            placeholder: 'Titre de la formation charges sociales'
-          },
-          {
-            name: 'formationChargesDescription',
-            label: 'Formation Charges Sociales - Description',
-            type: 'textarea',
-            value: existingContent.formationChargesDescription || 'Formation sur les charges sociales et assurances en Suisse',
-            placeholder: 'Description de la formation charges sociales'
-          },
-          {
-            name: 'formationImpotTitle',
-            label: 'Formation Impôt à la Source - Titre',
-            type: 'text',
-            value: existingContent.formationImpotTitle || 'Impôt à la Source',
-            placeholder: 'Titre de la formation impôt à la source'
-          },
-          {
-            name: 'formationImpotDescription',
-            label: 'Formation Impôt à la Source - Description',
-            type: 'textarea',
-            value: existingContent.formationImpotDescription || 'Formation sur l\'impôt à la source en Suisse',
-            placeholder: 'Description de la formation impôt à la source'
-          }
-        ]
-      },
-      {
-        id: 'contact',
-        title: 'Section Contact',
-        fields: [
-          {
-            name: 'contactTitle',
-            label: 'Titre de la section contact',
-            type: 'text',
-            value: existingContent.contactTitle || 'Contactez-nous',
-            placeholder: 'Titre de la section contact'
-          },
-          {
-            name: 'contactDescription',
-            label: 'Description de la section contact',
-            type: 'textarea',
-            value: existingContent.contactDescription || 'N\'hésitez pas à nous contacter pour plus d\'informations sur nos formations.',
-            placeholder: 'Description de la section contact'
-          }
-        ]
-      },
-      {
-        id: 'concept',
-        title: 'Section Concept',
-        fields: [
-          {
-            name: 'conceptTitle',
-            label: 'Titre de la section',
-            type: 'text',
-            value: existingContent.conceptTitle || 'Notre Concept',
-            placeholder: 'Titre de la section concept'
-          },
-          {
-            name: 'conceptSubtitle',
-            label: 'Sous-titre de la section',
-            type: 'text',
-            value: existingContent.conceptSubtitle || 'Une approche innovante de la formation',
-            placeholder: 'Sous-titre de la section concept'
-          },
-          {
-            name: 'conceptContent',
-            label: 'Contenu principal',
-            type: 'textarea',
-            value: existingContent.conceptContent || 'Helvetiforma est une plateforme innovante qui combine l\'apprentissage en ligne et l\'enseignement présentiel. Notre approche unique permet aux apprenants de bénéficier d\'une formation complète et personnalisée.',
-            placeholder: 'Contenu principal de la section concept'
-          },
-          {
-            name: 'conceptFeatures',
-            label: 'Fonctionnalités du concept',
-            type: 'textarea',
-            value: existingContent.conceptFeatures || '• Formation en ligne flexible\n• Sessions en présentiel\n• Suivi personnalisé\n• Certificats reconnus',
-            placeholder: 'Fonctionnalités du concept (une par ligne)'
-          }
-        ]
-      }
-    ];
+  const handlePageSelect = (pageId: string) => {
+    setSelectedPage(pageId);
+    const selectedPageOption = pageOptions.find(page => page.id === pageId);
+    if (selectedPageOption) {
+      // Load existing content for the selected page
+      const existingContent = contentService.getContent();
+      const sectionsWithContent = selectedPageOption.sections.map(section => ({
+        ...section,
+        fields: section.fields.map(field => ({
+          ...field,
+          value: existingContent[field.name as keyof WebsiteContent] || field.value
+        }))
+      }));
+      setSections(sectionsWithContent);
+    }
+  };
 
-    setSections(initialSections);
-    setIsLoading(false);
+  const handleBackToPages = () => {
+    setSelectedPage(null);
+    setSections([]);
   };
 
   const handleFieldChange = (sectionId: string, fieldName: string, value: string) => {
@@ -355,7 +403,7 @@ export default function ContentManagement() {
     setSaveStatus('saving');
     
     try {
-      // Save content to localStorage (can be replaced with API call later)
+      // Save content to localStorage
       const contentData = sections.reduce((acc, section) => {
         section.fields.forEach(field => {
           acc[field.name] = field.value;
@@ -375,6 +423,7 @@ export default function ContentManagement() {
       setTimeout(() => {
         window.location.reload();
       }, 1500);
+      
     } catch (error) {
       console.error('Error saving content:', error);
       setSaveStatus('error');
@@ -382,29 +431,57 @@ export default function ContentManagement() {
     }
   };
 
-  const handlePreview = () => {
-    // Save current content and redirect to homepage to preview
-    const contentData = sections.reduce((acc, section) => {
-      section.fields.forEach(field => {
-        acc[field.name] = field.value;
-      });
-      return acc;
-    }, {} as Record<string, string>);
-    
-    localStorage.setItem('websiteContent', JSON.stringify(contentData));
-    console.log('Content saved for preview:', contentData);
-    router.push('/');
-  };
-
-  if (isLoading) {
+  // Page Selection Interface
+  if (!selectedPage) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement de l'éditeur de contenu...</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion du Contenu</h1>
+            <p className="text-gray-600">
+              Choisissez la page que vous souhaitez modifier. Tous les changements sont sauvegardés automatiquement.
+            </p>
+          </div>
+
+          {/* Page Selection Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            {pageOptions.map((page) => (
+              <div
+                key={page.id}
+                className="bg-white rounded-lg shadow-lg border border-gray-200 hover:shadow-xl transition-shadow cursor-pointer"
+                onClick={() => handlePageSelect(page.id)}
+              >
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl mr-4 bg-${page.color}-100`}>
+                      {page.icon}
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-900">{page.title}</h2>
+                  </div>
+                  <p className="text-gray-600 mb-4">{page.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">
+                      {page.sections.length} section{page.sections.length > 1 ? 's' : ''}
+                    </span>
+                    <button className="text-blue-600 hover:text-blue-800 font-medium">
+                      Modifier →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
+  }
+
+  // Page Editing Interface
+  const selectedPageOption = pageOptions.find(page => page.id === selectedPage);
+  
+  if (!selectedPageOption) {
+    return <div>Page non trouvée</div>;
   }
 
   return (
@@ -412,9 +489,17 @@ export default function ContentManagement() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion du Contenu</h1>
+          <button
+            onClick={handleBackToPages}
+            className="text-blue-600 hover:text-blue-800 mb-4 inline-block"
+          >
+            ← Retour à la sélection des pages
+          </button>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Modifier : {selectedPageOption.title}
+          </h1>
           <p className="text-gray-600">
-            Modifiez le contenu de votre site web. Tous les changements sont sauvegardés automatiquement.
+            {selectedPageOption.description}
           </p>
         </div>
 
@@ -429,7 +514,6 @@ export default function ContentManagement() {
              saveStatus === 'saved' ? '✓ Sauvegardé' : 
              saveStatus === 'error' ? '❌ Erreur' : '💾 Sauvegarder'}
           </button>
-          
         </div>
 
         {/* Content Sections */}
