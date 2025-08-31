@@ -23,11 +23,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
     try {
       const user = JSON.parse(userData);
-      // Check if user is admin (email contains 'admin' or specific admin emails)
-      const isAdminUser = user.email?.includes('admin') || 
-                         user.email === 'admin@helvetiforma.com' ||
-                         user.email === 'damien@helvetiforma.com' ||
-                         user.email === 'damien.balet@me.com';
+      // Check if user is admin using the isAdmin property from our auth service
+      const isAdminUser = user.isAdmin === true;
       
       if (!isAdminUser) {
         router.push('/login?message=admin_required');
