@@ -43,33 +43,36 @@ export default function AdminRegistrationsPage() {
     try {
       // For now, use sample data since we don't have a registrations API yet
       // In the future, you can create /api/registrations endpoint
-      const sampleRegistrations = [
+      const sampleRegistrations: Registration[] = [
         {
           id: 1,
-          attributes: {
-            status: 'pending',
-            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            formation: { Title: 'Formation Salaires' },
-            userAccount: { email: 'marie.dupont@example.com', firstName: 'Marie', lastName: 'Dupont' }
-          }
+          firstName: 'Marie',
+          lastName: 'Dupont',
+          email: 'marie.dupont@example.com',
+          status: 'pending',
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          formation: { id: 1, Title: 'Formation Salaires' },
+          userAccount: { id: 1, email: 'marie.dupont@example.com', firstName: 'Marie', lastName: 'Dupont' }
         },
         {
           id: 2,
-          attributes: {
-            status: 'confirmed',
-            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-            formation: { Title: 'Charges Sociales' },
-            userAccount: { email: 'pierre.martin@example.com', firstName: 'Pierre', lastName: 'Martin' }
-          }
+          firstName: 'Pierre',
+          lastName: 'Martin',
+          email: 'pierre.martin@example.com',
+          status: 'confirmed',
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          formation: { id: 2, Title: 'Charges Sociales' },
+          userAccount: { id: 2, email: 'pierre.martin@example.com', firstName: 'Pierre', lastName: 'Martin' }
         },
         {
           id: 3,
-          attributes: {
-            status: 'pending',
-            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-            formation: { Title: 'Impôt à la Source' },
-            userAccount: { email: 'sophie.bernard@example.com', firstName: 'Sophie', lastName: 'Bernard' }
-          }
+          firstName: 'Sophie',
+          lastName: 'Bernard',
+          email: 'sophie.bernard@example.com',
+          status: 'pending',
+          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+          formation: { id: 3, Title: 'Impôt à la Source' },
+          userAccount: { id: 3, email: 'sophie.bernard@example.com', firstName: 'Sophie', lastName: 'Bernard' }
         }
       ];
       
@@ -90,7 +93,7 @@ export default function AdminRegistrationsPage() {
       // Update the local state to show the change
       setRegistrations(prev => prev.map(reg => 
         reg.id === id 
-          ? { ...reg, attributes: { ...reg.attributes, status: 'confirmed' } }
+          ? { ...reg, status: 'confirmed' }
           : reg
       ));
     } catch (error) {
@@ -110,7 +113,7 @@ export default function AdminRegistrationsPage() {
       // Update the local state to show the change
       setRegistrations(prev => prev.map(reg => 
         reg.id === id 
-          ? { ...reg, attributes: { ...reg.attributes, status: 'rejected' } }
+          ? { ...reg, status: 'rejected' }
           : reg
       ));
     } catch (error) {
@@ -130,7 +133,7 @@ export default function AdminRegistrationsPage() {
       // Update the local state to show the changes
       setRegistrations(prev => prev.map(reg => 
         selectedRegistrations.includes(reg.id)
-          ? { ...reg, attributes: { ...reg.attributes, status: newStatus } }
+          ? { ...reg, status: newStatus }
           : reg
       ));
       
