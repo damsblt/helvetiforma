@@ -293,6 +293,40 @@ export default function ContentManagement() {
             placeholder: 'Description de la section contact'
           }
         ]
+      },
+      {
+        id: 'concept',
+        title: 'Section Concept',
+        fields: [
+          {
+            name: 'conceptTitle',
+            label: 'Titre de la section',
+            type: 'text',
+            value: existingContent.conceptTitle || 'Notre Concept',
+            placeholder: 'Titre de la section concept'
+          },
+          {
+            name: 'conceptSubtitle',
+            label: 'Sous-titre de la section',
+            type: 'text',
+            value: existingContent.conceptSubtitle || 'Une approche innovante de la formation',
+            placeholder: 'Sous-titre de la section concept'
+          },
+          {
+            name: 'conceptContent',
+            label: 'Contenu principal',
+            type: 'textarea',
+            value: existingContent.conceptContent || 'Helvetiforma est une plateforme innovante qui combine l\'apprentissage en ligne et l\'enseignement présentiel. Notre approche unique permet aux apprenants de bénéficier d\'une formation complète et personnalisée.',
+            placeholder: 'Contenu principal de la section concept'
+          },
+          {
+            name: 'conceptFeatures',
+            label: 'Fonctionnalités du concept',
+            type: 'textarea',
+            value: existingContent.conceptFeatures || '• Formation en ligne flexible\n• Sessions en présentiel\n• Suivi personnalisé\n• Certificats reconnus',
+            placeholder: 'Fonctionnalités du concept (une par ligne)'
+          }
+        ]
       }
     ];
 
@@ -396,12 +430,6 @@ export default function ContentManagement() {
              saveStatus === 'error' ? '❌ Erreur' : '💾 Sauvegarder'}
           </button>
           
-          <button
-            onClick={handlePreview}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-          >
-            👁️ Aperçu
-          </button>
         </div>
 
         {/* Content Sections */}
