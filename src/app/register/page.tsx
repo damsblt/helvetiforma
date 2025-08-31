@@ -80,7 +80,7 @@ export default function RegisterPage() {
             Créer votre compte
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Rejoignez Helvetiforma pour accéder à nos formations
+            Rejoignez HelvetiForma pour accéder à nos formations
           </p>
         </div>
         

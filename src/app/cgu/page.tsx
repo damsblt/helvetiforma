@@ -20,13 +20,13 @@ export default function CGUPage() {
           <div className="prose prose-lg max-w-none">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">1. Acceptation des conditions</h2>
             <p className="text-gray-700 mb-6">
-              En accédant et en utilisant la plateforme Helvetiforma, vous acceptez d'être lié par ces conditions générales d'utilisation. 
+              En accédant et en utilisant la plateforme HelvetiForma, vous acceptez d'être lié par ces conditions générales d'utilisation. 
               Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.
             </p>
 
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">2. Description du service</h2>
             <p className="text-gray-700 mb-6">
-              Helvetiforma est une plateforme de formation professionnelle qui propose des cours en ligne et en présentiel. 
+              HelvetiForma est une plateforme de formation professionnelle qui propose des cours en ligne et en présentiel. 
               Nos services incluent l'accès à du contenu éducatif, des modules de formation et un accompagnement personnalisé.
             </p>
 
@@ -50,7 +50,7 @@ export default function CGUPage() {
 
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">6. Limitation de responsabilité</h2>
             <p className="text-gray-700 mb-6">
-              Helvetiforma s'efforce de fournir des informations exactes et à jour, mais ne garantit pas l'exactitude, 
+              HelvetiForma s'efforce de fournir des informations exactes et à jour, mais ne garantit pas l'exactitude, 
               l'exhaustivité ou l'adéquation du contenu. Nous ne sommes pas responsables des dommages indirects ou consécutifs.
             </p>
 
@@ -63,7 +63,7 @@ export default function CGUPage() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">8. Contact</h2>
             <p className="text-gray-700 mb-6">
               Pour toute question concernant ces conditions, vous pouvez nous contacter à l'adresse suivante : 
-              <a href="mailto:contact@helvetiforma.ch" className="text-blue-600 hover:text-blue-700">contact@helvetiforma.ch</a>
+              <a href="mailto:info@helvetiforma.ch" className="text-blue-600 hover:text-blue-700">info@helvetiforma.ch</a>
             </p>
           </div>
         </div>

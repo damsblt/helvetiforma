@@ -225,10 +225,10 @@ function CheckoutContent() {
               const emailData = {
                 to: formData.email,
                 from: 'noreply@helvetiforma.com',
-                subject: 'Configurez votre mot de passe - Helvetiforma',
+                subject: 'Configurez votre mot de passe - HelvetiForma',
                 html: `
                   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #2563eb; margin-bottom: 20px;">Bienvenue chez Helvetiforma!</h2>
+                    <h2 style="color: #2563eb; margin-bottom: 20px;">Bienvenue chez HelvetiForma!</h2>
                     
                     <p>Bonjour ${formData.firstName},</p>
                     
@@ -253,7 +253,7 @@ function CheckoutContent() {
                   </div>
                 `,
                 text: `
-                  Bienvenue chez Helvetiforma!
+                  Bienvenue chez HelvetiForma!
                   
                   Bonjour ${formData.firstName},
                   

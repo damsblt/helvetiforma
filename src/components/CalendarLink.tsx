@@ -19,11 +19,11 @@ const CalendarLink: React.FC<CalendarLinkProps> = ({
   const getThemeColor = (theme: string) => {
     switch (theme) {
       case 'Salaire':
-        return 'bg-green-600 hover:bg-green-700 text-white';
+        return 'bg-blue-600 hover:bg-blue-700 text-white';
       case 'Assurances sociales':
-        return 'bg-purple-600 hover:bg-purple-700 text-white';
+        return 'bg-green-600 hover:bg-green-700 text-white';
       case 'Impôt à la source':
-        return 'bg-orange-600 hover:bg-orange-700 text-white';
+        return 'bg-purple-600 hover:bg-purple-700 text-white';
       default:
         return 'bg-blue-600 hover:bg-blue-700 text-white';
     }
@@ -75,7 +75,7 @@ const CalendarLink: React.FC<CalendarLinkProps> = ({
     return (
       <Link
         href={`/calendar?category=${encodeURIComponent(theme)}`}
-        className={`inline-flex items-center justify-center w-10 h-10 rounded-full ${getThemeColor(theme)} transition-colors ${className}`}
+        className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-colors ${className || getThemeColor(theme)}`}
         title={getThemeLabel(theme)}
       >
         {getThemeIcon(theme)}
@@ -99,10 +99,10 @@ const CalendarLink: React.FC<CalendarLinkProps> = ({
   return (
     <Link
       href={`/calendar?category=${encodeURIComponent(theme)}`}
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${getThemeColor(theme)} ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${className || getThemeColor(theme)}`}
     >
       {getThemeIcon(theme)}
-      {children || `Voir le calendrier ${theme}`}
+      {children || getThemeLabel(theme)}
     </Link>
   );
 };

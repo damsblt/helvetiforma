@@ -171,16 +171,29 @@ export default function ChargesSocialesFormationPage() {
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
             {/* CTA Card */}
-            <div className="bg-green-600 rounded-2xl p-6 text-white text-center">
-              <h3 className="text-xl font-bold mb-4">Prêt à Commencer ?</h3>
-              <p className="text-green-100 mb-6">
-                Inscrivez-vous à cette formation et maîtrisez les charges sociales.
-              </p>
+            <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-8 text-white text-center shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Prêt à Commencer ?</h3>
+                <p className="text-green-100 text-lg leading-relaxed">
+                  Inscrivez-vous à cette formation et maîtrisez les charges sociales.
+                </p>
+              </div>
+              
               <CalendarLink
                 theme="Assurances sociales"
-                className="block w-full bg-white py-3 px-6 rounded-lg font-medium hover:bg-green-600 transition-colors"
+                className="group relative inline-flex items-center justify-center w-full bg-white text-green-600 py-4 px-8 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:bg-green-600 hover:text-white border-2 border-white hover:border-white"
               >
-                <span className="text-green-600 hover:text-white">Voir les dates</span>
+                <span className="flex items-center space-x-2">
+                  <span>Voir les dates</span>
+                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
               </CalendarLink>
             </div>
 

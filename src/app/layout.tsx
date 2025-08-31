@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 import HeaderButtons from '../components/HeaderButtons';
 
 export const metadata: Metadata = {
-  title: 'Helvetiforma - Formations professionnelles',
+  title: 'HelvetiForma - Formations professionnelles',
   description: 'Plateforme de formations professionnelles en Suisse',
   icons: {
     icon: '/favicon.svg',
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Logo/Brand */}
             <div className="flex items-center">
               <Link href="/" className="text-xl font-bold text-blue-700 mr-6 lg:mr-8">
-                Helvetiforma
+                HelvetiForma
               </Link>
               <Navigation />
             </div>
@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="bg-green-100 py-6 mt-auto">
           <div className="container mx-auto flex flex-col md:flex-row items-center justify-between px-4">
             <div className="text-gray-600 text-sm text-center md:text-left">
-              &copy; {new Date().getFullYear()} Helvetiforma. Tous droits réservés.
+              &copy; {new Date().getFullYear()} HelvetiForma. Tous droits réservés.
             </div>
             <div className="flex gap-4 mt-2 md:mt-0 text-sm">
               <Link href="/cgu" className="text-gray-600 hover:text-blue-700">CGU</Link>

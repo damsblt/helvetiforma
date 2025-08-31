@@ -11,7 +11,7 @@ export default function ReseauxSociauxPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Réseaux Sociaux</h1>
           <p className="text-xl text-gray-600">
-            Suivez-nous et restez connectés avec Helvetiforma
+            Suivez-nous et restez connectés avec HelvetiForma
           </p>
         </div>
 

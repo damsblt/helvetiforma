@@ -181,16 +181,29 @@ export default function ImpotALaSourceFormationPage() {
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
             {/* CTA Card */}
-            <div className="bg-purple-600 rounded-2xl p-6 text-white text-center">
-              <h3 className="text-xl font-bold mb-4">Prêt à Commencer ?</h3>
-              <p className="text-purple-100 mb-6">
-                Inscrivez-vous à cette formation spécialisée et maîtrisez l'impôt à la source.
-              </p>
+            <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-8 text-white text-center shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Prêt à Commencer ?</h3>
+                <p className="text-purple-100 text-lg leading-relaxed">
+                  Inscrivez-vous à cette formation spécialisée et maîtrisez l'impôt à la source.
+                </p>
+              </div>
+              
               <CalendarLink
                 theme="Impôt à la source"
-                className="block w-full bg-white py-3 px-6 rounded-lg font-medium hover:bg-purple-600 transition-colors"
+                className="group relative inline-flex items-center justify-center w-full bg-white text-purple-600 py-4 px-8 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:bg-purple-600 hover:text-white border-2 border-white hover:border-white"
               >
-                <span className="text-purple-600 hover:text-white">Voir les dates</span>
+                <span className="flex items-center space-x-2">
+                  <span>Voir les dates</span>
+                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
               </CalendarLink>
             </div>
 

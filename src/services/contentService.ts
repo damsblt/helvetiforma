@@ -53,14 +53,14 @@ export interface WebsiteContent {
 
 // Default content values
 const defaultContent: WebsiteContent = {
-  heroTitle: 'Bienvenue sur <span class="text-blue-400">Helvetiforma</span>',
+  heroTitle: 'Bienvenue sur <span class="text-blue-400">HelvetiForma</span>',
   heroDescription: 'Votre plateforme de formation professionnelle en Suisse. Découvrez nos formations spécialisées et développez vos compétences avec une approche moderne et flexible.',
   
   aboutTitle: 'Une approche moderne de la formation',
-  aboutContent: 'Helvetiforma révolutionne l\'apprentissage professionnel en combinant la flexibilité du digital avec l\'efficacité de l\'enseignement traditionnel.',
+  aboutContent: 'HelvetiForma révolutionne l\'apprentissage professionnel en combinant la flexibilité du digital avec l\'efficacité de l\'enseignement traditionnel.',
   aboutSubContent: 'Notre plateforme vous offre un accès à des ressources de qualité, des modules interactifs et un suivi personnalisé pour maximiser vos chances de réussite.',
   
-  featuresTitle: 'Pourquoi choisir Helvetiforma ?',
+  featuresTitle: 'Pourquoi choisir HelvetiForma ?',
   feature1Title: 'Formations Certifiantes',
   feature1Description: 'Nos programmes délivrent des certificats reconnus qui attestent de vos compétences acquises et valorisent votre CV.',
   feature2Title: 'Apprentissage Flexible',
@@ -76,7 +76,7 @@ const defaultContent: WebsiteContent = {
   statsSupport: '24/7',
   
   ctaTitle: 'Prêt à développer vos compétences ?',
-  ctaSubtitle: 'Rejoignez des centaines de professionnels qui ont déjà choisi Helvetiforma pour leur formation continue.',
+  ctaSubtitle: 'Rejoignez des centaines de professionnels qui ont déjà choisi HelvetiForma pour leur formation continue.',
   ctaButton1: 'Consulter nos ressources',
   ctaButton2: 'Nous contacter',
   
@@ -92,7 +92,7 @@ const defaultContent: WebsiteContent = {
   
   conceptTitle: 'Notre Concept',
   conceptSubtitle: 'Une approche innovante pour votre formation',
-  conceptContent: 'Helvetiforma est une plateforme de formation en ligne qui vous offre la liberté d\'apprendre à votre rythme, où et quand vous voulez. Nous vous aidons à acquérir les compétences nécessaires pour réussir dans votre carrière.',
+  conceptContent: 'HelvetiForma est une plateforme de formation en ligne qui vous offre la liberté d\'apprendre à votre rythme, où et quand vous voulez. Nous vous aidons à acquérir les compétences nécessaires pour réussir dans votre carrière.',
   conceptFeatures: 'Nos avantages : Flexibilité, Accessibilité, Suivi Personnalisé, Support 24/7'
 };
 

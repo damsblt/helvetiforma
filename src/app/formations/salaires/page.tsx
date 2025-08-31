@@ -146,16 +146,29 @@ export default function SalairesFormationPage() {
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
             {/* CTA Card */}
-            <div className="bg-blue-600 rounded-2xl p-6 text-white text-center">
-              <h3 className="text-xl font-bold mb-4">Prêt à Commencer ?</h3>
-              <p className="text-blue-100 mb-6">
-                Inscrivez-vous à cette formation et développez vos compétences en gestion des salaires.
-              </p>
+            <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-8 text-white text-center shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 5.477 5.754 5 7.5 5s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Prêt à Commencer ?</h3>
+                <p className="text-blue-100 text-lg leading-relaxed">
+                  Inscrivez-vous à cette formation et développez vos compétences en gestion des salaires.
+                </p>
+              </div>
+              
               <CalendarLink
                 theme="Salaire"
-                className="block w-full bg-white py-3 px-6 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                className="group relative inline-flex items-center justify-center w-full bg-white text-blue-600 py-4 px-8 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:bg-blue-600 hover:text-white border-2 border-white hover:border-white"
               >
-                <span className="text-blue-600 hover:text-white">Voir les dates</span>
+                <span className="flex items-center space-x-2">
+                  <span>Voir les dates</span>
+                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
               </CalendarLink>
             </div>
 
@@ -209,9 +222,14 @@ export default function SalairesFormationPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <CalendarLink
                 theme="Salaire"
-                className="bg-white px-8 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                className="group relative inline-flex items-center justify-center bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:bg-blue-600 hover:text-white border-2 border-white hover:border-white"
               >
-                <span className="text-blue-600 hover:text-white">Voir les dates</span>
+                <span className="flex items-center space-x-2">
+                  <span>Voir les dates</span>
+                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
               </CalendarLink>
               <Link
                 href="/formations"

@@ -9,7 +9,7 @@ export const emailjsConfig = {
 
 // EmailJS Template Variables
 export const emailjsTemplateParams = {
-  to_name: 'Helvetiforma Team',
+  to_name: 'HelvetiForma Team',
   from_name: '', // Will be filled by form data
   from_email: '', // Will be filled by form data
   subject: '', // Will be filled by form data
