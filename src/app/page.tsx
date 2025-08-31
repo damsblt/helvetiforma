@@ -1,20 +1,36 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getWordPressPageBySlug } from '@/lib/wordpress';
+import { contentService, WebsiteContent } from '@/services/contentService';
 
-export default async function Home() {
-  // Fetch the Accueil page content from WordPress
-  const homePage = await getWordPressPageBySlug('accueil');
-  
-  // Fallback content if WordPress content is not available
-  const heroTitle = homePage?.content?.rendered 
-    ? extractHeroTitle(homePage.content.rendered)
-    : 'Bienvenue sur <span class="text-blue-400">Helvetiforma</span>';
+export default function Home() {
+  const [content, setContent] = useState<WebsiteContent | null>(null);
+
+  useEffect(() => {
+    // Load content from the content service
+    setContent(contentService.getContent());
     
-  const heroDescription = homePage?.content?.rendered
-    ? extractHeroDescription(homePage.content.rendered)
-    : 'Votre plateforme de formation professionnelle en Suisse. Découvrez nos formations spécialisées et développez vos compétences avec une approche moderne et flexible.';
+    // Listen for content changes (when admin updates content)
+    const handleStorageChange = () => {
+      setContent(contentService.getContent());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  if (!content) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement du contenu...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -37,10 +53,10 @@ export default async function Home() {
         <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
           <h1 
             className="text-5xl md:text-6xl font-bold mb-6 leading-tight"
-            dangerouslySetInnerHTML={{ __html: heroTitle }}
+            dangerouslySetInnerHTML={{ __html: content.heroTitle }}
           />
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed">
-            {heroDescription}
+            {content.heroDescription}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -66,45 +82,82 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* WordPress Content Section */}
-      {homePage?.content?.rendered ? (
-        <div className="py-20 bg-white">
-          <div className="container mx-auto px-4">
-            <div 
-              className="prose prose-lg max-w-none mx-auto"
-              dangerouslySetInnerHTML={{ __html: homePage.content.rendered }}
-            />
-          </div>
-        </div>
-      ) : (
-        /* Helpful message when WordPress is empty */
-        <div className="py-20 bg-white">
-          <div className="container mx-auto px-4 text-center">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold text-blue-900 mb-4">
-                Contenu WordPress en attente
+      {/* About Section */}
+      <div className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                {content.aboutTitle}
               </h2>
-              <p className="text-blue-700 mb-4">
-                Pour personnaliser cette page, connectez-vous à WordPress et ajoutez du contenu à la page "Accueil".
+              <p className="text-lg text-gray-600 mb-6">
+                {content.aboutContent}
               </p>
-              <a 
-                href="https://api.helvetiforma.ch/wp-admin/post.php?post=17&action=edit" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              <p className="text-gray-600 mb-8">
+                Notre plateforme vous offre un accès à des ressources de qualité, 
+                des modules interactifs et un suivi personnalisé pour maximiser 
+                vos chances de réussite.
+              </p>
+              <Link
+                href="/concept"
+                className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-lg"
               >
-                Éditer dans WordPress →
-              </a>
+                En savoir plus sur notre approche
+                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+            
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-8">
+              <div className="space-y-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Formations en ligne</h3>
+                    <p className="text-sm text-gray-600">Apprenez à votre rythme</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Sessions en présentiel</h3>
+                    <p className="text-sm text-gray-600">Validation des acquis</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Suivi personnalisé</h3>
+                    <p className="text-sm text-gray-600">Accompagnement sur mesure</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Features Section with SVG Icons */}
       <div className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-16">
-            Pourquoi choisir Helvetiforma ?
+            {content.featuresTitle}
           </h2>
           
           <div className="grid md:grid-cols-3 gap-12">
@@ -114,10 +167,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Formations Certifiantes</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">{content.feature1Title}</h3>
               <p className="text-gray-600">
-                Nos programmes délivrent des certificats reconnus qui attestent 
-                de vos compétences acquises et valorisent votre CV.
+                {content.feature1Description}
               </p>
             </div>
 
@@ -127,10 +179,9 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Apprentissage Flexible</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">{content.feature2Title}</h3>
               <p className="text-gray-600">
-                Combinez cours en ligne et sessions en présentiel selon vos disponibilités. 
-                Apprenez à votre rythme, où et quand vous voulez.
+                {content.feature2Description}
               </p>
             </div>
 
@@ -140,50 +191,72 @@ export default async function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Support Personnalisé</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">{content.feature3Title}</h3>
               <p className="text-gray-600">
-                Bénéficiez d'un accompagnement sur mesure avec nos formateurs experts 
-                et notre équipe dédiée à votre réussite.
+                {content.feature3Description}
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Stats Section with Gradient Background */}
+      <div className="py-20 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-6">
+            Nos chiffres parlent d'eux-mêmes
+          </h2>
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Une croissance constante et des résultats probants
+          </p>
+          
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="text-center text-white">
+              <div className="text-4xl font-bold mb-2">500+</div>
+              <div className="text-blue-200">Apprenants formés</div>
+            </div>
+            <div className="text-center text-white">
+              <div className="text-4xl font-bold mb-2">50+</div>
+              <div className="text-blue-200">Formations disponibles</div>
+            </div>
+            <div className="text-center text-white">
+              <div className="text-4xl font-bold mb-2">95%</div>
+              <div className="text-blue-200">Taux de satisfaction</div>
+            </div>
+            <div className="text-center text-white">
+              <div className="text-4xl font-bold mb-2">24/7</div>
+              <div className="text-blue-200">Support disponible</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section with Gradient Background */}
+      <div className="py-20 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-6">
+            Prêt à développer vos compétences ?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Rejoignez des centaines de professionnels qui ont déjà choisi 
+            Helvetiforma pour leur formation continue.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/docs"
+              className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-50 transition-all transform hover:scale-105 font-medium text-lg shadow-lg"
+            >
+              Consulter nos ressources
+            </Link>
+            <Link
+              href="/contact"
+              className="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 transition-all transform hover:scale-105 font-medium text-lg shadow-lg"
+            >
+              Nous contacter
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
-
-// Helper functions to extract content from WordPress HTML
-function extractHeroTitle(htmlContent: string): string {
-  // Look for h1 tags or specific content patterns
-  const h1Match = htmlContent.match(/<h1[^>]*>(.*?)<\/h1>/i);
-  if (h1Match) {
-    return h1Match[1];
-  }
-  
-  // Fallback: look for content between specific markers
-  const titleMatch = htmlContent.match(/<!--hero-title-->(.*?)<!--\/hero-title-->/);
-  if (titleMatch) {
-    return titleMatch[1].trim();
-  }
-  
-  // Default fallback
-  return 'Bienvenue sur <span class="text-blue-400">Helvetiforma</span>';
-}
-
-function extractHeroDescription(htmlContent: string): string {
-  // Look for p tags or specific content patterns
-  const pMatch = htmlContent.match(/<p[^>]*>(.*?)<\/p>/i);
-  if (pMatch) {
-    return pMatch[1];
-  }
-  
-  // Fallback: look for content between specific markers
-  const descMatch = htmlContent.match(/<!--hero-description-->(.*?)<!--\/hero-description-->/);
-  if (descMatch) {
-    return descMatch[1].trim();
-  }
-  
-  // Default fallback
-  return 'Votre plateforme de formation professionnelle en Suisse. Découvrez nos formations spécialisées et développez vos compétences avec une approche moderne et flexible.';
 }
