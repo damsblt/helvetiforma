@@ -336,7 +336,11 @@ export default function ContentManagement() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 3000);
+      
+      // Refresh the page after successful save
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error) {
       console.error('Error saving content:', error);
       setSaveStatus('error');

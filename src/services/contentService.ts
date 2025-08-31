@@ -43,6 +43,12 @@ export interface WebsiteContent {
   // Contact Section
   contactTitle: string;
   contactDescription: string;
+  
+  // Concept Section
+  conceptTitle: string;
+  conceptSubtitle: string;
+  conceptContent: string;
+  conceptFeatures: string;
 }
 
 // Default content values
@@ -82,7 +88,12 @@ const defaultContent: WebsiteContent = {
   formationImpotDescription: 'Formation sur l\'impôt à la source en Suisse',
   
   contactTitle: 'Contactez-nous',
-  contactDescription: 'N\'hésitez pas à nous contacter pour plus d\'informations sur nos formations.'
+  contactDescription: 'N\'hésitez pas à nous contacter pour plus d\'informations sur nos formations.',
+  
+  conceptTitle: 'Notre Concept',
+  conceptSubtitle: 'Une approche innovante pour votre formation',
+  conceptContent: 'Helvetiforma est une plateforme de formation en ligne qui vous offre la liberté d\'apprendre à votre rythme, où et quand vous voulez. Nous vous aidons à acquérir les compétences nécessaires pour réussir dans votre carrière.',
+  conceptFeatures: 'Nos avantages : Flexibilité, Accessibilité, Suivi Personnalisé, Support 24/7'
 };
 
 class ContentService {
