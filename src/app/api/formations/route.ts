@@ -5,28 +5,68 @@ const formations = [
   {
     id: 1,
     attributes: {
-      title: "Formation Salaires",
+      Title: "Formation Salaires",
       Theme: "Salaire",
-      description: "Formation complète sur la gestion des salaires",
-      type: "presentiel"
+      Description: "Formation complète sur la gestion des salaires",
+      Type: "Présentiel",
+      difficulty: "Intermédiaire",
+      estimatedDuration: 2,
+      sessions: [
+        {
+          id: 1,
+          attributes: {
+            date: "2025-09-01T10:30:00.000Z",
+            formation: 1
+          }
+        },
+        {
+          id: 2,
+          attributes: {
+            date: "2025-09-03T14:00:00.000Z",
+            formation: 1
+          }
+        }
+      ]
     }
   },
   {
     id: 2,
     attributes: {
-      title: "Charges Sociales",
+      Title: "Charges Sociales",
       Theme: "Assurances sociales",
-      description: "Formation sur les charges sociales et assurances",
-      type: "presentiel"
+      Description: "Formation sur les charges sociales et assurances",
+      Type: "Présentiel",
+      difficulty: "Avancé",
+      estimatedDuration: 3,
+      sessions: [
+        {
+          id: 3,
+          attributes: {
+            date: "2025-09-02T09:00:00.000Z",
+            formation: 2
+          }
+        }
+      ]
     }
   },
   {
     id: 3,
     attributes: {
-      title: "Impôt à la Source",
+      Title: "Impôt à la Source",
       Theme: "Impôt à la source",
-      description: "Formation sur l'impôt à la source",
-      type: "ligne"
+      Description: "Formation sur l'impôt à la source",
+      Type: "En ligne",
+      difficulty: "Débutant",
+      estimatedDuration: 2,
+      sessions: [
+        {
+          id: 4,
+          attributes: {
+            date: "2025-09-04T11:00:00.000Z",
+            formation: 3
+          }
+        }
+      ]
     }
   }
 ];
