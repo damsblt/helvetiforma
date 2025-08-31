@@ -73,13 +73,13 @@ export default function HeaderButtons() {
         <div className="flex items-center space-x-2 lg:space-x-4">
           <Link
             href="/calendar"
-            className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+            className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
           >
             Calendrier
           </Link>
           <Link
             href="/docs"
-            className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+            className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
           >
             Coin des Docs
           </Link>
@@ -106,13 +106,13 @@ export default function HeaderButtons() {
         <div className="flex items-center space-x-2 lg:space-x-4">
           <Link
             href="/calendar"
-            className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+            className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
           >
             Calendrier
           </Link>
           <Link
             href="/docs"
-            className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+            className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
           >
             Coin des Docs
           </Link>
@@ -141,13 +141,13 @@ export default function HeaderButtons() {
     <div className="flex items-center space-x-2 lg:space-x-4">
       <Link
         href="/calendar"
-        className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+        className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
       >
         Calendrier
       </Link>
       <Link
         href="/docs"
-        className="px-3 py-2 text-gray-700 hover:text-blue-700 transition text-sm font-medium"
+        className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
       >
         Coin des Docs
       </Link>
