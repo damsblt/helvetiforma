@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
+// Force dynamic rendering for admin pages
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 
 interface User {
@@ -42,17 +45,68 @@ export default function AdminUsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('http://localhost:1337/api/user-accounts?populate[registrations][populate][formation][fields]=Title&sort=createdAt:DESC');
+      // For now, use sample data since we don't have a users API yet
+      // In the future, you can create /api/users endpoint
+      const sampleUsers: User[] = [
+        {
+          id: 1,
+          firstName: 'Marie',
+          lastName: 'Dupont',
+          email: 'marie.dupont@example.com',
+          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+          registrations: [
+            {
+              id: 1,
+              status: 'confirmed',
+              formation: { Title: 'Formation Salaires' },
+              createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+            }
+          ]
+        },
+        {
+          id: 2,
+          firstName: 'Pierre',
+          lastName: 'Martin',
+          email: 'pierre.martin@example.com',
+          createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), // 14 days ago
+          registrations: [
+            {
+              id: 2,
+              status: 'pending',
+              formation: { Title: 'Charges Sociales' },
+              createdAt: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              id: 3,
+              status: 'confirmed',
+              formation: { Title: 'Impôt à la Source' },
+              createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString()
+            }
+          ]
+        },
+        {
+          id: 3,
+          firstName: 'Sophie',
+          lastName: 'Bernard',
+          email: 'sophie.bernard@example.com',
+          createdAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(), // 21 days ago
+          registrations: [
+            {
+              id: 4,
+              status: 'confirmed',
+              formation: { Title: 'Formation Salaires' },
+              createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+            }
+          ]
+        }
+      ];
       
-      if (res.ok) {
-        const data = await res.json();
-        setUsers(data.data || []);
-        setFilteredUsers(data.data || []);
-      } else {
-        console.error('Failed to fetch users:', res.status);
-      }
+      setUsers(sampleUsers);
+      setFilteredUsers(sampleUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error setting up sample users:', error);
+      setUsers([]);
+      setFilteredUsers([]);
     } finally {
       setIsLoading(false);
     }

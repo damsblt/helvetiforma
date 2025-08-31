@@ -177,15 +177,15 @@ export default function CalendarPage() {
             <div className="text-sm text-gray-600">Total Sessions</div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-2xl font-bold text-green-600">{stats['Salaire']}</div>
+            <div className="text-2xl font-bold text-blue-600">{stats['Salaire']}</div>
             <div className="text-sm text-gray-600">Salaires</div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-2xl font-bold text-purple-600">{stats['Assurances sociales']}</div>
+            <div className="text-2xl font-bold text-green-600">{stats['Assurances sociales']}</div>
             <div className="text-sm text-gray-600">Charges Sociales</div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-2xl font-bold text-orange-600">{stats['Impôt à la source']}</div>
+            <div className="text-2xl font-bold text-purple-600">{stats['Impôt à la source']}</div>
             <div className="text-sm text-gray-600">Impôt à la Source</div>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function CalendarPage() {
                 onClick={() => handleCategoryChange('Salaire')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === 'Salaire'
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -218,7 +218,7 @@ export default function CalendarPage() {
                 onClick={() => handleCategoryChange('Assurances sociales')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === 'Assurances sociales'
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-green-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -228,7 +228,7 @@ export default function CalendarPage() {
                 onClick={() => handleCategoryChange('Impôt à la source')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === 'Impôt à la source'
-                    ? 'bg-orange-600 text-white'
+                    ? 'bg-purple-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -283,82 +283,15 @@ export default function CalendarPage() {
           </div>
         )}
 
-        {/* Results Count */}
-        <div className="mb-4 text-sm text-gray-600">
-          {filteredFormations.length === 0 ? (
-            <p>Aucune formation trouvée avec les filtres actuels.</p>
-          ) : (
-            <p>
-              Affichage de {filteredFormations.length} formation{filteredFormations.length > 1 ? 's' : ''} 
-              {selectedCategory !== 'all' && ` dans la catégorie "${selectedCategory}"`}
-              {searchTerm && ` correspondant à "${searchTerm}"`}
-            </p>
-          )}
-        </div>
 
-        {/* View Selector */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          <button
-            onClick={() => handleViewChange('dayGridMonth')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedView === 'dayGridMonth'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-            }`}
-          >
-            Vue Mensuelle
-          </button>
-          <button
-            onClick={() => handleViewChange('timeGridWeek')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedView === 'timeGridWeek'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-            }`}
-          >
-            Vue Hebdomadaire
-          </button>
-          <button
-            onClick={() => handleViewChange('timeGridDay')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedView === 'timeGridDay'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-            }`}
-          >
-            Vue Journalière
-          </button>
-          <button
-            onClick={() => handleViewChange('listWeek')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedView === 'listWeek'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-            }`}
-          >
-            Vue Liste
-          </button>
-        </div>
-
-        {/* Legend */}
-        <div className="mb-6 flex flex-wrap gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            <span>Formations en Présentiel</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-500 rounded"></div>
-            <span>Formations en Ligne</span>
-          </div>
-        </div>
 
         {/* Calendar */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <FormationCalendar
             formations={filteredFormations}
+            view={selectedView}
             onEventClick={handleEventClick}
             onDateSelect={handleDateSelect}
-            view={selectedView}
             height="700px"
           />
         </div>

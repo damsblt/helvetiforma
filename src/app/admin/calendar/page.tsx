@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
+// Force dynamic rendering for admin pages
+export const dynamic = 'force-dynamic';
 import AdminCalendar from '@/components/AdminCalendar';
 import { EventClickArg, DateSelectArg, EventChangeArg, EventDropArg } from '@fullcalendar/core';
 
@@ -217,15 +220,15 @@ export default function AdminCalendarPage() {
             <div className="text-sm text-gray-600">Total Sessions</div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-2xl font-bold text-green-600">{stats['Salaire']}</div>
+            <div className="text-2xl font-bold text-blue-600">{stats['Salaire']}</div>
             <div className="text-sm text-gray-600">Salaires</div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-2xl font-bold text-purple-600">{stats['Assurances sociales']}</div>
+            <div className="text-2xl font-bold text-green-600">{stats['Assurances sociales']}</div>
             <div className="text-sm text-gray-600">Charges Sociales</div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-2xl font-bold text-orange-600">{stats['Impôt à la source']}</div>
+            <div className="text-2xl font-bold text-purple-600">{stats['Impôt à la source']}</div>
             <div className="text-sm text-gray-600">Impôt à la Source</div>
           </div>
         </div>
@@ -248,7 +251,7 @@ export default function AdminCalendarPage() {
                 onClick={() => handleCategoryChange('Salaire')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === 'Salaire'
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -258,7 +261,7 @@ export default function AdminCalendarPage() {
                 onClick={() => handleCategoryChange('Assurances sociales')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === 'Assurances sociales'
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-green-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -268,7 +271,7 @@ export default function AdminCalendarPage() {
                 onClick={() => handleCategoryChange('Impôt à la source')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === 'Impôt à la source'
-                    ? 'bg-orange-600 text-white'
+                    ? 'bg-purple-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -457,7 +460,10 @@ export default function AdminCalendarPage() {
                     <option value="">Sélectionnez une formation</option>
                     {formations.map((formation) => (
                       <option key={formation.id} value={formation.id}>
-                        {formation.attributes.Title} ({formation.attributes.Theme})
+                        {formation.attributes.Theme === 'Salaire' ? 'Salaires' : 
+                         formation.attributes.Theme === 'Assurances sociales' ? 'Charges sociales' :
+                         formation.attributes.Theme === 'Impôt à la source' ? 'Impôt à la source' :
+                         formation.attributes.Title}
                       </option>
                     ))}
                   </select>

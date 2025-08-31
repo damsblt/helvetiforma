@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
+// Force dynamic rendering for admin pages
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 
 interface DashboardStats {
@@ -32,41 +35,51 @@ export default function AdminDashboardPage() {
 
   const fetchDashboardStats = async () => {
     try {
-      // Fetch formations count
-      const formationsRes = await fetch('http://localhost:1337/api/formations');
+      // Fetch formations count from our Next.js API
+      const formationsRes = await fetch('/api/formations');
       const formationsData = await formationsRes.json();
       
-      // Fetch registrations with status counts
-      const registrationsRes = await fetch('http://localhost:1337/api/registrations?populate=formation,userAccount');
-      const registrationsData = await registrationsRes.json();
-      
-      // Fetch users count
-      const usersRes = await fetch('http://localhost:1337/api/user-accounts');
-      const usersData = await usersRes.json();
-
-      const registrations = registrationsData.data || [];
-      const pendingCount = registrations.filter((r: any) => r.status === 'pending').length;
-      const confirmedCount = registrations.filter((r: any) => r.status === 'confirmed').length;
-
-      // Generate recent activity from registrations
-      const recentActivity = registrations
-        .slice(0, 5)
-        .map((registration: any) => ({
-          id: registration.id.toString(),
-          type: 'registration',
-          message: `Nouvelle inscription à "${registration.formation?.Title || 'Formation inconnue'}"`,
-          timestamp: registration.createdAt
-        }));
+      // For now, use mock data for registrations and users since we don't have those APIs yet
+      // In the future, you can create /api/registrations and /api/users endpoints
+      const mockRegistrations = [];
+      const mockUsers = [];
 
       setStats({
         totalFormations: formationsData.data?.length || 0,
-        pendingRegistrations: pendingCount,
-        confirmedRegistrations: confirmedCount,
-        totalUsers: usersData.data?.length || 0,
-        recentActivity
+        pendingRegistrations: 3, // Sample data for development
+        confirmedRegistrations: 12, // Sample data for development
+        totalUsers: 8, // Sample data for development
+        recentActivity: [
+          {
+            id: '1',
+            type: 'registration',
+            message: 'Nouvelle inscription à "Formation Salaires"',
+            timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString() // 30 minutes ago
+          },
+          {
+            id: '2',
+            type: 'registration',
+            message: 'Nouvelle inscription à "Charges Sociales"',
+            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2 hours ago
+          },
+          {
+            id: '3',
+            type: 'session',
+            message: 'Session créée pour "Impôt à la Source"',
+            timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() // 4 hours ago
+          }
+        ]
       });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
+      // Set default stats on error
+      setStats({
+        totalFormations: 0,
+        pendingRegistrations: 0,
+        confirmedRegistrations: 0,
+        totalUsers: 0,
+        recentActivity: []
+      });
     } finally {
       setIsLoading(false);
     }

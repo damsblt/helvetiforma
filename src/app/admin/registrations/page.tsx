@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
+// Force dynamic rendering for admin pages
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 
 interface Registration {
@@ -38,21 +41,42 @@ export default function AdminRegistrationsPage() {
 
   const fetchRegistrations = async () => {
     try {
-      const res = await fetch('http://localhost:1337/api/registrations?populate[formation][fields]=Title&populate[userAccount][fields]=email,firstName,lastName&sort=createdAt:DESC', {
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/json',
+      // For now, use sample data since we don't have a registrations API yet
+      // In the future, you can create /api/registrations endpoint
+      const sampleRegistrations = [
+        {
+          id: 1,
+          attributes: {
+            status: 'pending',
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+            formation: { Title: 'Formation Salaires' },
+            userAccount: { email: 'marie.dupont@example.com', firstName: 'Marie', lastName: 'Dupont' }
+          }
         },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setRegistrations(data.data || []);
-      } else {
-        console.error('Failed to fetch registrations:', res.status);
-      }
+        {
+          id: 2,
+          attributes: {
+            status: 'confirmed',
+            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+            formation: { Title: 'Charges Sociales' },
+            userAccount: { email: 'pierre.martin@example.com', firstName: 'Pierre', lastName: 'Martin' }
+          }
+        },
+        {
+          id: 3,
+          attributes: {
+            status: 'pending',
+            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+            formation: { Title: 'Impôt à la Source' },
+            userAccount: { email: 'sophie.bernard@example.com', firstName: 'Sophie', lastName: 'Bernard' }
+          }
+        }
+      ];
+      
+      setRegistrations(sampleRegistrations);
     } catch (error) {
-      console.error('Error fetching registrations:', error);
+      console.error('Error setting up sample registrations:', error);
+      setRegistrations([]);
     } finally {
       setIsLoading(false);
     }
@@ -60,19 +84,15 @@ export default function AdminRegistrationsPage() {
 
   const approveRegistration = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:1337/api/registrations/${id}/approve`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (res.ok) {
-        alert('Registration approved successfully!');
-        fetchRegistrations(); // Refresh the list
-      } else {
-        alert('Failed to approve registration');
-      }
+      // For now, simulate approval with sample data
+      // In the future, you can create /api/registrations/[id]/approve endpoint
+      alert('Registration approved successfully! (Sample data)');
+      // Update the local state to show the change
+      setRegistrations(prev => prev.map(reg => 
+        reg.id === id 
+          ? { ...reg, attributes: { ...reg.attributes, status: 'confirmed' } }
+          : reg
+      ));
     } catch (error) {
       console.error('Error approving registration:', error);
       alert('Error approving registration');
@@ -81,23 +101,18 @@ export default function AdminRegistrationsPage() {
 
   const rejectRegistration = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:1337/api/registrations/${id}/reject`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reason: rejectReason }),
-      });
-
-      if (res.ok) {
-        alert('Registration rejected successfully!');
-        setShowRejectModal(false);
-        setRejectReason('');
-        setSelectedRegistration(null);
-        fetchRegistrations(); // Refresh the list
-      } else {
-        alert('Failed to reject registration');
-      }
+      // For now, simulate rejection with sample data
+      // In the future, you can create /api/registrations/[id]/reject endpoint
+      alert('Registration rejected successfully! (Sample data)');
+      setShowRejectModal(false);
+      setRejectReason('');
+      setSelectedRegistration(null);
+      // Update the local state to show the change
+      setRegistrations(prev => prev.map(reg => 
+        reg.id === id 
+          ? { ...reg, attributes: { ...reg.attributes, status: 'rejected' } }
+          : reg
+      ));
     } catch (error) {
       console.error('Error rejecting registration:', error);
       alert('Error rejecting registration');
@@ -108,24 +123,20 @@ export default function AdminRegistrationsPage() {
     if (selectedRegistrations.length === 0) return;
 
     try {
-      const promises = selectedRegistrations.map(id => {
-        const endpoint = bulkAction === 'approve' ? 'approve' : 'reject';
-        const body = bulkAction === 'reject' ? JSON.stringify({ reason: 'Bulk action' }) : undefined;
-        
-        return fetch(`http://localhost:1337/api/registrations/${id}/${endpoint}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body
-        });
-      });
-
-      await Promise.all(promises);
-      alert(`${bulkAction === 'approve' ? 'Approuvées' : 'Rejetées'} ${selectedRegistrations.length} inscription(s) avec succès!`);
+      // For now, simulate bulk actions with sample data
+      // In the future, you can create proper bulk action endpoints
+      const newStatus = bulkAction === 'approve' ? 'confirmed' : 'rejected';
+      
+      // Update the local state to show the changes
+      setRegistrations(prev => prev.map(reg => 
+        selectedRegistrations.includes(reg.id)
+          ? { ...reg, attributes: { ...reg.attributes, status: newStatus } }
+          : reg
+      ));
+      
+      alert(`${bulkAction === 'approve' ? 'Approuvées' : 'Rejetées'} ${selectedRegistrations.length} inscription(s) avec succès! (Sample data)`);
       setShowBulkModal(false);
       setSelectedRegistrations([]);
-      fetchRegistrations();
     } catch (error) {
       console.error('Error performing bulk action:', error);
       alert('Erreur lors de l\'action en masse');

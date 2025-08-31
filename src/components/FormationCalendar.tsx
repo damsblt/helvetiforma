@@ -66,11 +66,11 @@ const FormationCalendar: React.FC<FormationCalendarProps> = ({
               const getCategoryColor = (theme: string) => {
                 switch (theme) {
                   case 'Salaire':
-                    return { bg: '#10B981', border: '#059669' }; // Green
+                    return { bg: '#2563EB', border: '#1D4ED8' }; // Blue
                   case 'Assurances sociales':
-                    return { bg: '#8B5CF6', border: '#7C3AED' }; // Purple
+                    return { bg: '#16A34A', border: '#15803D' }; // Green
                   case 'Impôt à la source':
-                    return { bg: '#F59E0B', border: '#D97706' }; // Orange
+                    return { bg: '#9333EA', border: '#7C3AED' }; // Purple
                   default:
                     return { bg: '#6B7280', border: '#4B5563' }; // Gray
                 }

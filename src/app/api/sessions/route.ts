@@ -1,26 +1,86 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Try to use Supabase, fallback to local storage
+// Enhanced storage detection with environment awareness
 async function getStorage() {
   try {
+    // Check if we're in development/localhost
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const isLocalhost = process.env.NEXT_PUBLIC_USE_LOCAL_STORAGE === 'true';
+    
+    // Try to use Supabase first (production priority)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
     if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      return { type: 'supabase' as const, client: supabase };
+      try {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        // Test the connection
+        const { data, error } = await supabase.from('sessions').select('count').limit(1);
+        if (!error) {
+          console.log('Using Supabase storage (production)');
+          return { type: 'supabase' as const, client: supabase };
+        }
+      } catch (supabaseError) {
+        console.log('Supabase connection test failed:', supabaseError);
+      }
     }
-  } catch {
-    // Fallback to local storage
+    
+    // Use local storage for development if explicitly requested
+    if (isDevelopment && isLocalhost) {
+      console.log('Using local storage for development');
+      return { type: 'local' as const, client: null };
+    }
+    
+    // In production, if Supabase fails, we should fail gracefully
+    if (!isDevelopment) {
+      console.error('CRITICAL: Supabase connection failed in production');
+      throw new Error('Database connection failed in production');
+    }
+    
+  } catch (error) {
+    console.error('Storage detection error:', error);
   }
-  return { type: 'local' as const, client: null };
+  
+  // Fallback to local storage only in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Using local storage fallback (development only)');
+    return { type: 'local' as const, client: null };
+  }
+  
+  // In production, we must have Supabase
+  throw new Error('Supabase connection required for production');
 }
 
-// Local fallback storage - use object to avoid ESLint issues
+// Enhanced local storage with persistence across API calls
 const localStorage = {
-  sessions: [] as any[]
+  sessions: [] as any[],
+  
+  // Add some sample sessions for development
+  init() {
+    if (this.sessions.length === 0) {
+      // Add sample sessions for localhost development
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      this.sessions = [
+        {
+          id: 1,
+          date: tomorrow.toISOString(),
+          formation: 1,
+          duration: 2,
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString()
+        }
+      ];
+      console.log('Initialized local storage with sample session');
+    }
+  }
 };
+
+// Initialize local storage
+localStorage.init();
 
 // Save session
 async function saveSession(session: any) {
