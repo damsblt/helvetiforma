@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { contentService, WebsiteContent } from '@/services/contentService';
 
 interface ContentSection {
@@ -452,10 +453,20 @@ export default function ContentManagement() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion du Contenu</h1>
-            <p className="text-gray-600">
-              Choisissez la page que vous souhaitez modifier. Tous les changements sont sauvegardés automatiquement.
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion du Contenu</h1>
+                <p className="text-gray-600">
+                  Choisissez la page que vous souhaitez modifier. Tous les changements sont sauvegardés automatiquement.
+                </p>
+              </div>
+              <Link 
+                href="/admin" 
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+              >
+                ← Retour au dashboard
+              </Link>
+            </div>
           </div>
 
           {/* Page Selection Grid */}
@@ -503,18 +514,28 @@ export default function ContentManagement() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <button
-            onClick={handleBackToPages}
-            className="text-blue-600 hover:text-blue-800 mb-4 inline-block"
-          >
-            ← Retour à la sélection des pages
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Modifier : {selectedPageOption.title}
-          </h1>
-          <p className="text-gray-600">
-            {selectedPageOption.description}
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <button
+                onClick={handleBackToPages}
+                className="text-blue-600 hover:text-blue-800 mb-2 inline-block"
+              >
+                ← Retour à la sélection des pages
+              </button>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Modifier : {selectedPageOption.title}
+              </h1>
+              <p className="text-gray-600">
+                {selectedPageOption.description}
+              </p>
+            </div>
+            <Link 
+              href="/admin" 
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+            >
+              ← Retour au dashboard
+            </Link>
+          </div>
         </div>
 
         {/* Action Buttons */}

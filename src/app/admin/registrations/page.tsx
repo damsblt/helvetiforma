@@ -212,11 +212,18 @@ export default function AdminRegistrationsPage() {
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/" className="text-blue-600 hover:text-blue-800 mb-4 inline-block">
-            ← Retour à l'accueil
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Inscriptions</h1>
-          <p className="text-gray-600">Approuvez ou rejetez les inscriptions aux formations</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Inscriptions</h1>
+              <p className="text-gray-600">Approuvez ou rejetez les inscriptions aux formations</p>
+            </div>
+            <Link 
+              href="/admin" 
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+            >
+              ← Retour au dashboard
+            </Link>
+          </div>
         </div>
 
         {/* Statistics */}

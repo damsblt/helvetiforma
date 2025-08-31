@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 // Force dynamic rendering for admin pages
 export const dynamic = 'force-dynamic';
@@ -207,10 +208,20 @@ export default function AdminCalendarPage() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
         {/* Header */}
         <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Calendrier Administrateur</h1>
-          <p className="text-sm md:text-base text-gray-600">
-            Gérez les formations et sessions. Glissez-déposez pour modifier les horaires.
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Calendrier Administrateur</h1>
+              <p className="text-sm md:text-base text-gray-600">
+                Gérez les formations et sessions. Glissez-déposez pour modifier les horaires.
+              </p>
+            </div>
+            <Link 
+              href="/admin" 
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+            >
+              ← Retour au dashboard
+            </Link>
+          </div>
         </div>
 
         {/* Category Statistics */}
