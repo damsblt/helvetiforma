@@ -48,12 +48,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   useEffect(() => {
     document.addEventListener('keydown', handleEscapeKey);
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
+    // Don't prevent body scroll - let the admin panel handle its own scrolling
     
     return () => {
       document.removeEventListener('keydown', handleEscapeKey);
-      document.body.style.overflow = 'unset';
+      // No need to reset body overflow since we're not setting it to hidden
     };
   }, []);
 
@@ -83,9 +82,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className={`fixed inset-0 z-50 transition-all duration-200 ${
         isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
       }`}>
-        <div className="min-h-screen bg-gray-50 relative">
+        <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
           {/* Admin Header */}
-          <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+          <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
             <div className="container mx-auto px-4 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-6">
@@ -107,8 +106,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
           </header>
 
-          {/* Admin Content */}
-          <div className="relative z-0">
+          {/* Admin Content - Scrollable */}
+          <div className="flex-1 overflow-y-auto">
             {children}
           </div>
         </div>

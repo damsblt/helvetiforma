@@ -63,6 +63,10 @@ class AuthService {
     if (typeof window !== 'undefined') {
       localStorage.setItem(this.tokenKey, token);
       localStorage.setItem(this.userKey, JSON.stringify(user));
+      
+      // Also set cookies for middleware authentication
+      this.setCookie('auth', token, 7); // 7 days
+      this.setCookie('user', JSON.stringify(user), 7);
     }
   }
 
@@ -71,6 +75,19 @@ class AuthService {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(this.tokenKey);
       localStorage.removeItem(this.userKey);
+      
+      // Also clear cookies
+      this.setCookie('auth', '', -1);
+      this.setCookie('user', '', -1);
+    }
+  }
+
+  // Helper method to set cookies
+  private setCookie(name: string, value: string, days: number): void {
+    if (typeof window !== 'undefined') {
+      const expires = new Date();
+      expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+      document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
     }
   }
 
