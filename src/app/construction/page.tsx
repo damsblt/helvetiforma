@@ -45,9 +45,9 @@ export default function ConstructionPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
       {/* Custom Navbar for Construction Page */}
-      <nav className="bg-white bg-opacity-10 backdrop-blur-sm border-b border-white border-opacity-20">
+      <nav className="bg-white bg-opacity-10 backdrop-blur-sm border-b border-white border-opacity-20 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
