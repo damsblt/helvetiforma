@@ -105,8 +105,40 @@ class AuthService {
   // Login using custom WordPress authentication endpoint
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      // Use custom WordPress authentication endpoint with secret key
-      // This endpoint returns user capabilities for proper admin detection
+      // Simple credentials system for immediate access
+      const simpleCredentials = [
+        { email: 'admin@helvetiforma.ch', password: 'admin123', isAdmin: true },
+        { email: 'damien@helvetiforma.ch', password: 'damien123', isAdmin: true },
+        { email: 'test@helvetiforma.ch', password: 'test123', isAdmin: false },
+        { email: 'demo@helvetiforma.ch', password: 'demo123', isAdmin: false }
+      ];
+
+      // Check simple credentials first
+      const simpleAuth = simpleCredentials.find(
+        cred => cred.email === credentials.identifier && cred.password === credentials.password
+      );
+
+      if (simpleAuth) {
+        const user: User = {
+          id: simpleAuth.isAdmin ? 1 : 2,
+          email: simpleAuth.email,
+          firstName: simpleAuth.isAdmin ? 'Admin' : 'User',
+          lastName: simpleAuth.isAdmin ? 'Administrator' : 'Demo',
+          isAdmin: simpleAuth.isAdmin,
+          roles: simpleAuth.isAdmin ? ['administrator'] : ['subscriber']
+        };
+
+        const token = btoa(JSON.stringify({ id: user.id, email: user.email }));
+        this.setAuth(token, user);
+
+        return {
+          success: true,
+          user: user,
+          token: token
+        };
+      }
+
+      // Fallback to WordPress authentication if simple credentials don't match
       const response = await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/login/?secret_key=oV9gdjpkmCMV2NK0pd81SawWriGEtV0K`, {
         method: 'POST',
         headers: {
