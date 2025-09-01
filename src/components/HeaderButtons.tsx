@@ -151,6 +151,12 @@ export default function HeaderButtons() {
       >
         Coin des Docs
       </Link>
+      <Link
+        href="/elearning"
+        className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
+      >
+        E-learning
+      </Link>
     </div>
   );
 } 
