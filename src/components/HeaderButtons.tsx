@@ -42,13 +42,9 @@ export default function HeaderButtons() {
     };
   }, []);
 
-
-
   const isAdmin = user?.email?.includes('admin') || 
                   user?.email === 'admin@helvetiforma.com' ||
                   user?.email === 'damien@helvetiforma.com';
-
-
 
   if (isLoading) {
     return (
@@ -57,10 +53,7 @@ export default function HeaderButtons() {
           Chargement...
         </div>
         <div className="px-3 py-2 text-gray-400 text-sm">
-          Calendrier
-        </div>
-        <div className="px-3 py-2 text-gray-400 text-sm">
-          Coin des Docs
+          Connexion requise
         </div>
       </div>
     );
@@ -68,7 +61,7 @@ export default function HeaderButtons() {
 
   if (user) {
     if (isAdmin) {
-      // Admin user - show dashboard link, calendar, docs, and logout
+      // Admin user - show dashboard link, calendar, e-learning, and logout
       return (
         <div className="flex items-center space-x-2 lg:space-x-4">
           <Link
@@ -78,10 +71,10 @@ export default function HeaderButtons() {
             Calendrier
           </Link>
           <Link
-            href="/docs"
+            href="/elearning"
             className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
           >
-            Coin des Docs
+            E-learning
           </Link>
           <Link
             href="/admin"
@@ -101,7 +94,7 @@ export default function HeaderButtons() {
         </div>
       );
     } else {
-      // Regular user - show personal space, calendar, docs, and logout
+      // Regular user - show personal space, calendar, e-learning, and logout
       return (
         <div className="flex items-center space-x-2 lg:space-x-4">
           <Link
@@ -111,10 +104,10 @@ export default function HeaderButtons() {
             Calendrier
           </Link>
           <Link
-            href="/docs"
+            href="/elearning"
             className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
           >
-            Coin des Docs
+            E-learning
           </Link>
           <Link
             href="/personal-space"
@@ -136,26 +129,20 @@ export default function HeaderButtons() {
     }
   }
 
-  // Not logged in - show calendar and docs buttons
+  // Not logged in - show login/register buttons only
   return (
     <div className="flex items-center space-x-2 lg:space-x-4">
       <Link
-        href="/calendar"
+        href="/login"
         className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
       >
-        Calendrier
+        Connexion
       </Link>
       <Link
-        href="/docs"
-        className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
+        href="/register"
+        className="px-3 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition text-sm"
       >
-        Coin des Docs
-      </Link>
-      <Link
-        href="/elearning"
-        className="px-3 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition text-sm"
-      >
-        E-learning
+        Inscription
       </Link>
     </div>
   );

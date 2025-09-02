@@ -53,7 +53,7 @@ export default function Navigation() {
     { href: '/', label: 'Accueil' },
     { href: '/concept', label: 'Concept' },
     { href: '/formations', label: 'Formations' },
-    { href: '/elearning', label: 'E-learning' },
+    { href: '/docs', label: 'Coin des Docs' },
     { href: '/contact', label: 'Contact' },
   ];
 

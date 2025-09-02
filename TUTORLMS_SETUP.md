@@ -361,3 +361,4 @@ const success = await tutorLmsService.enrollUser(userId, courseId, userData);
 ---
 
 **🎯 Result**: You'll have a professional, Swiss-market-ready training platform that's much more powerful than a custom solution, built in weeks instead of months!
+
