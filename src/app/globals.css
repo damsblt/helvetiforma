@@ -99,6 +99,25 @@
   @apply max-w-full h-auto rounded-lg shadow-sm my-4;
 }
 
+/* Hero Image Optimization */
+.hero-image-container {
+  background-color: #f3f4f6; /* Light gray placeholder */
+  background-image: url('/images/hero-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Ensure hero image loads immediately */
+.hero-image-container img {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.hero-image-container img[src] {
+  opacity: 1;
+}
+
 /* Enhanced spacing for better readability */
 .wordpress-content > * + * {
   @apply mt-4;

@@ -74,6 +74,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr">
       <head>
         <StructuredData />
+        {/* Preload critical images for better performance */}
+        <link 
+          rel="preload" 
+          href="/images/hero-bg.jpg" 
+          as="image" 
+          type="image/jpeg"
+        />
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50">
         {/* Header */}

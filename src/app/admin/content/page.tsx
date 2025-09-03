@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { contentService, WebsiteContent } from '@/services/contentService';
+import { authService } from '@/services/authService';
 
 interface ContentSection {
   id: string;
@@ -34,6 +35,42 @@ export default function ContentManagement() {
   const [sections, setSections] = useState<ContentSection[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [authStatus, setAuthStatus] = useState<string>('Checking...');
+
+  // Check authentication immediately
+  useEffect(() => {
+    if (!authService.isAuthenticated()) {
+      console.log('Not authenticated, redirecting to login');
+      router.push('/login?redirect=/admin/content');
+      return;
+    }
+
+    const user = authService.getUser();
+    if (!user || !user.isAdmin) {
+      console.log('Not admin, redirecting to login');
+      router.push('/login?message=admin_required');
+      return;
+    }
+
+    console.log('User authenticated and is admin:', user);
+  }, [router]);
+
+  // Debug authentication status
+  useEffect(() => {
+    const checkAuth = () => {
+      try {
+        const isAuth = authService.isAuthenticated();
+        const user = authService.getUser();
+        setAuthStatus(`Auth: ${isAuth}, User: ${JSON.stringify(user)}`);
+        console.log('Auth check:', { isAuth, user });
+      } catch (error) {
+        setAuthStatus(`Error: ${error}`);
+        console.error('Auth check error:', error);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
   // Define all available pages with their content sections
   const pageOptions: PageOption[] = [
@@ -273,67 +310,236 @@ export default function ContentManagement() {
         }
       ]
     },
-    {
-      id: 'formations',
-      title: 'Page Formations',
-      description: 'Modifiez le contenu des formations : titres et descriptions des différentes formations disponibles.',
-      icon: '📚',
-      color: 'purple',
-      sections: [
-        {
+            {
           id: 'formations',
-          title: 'Gestion des Formations',
-          fields: [
+          title: 'Page Formations',
+          description: 'Modifiez le contenu des formations : titres, descriptions, programmes détaillés et informations pratiques.',
+          icon: '📚',
+          color: 'purple',
+          sections: [
             {
-              name: 'formationSalairesTitle',
-              label: 'Formation Salaires - Titre',
-              type: 'text',
-              value: '',
-              placeholder: 'Titre de la formation salaires'
+              id: 'formations',
+              title: 'Gestion des Formations',
+              fields: [
+                {
+                  name: 'formationSalairesTitle',
+                  label: 'Formation Salaires - Titre',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'Titre de la formation salaires'
+                },
+                {
+                  name: 'formationSalairesDescription',
+                  label: 'Formation Salaires - Description',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Description de la formation salaires'
+                },
+                {
+                  name: 'formationSalairesOverview',
+                  label: 'Formation Salaires - Aperçu détaillé',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Aperçu détaillé de la formation salaires'
+                },
+                {
+                  name: 'formationSalairesDay1',
+                  label: 'Formation Salaires - Jour 1 contenu',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Contenu détaillé du jour 1'
+                },
+                {
+                  name: 'formationSalairesDay2',
+                  label: 'Formation Salaires - Jour 2 contenu',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Contenu détaillé du jour 2'
+                },
+                {
+                  name: 'formationSalairesDay3',
+                  label: 'Formation Salaires - Jour 3 contenu',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Contenu détaillé du jour 3'
+                },
+                {
+                  name: 'formationSalairesTargetAudience',
+                  label: 'Formation Salaires - Public cible',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Liste du public cible (une ligne par rôle)'
+                },
+                {
+                  name: 'formationSalairesPrerequisites',
+                  label: 'Formation Salaires - Prérequis',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Liste des prérequis (une ligne par prérequis)'
+                },
+                {
+                  name: 'formationSalairesDuration',
+                  label: 'Formation Salaires - Durée',
+                  type: 'text',
+                  value: '',
+                  placeholder: '3 jours'
+                },
+                {
+                  name: 'formationSalairesMaxParticipants',
+                  label: 'Formation Salaires - Participants max',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'Max 12 participants'
+                },
+                {
+                  name: 'formationSalairesPrice',
+                  label: 'Formation Salaires - Prix',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'CHF 1,200'
+                },
+                {
+                  name: 'formationSalairesLevel',
+                  label: 'Formation Salaires - Niveau',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'Niveau Intermédiaire'
+                },
+                {
+                  name: 'formationChargesTitle',
+                  label: 'Formation Charges Sociales - Titre',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'Titre de la formation charges sociales'
+                },
+                {
+                  name: 'formationChargesDescription',
+                  label: 'Formation Charges Sociales - Description',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Description de la formation charges sociales'
+                },
+                {
+                  name: 'formationChargesOverview',
+                  label: 'Formation Charges Sociales - Aperçu détaillé',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Aperçu détaillé de la formation charges sociales'
+                },
+                {
+                  name: 'formationChargesTargetAudience',
+                  label: 'Formation Charges Sociales - Public cible',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Liste du public cible (une ligne par rôle)'
+                },
+                {
+                  name: 'formationChargesPrerequisites',
+                  label: 'Formation Charges Sociales - Prérequis',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Liste des prérequis (une ligne par prérequis)'
+                },
+                {
+                  name: 'formationChargesDuration',
+                  label: 'Formation Charges Sociales - Durée',
+                  type: 'text',
+                  value: '',
+                  placeholder: '2 jours'
+                },
+                {
+                  name: 'formationChargesMaxParticipants',
+                  label: 'Formation Charges Sociales - Participants max',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'Max 10 participants'
+                },
+                {
+                  name: 'formationChargesPrice',
+                  label: 'Formation Charges Sociales - Prix',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'CHF 800'
+                },
+                {
+                  name: 'formationChargesLevel',
+                  label: 'Formation Charges Sociales - Niveau',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'Niveau Débutant'
+                },
+                {
+                  name: 'formationImpotTitle',
+                  label: 'Formation Impôt à la Source - Titre',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'Titre de la formation impôt à la source'
+                },
+                {
+                  name: 'formationImpotDescription',
+                  label: 'Formation Impôt à la Source - Description',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Description de la formation impôt à la source'
+                },
+                {
+                  name: 'formationImpotOverview',
+                  label: 'Formation Impôt à la Source - Aperçu détaillé',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Aperçu détaillé de la formation impôt à la source'
+                },
+                {
+                  name: 'formationImpotTargetAudience',
+                  label: 'Formation Impôt à la Source - Public cible',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Liste du public cible (une ligne par rôle)'
+                },
+                {
+                  name: 'formationImpotPrerequisites',
+                  label: 'Formation Impôt à la Source - Prérequis',
+                  type: 'textarea',
+                  value: '',
+                  placeholder: 'Liste des prérequis (une ligne par prérequis)'
+                },
+                {
+                  name: 'formationImpotDuration',
+                  label: 'Formation Impôt à la Source - Durée',
+                  type: 'text',
+                  value: '',
+                  placeholder: '2.5 jours'
+                },
+                {
+                  name: 'formationImpotMaxParticipants',
+                  label: 'Formation Impôt à la Source - Participants max',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'Max 8 participants'
+                },
+                {
+                  name: 'formationImpotPrice',
+                  label: 'Formation Impôt à la Source - Prix',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'CHF 1,000'
+                },
+                {
+                  name: 'formationImpotLevel',
+                  label: 'Formation Impôt à la Source - Niveau',
+                  type: 'text',
+                  value: '',
+                  placeholder: 'Niveau Avancé'
+                }
+              ]
             },
-            {
-              name: 'formationSalairesDescription',
-              label: 'Formation Salaires - Description',
-              type: 'textarea',
-              value: '',
-              placeholder: 'Description de la formation salaires'
-            },
-            {
-              name: 'formationChargesTitle',
-              label: 'Formation Charges Sociales - Titre',
-              type: 'text',
-              value: '',
-              placeholder: 'Titre de la formation charges sociales'
-            },
-            {
-              name: 'formationChargesDescription',
-              label: 'Formation Charges Sociales - Description',
-              type: 'textarea',
-              value: '',
-              placeholder: 'Description de la formation charges sociales'
-            },
-            {
-              name: 'formationImpotTitle',
-              label: 'Formation Impôt à la Source - Titre',
-              type: 'text',
-              value: '',
-              placeholder: 'Titre de la formation impôt à la source'
-            },
-            {
-              name: 'formationImpotDescription',
-              label: 'Formation Impôt à la Source - Description',
-              type: 'textarea',
-              value: '',
-              placeholder: 'Description de la formation impôt à la source'
-            }
+
           ]
-        }
-      ]
-    },
+        },
     {
       id: 'contact',
       title: 'Page Contact',
-      description: 'Modifiez le contenu de la page contact : titre et description de la section contact.',
+      description: 'Modifiez le contenu de la page contact : titre, description, informations de contact et FAQ.',
       icon: '📞',
       color: 'orange',
       sections: [
@@ -354,6 +560,136 @@ export default function ContentManagement() {
               type: 'textarea',
               value: '',
               placeholder: 'Description de la section contact'
+            }
+          ]
+        },
+        {
+          id: 'contactInfo',
+          title: 'Informations de Contact',
+          fields: [
+            {
+              name: 'contactEmail',
+              label: 'Adresse email',
+              type: 'text',
+              value: '',
+              placeholder: 'info@helvetiforma.ch'
+            },
+            {
+              name: 'contactLocation',
+              label: 'Localisation',
+              type: 'text',
+              value: '',
+              placeholder: 'Suisse'
+            },
+            {
+              name: 'contactResponseTime',
+              label: 'Délai de réponse',
+              type: 'text',
+              value: '',
+              placeholder: 'Sous 24-48 heures'
+            }
+          ]
+        },
+        {
+          id: 'whyChooseUs',
+          title: 'Pourquoi nous choisir ?',
+          fields: [
+            {
+              name: 'whyChooseUsTitle',
+              label: 'Titre de la section',
+              type: 'text',
+              value: '',
+              placeholder: 'Pourquoi nous choisir ?'
+            },
+            {
+              name: 'whyChooseUsPoint1',
+              label: 'Point 1',
+              type: 'text',
+              value: '',
+              placeholder: 'Formations certifiantes'
+            },
+            {
+              name: 'whyChooseUsPoint2',
+              label: 'Point 2',
+              type: 'text',
+              value: '',
+              placeholder: 'Support personnalisé'
+            },
+            {
+              name: 'whyChooseUsPoint3',
+              label: 'Point 3',
+              type: 'text',
+              value: '',
+              placeholder: 'Flexibilité d\'apprentissage'
+            }
+          ]
+        },
+        {
+          id: 'faq',
+          title: 'Questions Fréquentes (FAQ)',
+          fields: [
+            {
+              name: 'faqTitle',
+              label: 'Titre de la section FAQ',
+              type: 'text',
+              value: '',
+              placeholder: 'Questions fréquentes'
+            },
+            {
+              name: 'faqQuestion1',
+              label: 'Question 1',
+              type: 'text',
+              value: '',
+              placeholder: 'Comment s\'inscrire à une formation ?'
+            },
+            {
+              name: 'faqAnswer1',
+              label: 'Réponse 1',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Contactez-nous via ce formulaire ou par email. Nous vous guiderons dans le processus d\'inscription et répondrons à toutes vos questions.'
+            },
+            {
+              name: 'faqQuestion2',
+              label: 'Question 2',
+              type: 'text',
+              value: '',
+              placeholder: 'Les formations sont-elles certifiantes ?'
+            },
+            {
+              name: 'faqAnswer2',
+              label: 'Réponse 2',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Oui, nos formations délivrent des certificats reconnus qui attestent de vos compétences acquises.'
+            },
+            {
+              name: 'faqQuestion3',
+              label: 'Question 3',
+              type: 'text',
+              value: '',
+              placeholder: 'Quels sont les délais de réponse ?'
+            },
+            {
+              name: 'faqAnswer3',
+              label: 'Réponse 3',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Nous nous engageons à répondre à toutes les demandes sous 24-48 heures maximum.'
+            },
+            {
+              name: 'faqQuestion4',
+              label: 'Question 4',
+              type: 'text',
+              value: '',
+              placeholder: 'Proposez-vous des formations sur mesure ?'
+            },
+            {
+              name: 'faqAnswer4',
+              label: 'Réponse 4',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Absolument ! Nous adaptons nos programmes aux besoins spécifiques de votre entreprise ou organisation.'
             }
           ]
         }
@@ -459,6 +795,10 @@ export default function ContentManagement() {
                 <p className="text-gray-600">
                   Choisissez la page que vous souhaitez modifier. Tous les changements sont sauvegardés automatiquement.
                 </p>
+                {/* Debug Authentication Status */}
+                <div className="mt-2 p-2 bg-gray-100 rounded text-xs font-mono">
+                  <p className="text-gray-700">{authStatus}</p>
+                </div>
               </div>
               <Link 
                 href="/admin" 

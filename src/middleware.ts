@@ -14,7 +14,8 @@ export function middleware(request: NextRequest) {
     '/favicon.ico',
     '/images',
     '/css',
-    '/js'
+    '/js',
+    '/formations'  // Allow access to formation pages
   ];
   
   // Check if the current path is allowed
