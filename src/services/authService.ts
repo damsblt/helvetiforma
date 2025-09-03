@@ -39,7 +39,7 @@ class AuthService {
   private userKey = 'helvetiforma_user';
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://helvetiforma.ch';
+    this.baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
   }
 
   // Get stored token
