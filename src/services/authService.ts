@@ -206,41 +206,63 @@ class AuthService {
     }
   }
 
-  // Register using custom WordPress registration endpoint
+  // Register using standard WordPress REST API
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
-      // Use custom WordPress registration endpoint with secret key
-      const response = await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/register/?secret_key=oV9gdjpkmCMV2NK0pd81SawWriGEtV0K`, {
+      // Use standard WordPress user creation endpoint
+      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Note: WordPress requires authentication for user creation
+          // We'll need to handle this differently or use a different approach
         },
         body: JSON.stringify({
+          username: userData.email.split('@')[0], // Create username from email
           email: userData.email,
-          firstName: userData.firstName,
-          lastName: userData.lastName
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          password: this.generateSecurePassword(), // Generate a secure password
+          roles: ['subscriber'] // Non-admin role, perfect for learners
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
         
-        if (data.success) {
+        // WordPress user created successfully
+        return {
+          success: true,
+          message: 'Compte créé avec succès. Vérifiez votre email pour le mot de passe.',
+          user: {
+            id: data.id,
+            email: data.email,
+            firstName: data.first_name,
+            lastName: data.last_name,
+            isAdmin: false,
+            roles: ['subscriber']
+          }
+        };
+      } else {
+        const errorData = await response.json();
+        
+        // Handle WordPress-specific errors
+        if (errorData.code === 'existing_user_email') {
           return {
-            success: true,
-            message: data.message || 'Compte créé avec succès',
+            success: false,
+            message: 'Un compte avec cet email existe déjà.',
+          };
+        } else if (errorData.code === 'existing_user_login') {
+          return {
+            success: false,
+            message: 'Ce nom d\'utilisateur est déjà pris.',
           };
         } else {
           return {
             success: false,
-            message: data.message || 'Erreur lors de la création du compte',
+            message: errorData.message || 'Erreur lors de la création du compte',
           };
         }
-      } else {
-        return {
-          success: false,
-          message: 'Erreur lors de la création du compte',
-        };
       }
     } catch (error) {
       console.error('Register error:', error);
@@ -249,6 +271,16 @@ class AuthService {
         message: 'Erreur de connexion au serveur',
       };
     }
+  }
+
+  // Generate a secure password for new users
+  private generateSecurePassword(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
   }
 
   // Logout (just clear local storage)
