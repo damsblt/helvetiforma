@@ -196,6 +196,27 @@ export default function PersonalSpacePage() {
               </div>
             </div>
 
+            {/* My Courses (for subscribers) */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Mes Cours E-learning</h2>
+
+              <div className="text-center py-8">
+                <div className="text-gray-400 mb-4">
+                  <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Accédez à vos cours</h3>
+                <p className="text-gray-600 mb-4">Découvrez nos formations en ligne et suivez votre progression.</p>
+                <Link
+                  href="/elearning"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                >
+                  Accéder aux cours
+                </Link>
+              </div>
+            </div>
+
             {/* My Documents */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Mes Documents</h2>
@@ -245,6 +266,19 @@ export default function PersonalSpacePage() {
                   <div className="ml-4">
                     <h3 className="font-medium text-gray-900">Documents</h3>
                     <p className="text-sm text-gray-600">Accéder aux ressources</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/elearning"
+                  className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                >
+                  <div className="flex-shrink-0">
+                    <span className="text-green-600 text-2xl">🎓</span>
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">E-learning</h3>
+                    <p className="text-sm text-gray-600">Suivre vos cours</p>
                   </div>
                 </Link>
 

@@ -14,6 +14,7 @@ export interface AuthResponse {
   user?: User;
   token?: string;
   message?: string;
+  redirectTo?: string;
 }
 
 export interface LoginCredentials {
@@ -229,6 +230,7 @@ class AuthService {
         return {
           success: true,
           message: data.message || 'Compte créé avec succès. Vérifiez votre email pour le mot de passe.',
+          redirectTo: '/login', // Redirect to login page
           user: {
             id: data.user_id,
             email: userData.email,

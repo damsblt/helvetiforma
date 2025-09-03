@@ -37,6 +37,13 @@ export default function RegisterPage() {
       if (response.success) {
         setSuccess(true);
         setFormData({ email: '', firstName: '', lastName: '' });
+        
+        // Redirect to login page if specified
+        if (response.redirectTo) {
+          setTimeout(() => {
+            window.location.href = response.redirectTo!;
+          }, 2000); // 2 second delay to show success message
+        }
       } else {
         setError(response.message || 'Erreur lors de l\'inscription');
       }
