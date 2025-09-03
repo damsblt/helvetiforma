@@ -206,24 +206,19 @@ class AuthService {
     }
   }
 
-  // Register using standard WordPress REST API
+  // Register using WordPress - try custom endpoint first, then fallback
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
-      // Use standard WordPress user creation endpoint
-      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/users`, {
+      // First, try our custom registration endpoint
+      const response = await fetch(`${this.baseUrl}/wp-json/helvetiforma/v1/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Note: WordPress requires authentication for user creation
-          // We'll need to handle this differently or use a different approach
         },
         body: JSON.stringify({
-          username: userData.email.split('@')[0], // Create username from email
-          email: userData.email,
           first_name: userData.firstName,
           last_name: userData.lastName,
-          password: this.generateSecurePassword(), // Generate a secure password
-          roles: ['subscriber'] // Non-admin role, perfect for learners
+          email: userData.email,
         }),
       });
 
@@ -233,12 +228,12 @@ class AuthService {
         // WordPress user created successfully
         return {
           success: true,
-          message: 'Compte créé avec succès. Vérifiez votre email pour le mot de passe.',
+          message: data.message || 'Compte créé avec succès. Vérifiez votre email pour le mot de passe.',
           user: {
-            id: data.id,
-            email: data.email,
-            firstName: data.first_name,
-            lastName: data.last_name,
+            id: data.user_id,
+            email: userData.email,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
             isAdmin: false,
             roles: ['subscriber']
           }
@@ -247,7 +242,7 @@ class AuthService {
         const errorData = await response.json();
         
         // Handle WordPress-specific errors
-        if (errorData.code === 'existing_user_email') {
+        if (errorData.code === 'email_exists' || errorData.code === 'existing_user_email') {
           return {
             success: false,
             message: 'Un compte avec cet email existe déjà.',
