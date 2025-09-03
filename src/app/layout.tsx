@@ -4,10 +4,64 @@ import Navigation from '../components/Navigation';
 import './globals.css';
 import type { Metadata } from 'next';
 import HeaderButtons from '../components/HeaderButtons';
+import StructuredData from '../components/StructuredData';
 
 export const metadata: Metadata = {
-  title: 'HelvetiForma - Formations professionnelles',
-  description: 'Plateforme de formations professionnelles en Suisse',
+  title: {
+    default: 'HelvetiForma - Formations professionnelles en Suisse',
+    template: '%s | HelvetiForma'
+  },
+  description: 'Plateforme de formations professionnelles en Suisse. Formations continues, e-learning et développement des compétences pour entreprises et particuliers.',
+  keywords: ['formations', 'professionnelles', 'Suisse', 'e-learning', 'développement', 'compétences', 'formation continue'],
+  authors: [{ name: 'HelvetiForma' }],
+  creator: 'HelvetiForma',
+  publisher: 'HelvetiForma',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://helvetiforma.ch'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_CH',
+    url: 'https://helvetiforma.ch',
+    title: 'HelvetiForma - Formations professionnelles en Suisse',
+    description: 'Plateforme de formations professionnelles en Suisse. Formations continues, e-learning et développement des compétences.',
+    siteName: 'HelvetiForma',
+    images: [
+      {
+        url: '/images/hero-bg.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'HelvetiForma - Formations professionnelles',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HelvetiForma - Formations professionnelles en Suisse',
+    description: 'Plateforme de formations professionnelles en Suisse. Formations continues, e-learning et développement des compétences.',
+    images: ['/images/hero-bg.jpg'],
+    creator: '@helvetiforma',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'your-google-verification-code', // Add your Google Search Console verification code
+  },
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
@@ -18,6 +72,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
+      <head>
+        <StructuredData />
+      </head>
       <body className="min-h-screen flex flex-col bg-gray-50">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">

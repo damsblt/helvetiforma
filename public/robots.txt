@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://helvetiforma.ch/sitemap.xml
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /construction/
+
+# Allow important pages
+Allow: /formations/
+Allow: /elearning/
+Allow: /concept/
+Allow: /contact/
+Allow: /docs/
