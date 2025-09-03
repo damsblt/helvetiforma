@@ -10,12 +10,20 @@ export default function ConstructionPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showLogin, setShowLogin] = useState(false);
+  const [redirectTo, setRedirectTo] = useState<string>('/');
   const router = useRouter();
 
   useEffect(() => {
     // Check if user is already authenticated
     if (authService.isAuthenticated()) {
       router.push('/');
+    }
+    
+    // Get redirect parameter from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect = urlParams.get('redirect');
+    if (redirect) {
+      setRedirectTo(redirect);
     }
   }, [router]);
 
@@ -32,8 +40,26 @@ export default function ConstructionPage() {
         
         // Add a small delay to show success feedback
         setTimeout(() => {
+          // Use the stored redirect destination, or fallback to smart redirect
+          let redirectUrl = redirectTo;
+          
+          // If no specific redirect, try to go back to where user was
+          if (redirectTo === '/') {
+            const referrer = document.referrer;
+            if (referrer && referrer.includes(window.location.origin)) {
+              try {
+                const referrerUrl = new URL(referrer);
+                if (referrerUrl.pathname !== '/construction' && referrerUrl.pathname !== '/login') {
+                  redirectUrl = referrerUrl.pathname;
+                }
+              } catch (e) {
+                redirectUrl = '/';
+              }
+            }
+          }
+          
           // Force a complete page refresh to load the main website
-          window.location.href = '/';
+          window.location.href = redirectUrl;
         }, 500);
       } else {
         setError(response.message || 'Identifiants incorrects');

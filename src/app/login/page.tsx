@@ -39,8 +39,31 @@ function LoginForm() {
       const response = await authService.login({ identifier, password });
       
       if (response.success) {
-        const redirectTo = searchParams.get('redirect') || '/';
-        router.push(redirectTo);
+        // Smart redirect logic
+        const redirectTo = searchParams.get('redirect');
+        const referrer = document.referrer;
+        
+        // Priority: 1. URL parameter, 2. Referrer (if not from same domain), 3. Home
+        let finalRedirect = '/';
+        
+        if (redirectTo) {
+          finalRedirect = redirectTo;
+        } else if (referrer && !referrer.includes(window.location.origin)) {
+          // If user came from external site or different page, go to home
+          finalRedirect = '/';
+        } else if (referrer && referrer.includes(window.location.origin)) {
+          // If user came from same site, try to go back
+          try {
+            const referrerUrl = new URL(referrer);
+            if (referrerUrl.pathname !== '/login' && referrerUrl.pathname !== '/construction') {
+              finalRedirect = referrerUrl.pathname;
+            }
+          } catch (e) {
+            finalRedirect = '/';
+          }
+        }
+        
+        router.push(finalRedirect);
       } else {
         setError(response.message || 'Identifiants incorrects');
       }

@@ -30,7 +30,7 @@ export default function CalendarPage() {
   const [formations, setFormations] = useState<Formation[]>([]);
   const [filteredFormations, setFilteredFormations] = useState<Formation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedView, setSelectedView] = useState<'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'>('dayGridMonth');
+
   const [selectedEvent, setSelectedEvent] = useState<EventClickArg | null>(null);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -94,9 +94,7 @@ export default function CalendarPage() {
     console.log('Date selected:', selectInfo.startStr);
   };
 
-  const handleViewChange = (view: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek') => {
-    setSelectedView(view);
-  };
+
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
@@ -272,7 +270,6 @@ export default function CalendarPage() {
           <div className="p-6 md:p-8">
             <FormationCalendar
               formations={filteredFormations}
-              view={selectedView}
               onEventClick={handleEventClick}
               onDateSelect={handleDateSelect}
               height="700px"

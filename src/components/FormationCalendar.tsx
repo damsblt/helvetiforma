@@ -34,7 +34,6 @@ interface FormationCalendarProps {
   onEventClick?: (eventInfo: EventClickArg) => void;
   onDateSelect?: (selectInfo: DateSelectArg) => void;
   height?: string;
-  view?: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek';
   editable?: boolean;
   selectable?: boolean;
 }
@@ -44,7 +43,6 @@ const FormationCalendar: React.FC<FormationCalendarProps> = ({
   onEventClick,
   onDateSelect,
   height = '600px',
-  view = 'dayGridMonth',
   editable = false,
   selectable = false,
 }) => {
@@ -238,9 +236,9 @@ const FormationCalendar: React.FC<FormationCalendarProps> = ({
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+          right: '',
         }}
-        initialView={view}
+        initialView="listWeek"
         editable={editable}
         selectable={selectable}
         selectMirror={true}

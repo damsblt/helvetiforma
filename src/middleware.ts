@@ -29,9 +29,11 @@ export function middleware(request: NextRequest) {
   const authCookie = request.cookies.get('auth') || request.cookies.get('user');
   const hasAuth = authCookie && authCookie.value !== 'undefined';
   
-  // If no authentication and not on an allowed path, redirect to construction
+  // If no authentication and not on an allowed path, redirect to construction with current path
   if (!hasAuth) {
-    return NextResponse.redirect(new URL('/construction', request.url));
+    const constructionUrl = new URL('/construction', request.url);
+    constructionUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(constructionUrl);
   }
   
   // User is authenticated, allow access to the requested page

@@ -89,7 +89,6 @@ const FormationCalendarWidget: React.FC<FormationCalendarWidgetProps> = ({
         <FormationCalendar
           formations={[formation]}
           height={isExpanded ? height : '300px'}
-          view={isExpanded ? 'timeGridWeek' : 'listWeek'}
         />
       </div>
 
