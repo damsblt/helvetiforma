@@ -94,6 +94,9 @@ class HelvetiFormaRegistration {
         $user = new WP_User($user_id);
         $user->set_role('subscriber');
         
+        // Integrate with Tutor LMS - ensure user appears in learners list
+        $this->integrate_with_tutor_lms($user_id);
+        
         // Send email with credentials
         $this->send_welcome_email($email, $username, $password, $first_name);
         
@@ -103,6 +106,44 @@ class HelvetiFormaRegistration {
             'user_id' => $user_id,
             'username' => $username,
         );
+    }
+    
+    /**
+     * Integrate new user with Tutor LMS
+     * This ensures the user appears in the learners list
+     */
+    private function integrate_with_tutor_lms($user_id) {
+        // Check if Tutor LMS is active
+        if (!class_exists('TUTOR\Tutor')) {
+            return;
+        }
+        
+        // Get user data
+        $user = get_userdata($user_id);
+        if (!$user) {
+            return;
+        }
+        
+        // Ensure user has the correct role for Tutor LMS
+        if (!in_array('subscriber', $user->roles)) {
+            $user->set_role('subscriber');
+        }
+        
+        // Trigger Tutor LMS user creation hooks
+        do_action('tutor_after_user_register', $user_id);
+        
+        // Add user meta that Tutor LMS expects
+        update_user_meta($user_id, '_is_tutor_student', 'yes');
+        update_user_meta($user_id, 'tutor_profile_bio', '');
+        update_user_meta($user_id, 'tutor_profile_photo', '');
+        
+        // Force refresh of Tutor LMS user cache
+        if (function_exists('tutor_utils')) {
+            tutor_utils()->update_user_profile($user_id);
+        }
+        
+        // Log integration for debugging
+        error_log("Tutor LMS integration completed for user ID: " . $user_id);
     }
     
     private function send_welcome_email($email, $username, $password, $first_name) {
