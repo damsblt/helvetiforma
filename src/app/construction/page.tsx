@@ -27,7 +27,14 @@ export default function ConstructionPage() {
     try {
       const response = await authService.login({ identifier: email, password });
       if (response.success) {
-        router.push('/');
+        // Show success message briefly
+        setError(''); // Clear any previous errors
+        
+        // Add a small delay to show success feedback
+        setTimeout(() => {
+          // Force a complete page refresh to load the main website
+          window.location.href = '/';
+        }, 500);
       } else {
         setError(response.message || 'Identifiants incorrects');
       }
