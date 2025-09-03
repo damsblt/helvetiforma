@@ -313,13 +313,13 @@ export default function ContentManagement() {
             {
           id: 'formations',
           title: 'Page Formations',
-          description: 'Modifiez le contenu des formations : titres, descriptions, programmes détaillés et informations pratiques.',
+          description: 'Modifiez le contenu des formations : 3 sections séparées pour Salaires, Charges Sociales et Impôt à la Source.',
           icon: '📚',
           color: 'purple',
           sections: [
             {
               id: 'formations',
-              title: 'Gestion des Formations',
+              title: 'Formation Salaires',
               fields: [
                 {
                   name: 'formationSalairesTitle',
