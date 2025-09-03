@@ -1,8 +1,47 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import CalendarLink from '@/components/CalendarLink';
+import { contentService, WebsiteContent } from '@/services/contentService';
+import EditableContent from '@/components/EditableContent';
 
 export default function SalairesFormationPage() {
+  const [content, setContent] = useState<WebsiteContent | null>(null);
+
+  useEffect(() => {
+    // Load content from the content service
+    setContent(contentService.getContent());
+    
+    // Listen for content changes (when admin updates content)
+    const handleStorageChange = () => {
+      setContent(contentService.getContent());
+    };
+    
+    // Listen for custom content update events
+    const handleContentUpdate = () => {
+      setContent(contentService.getContent());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('contentUpdated', handleContentUpdate);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('contentUpdated', handleContentUpdate);
+    };
+  }, []);
+
+  if (!content) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement du contenu...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto max-w-4xl px-4">
@@ -20,31 +59,79 @@ export default function SalairesFormationPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="text-6xl mb-6">💰</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            Gestion des Salaires
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. 
-            Formation pratique avec cas concrets et outils modernes.
-          </p>
+          <EditableContent
+            fieldName="formationSalairesTitle"
+            value={content.formationSalairesTitle}
+            type="text"
+            placeholder="Titre de la formation salaires"
+            className="mb-6"
+          >
+            <h1 className="text-4xl font-bold text-gray-900">
+              {content.formationSalairesTitle}
+            </h1>
+          </EditableContent>
+          
+          <EditableContent
+            fieldName="formationSalairesDescription"
+            value={content.formationSalairesDescription}
+            type="textarea"
+            placeholder="Description de la formation salaires"
+            className="max-w-3xl mx-auto mb-8"
+          >
+            <p className="text-xl text-gray-600">
+              {content.formationSalairesDescription}
+            </p>
+          </EditableContent>
           
           {/* Quick Info */}
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600">
             <div className="flex items-center">
               <span className="mr-2">⏱️</span>
-              <span>3 jours</span>
+              <EditableContent
+                fieldName="formationSalairesDuration"
+                value={content.formationSalairesDuration}
+                type="text"
+                placeholder="Durée de la formation"
+                className="inline"
+              >
+                <span>{content.formationSalairesDuration}</span>
+              </EditableContent>
             </div>
             <div className="flex items-center">
               <span className="mr-2">📊</span>
-              <span>Niveau Intermédiaire</span>
+              <EditableContent
+                fieldName="formationSalairesLevel"
+                value={content.formationSalairesLevel}
+                type="text"
+                placeholder="Niveau de la formation"
+                className="inline"
+              >
+                <span>{content.formationSalairesLevel}</span>
+              </EditableContent>
             </div>
             <div className="flex items-center">
               <span className="mr-2">💰</span>
-              <span>CHF 1,200</span>
+              <EditableContent
+                fieldName="formationSalairesPrice"
+                value={content.formationSalairesPrice}
+                type="text"
+                placeholder="Prix de la formation"
+                className="inline"
+              >
+                <span>{content.formationSalairesPrice}</span>
+              </EditableContent>
             </div>
             <div className="flex items-center">
               <span className="mr-2">👥</span>
-              <span>Max 12 participants</span>
+              <EditableContent
+                fieldName="formationSalairesParticipants"
+                value={content.formationSalairesParticipants}
+                type="text"
+                placeholder="Nombre de participants"
+                className="inline"
+              >
+                <span>{content.formationSalairesParticipants}</span>
+              </EditableContent>
             </div>
           </div>
         </div>
@@ -56,90 +143,147 @@ export default function SalairesFormationPage() {
             {/* Overview */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Aperçu de la Formation</h2>
-              <p className="text-gray-700 mb-4">
-                Cette formation intensive de 3 jours vous permettra de maîtriser tous les aspects de la gestion des salaires 
-                en Suisse, de la conformité légale aux outils pratiques de gestion RH.
-              </p>
-              <p className="text-gray-700">
-                Vous apprendrez à gérer efficacement les salaires, les avantages sociaux, les congés et les absences, 
-                tout en respectant la réglementation suisse et en optimisant les processus de votre entreprise.
-              </p>
+              <EditableContent
+                fieldName="formationSalairesOverview"
+                value={content.formationSalairesOverview}
+                type="textarea"
+                placeholder="Aperçu de la formation salaires"
+                className="mb-4"
+              >
+                <p className="text-gray-700">
+                  {content.formationSalairesOverview}
+                </p>
+              </EditableContent>
             </div>
 
-            {/* Program */}
+
+
+            {/* Key Concepts */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Programme de la Formation</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Concepts Clés de la Gestion des Salaires</h2>
               
-              <div className="space-y-6">
-                <div className="border-l-4 border-blue-600 pl-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Jour 1 : Fondamentaux de la Gestion des Salaires</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    <li>• Cadre légal suisse et obligations de l'employeur</li>
-                    <li>• Structure des salaires et composantes</li>
-                    <li>• Calcul des salaires de base et variables</li>
-                    <li>• Gestion des heures supplémentaires et du travail de nuit</li>
-                  </ul>
-                </div>
+                <div className="space-y-6">
+                  <div className="bg-blue-50 rounded-xl p-6">
+                    <EditableContent
+                      fieldName="formationSalairesKeyConcept1Title"
+                      value={content.formationSalairesKeyConcept1Title}
+                      type="text"
+                      placeholder="Titre du concept 1"
+                      className="mb-3"
+                    >
+                      <h3 className="text-lg font-semibold text-blue-900">
+                        {content.formationSalairesKeyConcept1Title}
+                      </h3>
+                    </EditableContent>
+                    <EditableContent
+                      fieldName="formationSalairesKeyConcept1Description"
+                      value={content.formationSalairesKeyConcept1Description}
+                      type="textarea"
+                      placeholder="Description du concept 1"
+                    >
+                      <p className="text-blue-800 text-sm">
+                        {content.formationSalairesKeyConcept1Description}
+                      </p>
+                    </EditableContent>
+                  </div>
 
-                <div className="border-l-4 border-green-600 pl-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Jour 2 : Avantages Sociaux et Gestion RH</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    <li>• Gestion des congés et absences</li>
-                    <li>• Calcul des indemnités et avantages</li>
-                    <li>• Gestion des primes et bonus</li>
-                    <li>• Outils de gestion RH et logiciels</li>
-                  </ul>
-                </div>
+                  <div className="bg-green-50 rounded-xl p-6">
+                    <EditableContent
+                      fieldName="formationSalairesKeyConcept2Title"
+                      value={content.formationSalairesKeyConcept2Title}
+                      type="text"
+                      placeholder="Titre du concept 2"
+                      className="mb-3"
+                    >
+                      <h3 className="text-lg font-semibold text-green-900">
+                        {content.formationSalairesKeyConcept2Title}
+                      </h3>
+                    </EditableContent>
+                    <EditableContent
+                      fieldName="formationSalairesKeyConcept2Description"
+                      value={content.formationSalairesKeyConcept2Description}
+                      type="textarea"
+                      placeholder="Description du concept 2"
+                    >
+                      <p className="text-green-800 text-sm">
+                        {content.formationSalairesKeyConcept2Description}
+                      </p>
+                    </EditableContent>
+                  </div>
 
-                <div className="border-l-4 border-purple-600 pl-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Jour 3 : Conformité et Optimisation</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    <li>• Déclarations sociales et fiscales</li>
-                    <li>• Contrôles et audits</li>
-                    <li>• Bonnes pratiques et optimisation</li>
-                    <li>• Cas pratiques et mise en situation</li>
-                  </ul>
+                  <div className="bg-purple-50 rounded-xl p-6">
+                    <EditableContent
+                      fieldName="formationSalairesKeyConcept3Title"
+                      value={content.formationSalairesKeyConcept3Title}
+                      type="text"
+                      placeholder="Titre du concept 3"
+                      className="mb-3"
+                    >
+                      <h3 className="text-lg font-semibold text-purple-900">
+                        {content.formationSalairesKeyConcept3Title}
+                      </h3>
+                    </EditableContent>
+                    <EditableContent
+                      fieldName="formationSalairesKeyConcept3Description"
+                      value={content.formationSalairesKeyConcept3Description}
+                      type="textarea"
+                      placeholder="Description du concept 3"
+                    >
+                      <p className="text-purple-800 text-sm">
+                        {content.formationSalairesKeyConcept3Description}
+                      </p>
+                    </EditableContent>
+                  </div>
+
+                  <div className="bg-orange-50 rounded-xl p-6">
+                    <EditableContent
+                      fieldName="formationSalairesKeyConcept4Title"
+                      value={content.formationSalairesKeyConcept4Title}
+                      type="text"
+                      placeholder="Titre du concept 4"
+                      className="mb-3"
+                    >
+                      <h3 className="text-lg font-semibold text-orange-900">
+                        {content.formationSalairesKeyConcept4Title}
+                      </h3>
+                    </EditableContent>
+                    <EditableContent
+                      fieldName="formationSalairesKeyConcept4Description"
+                      value={content.formationSalairesKeyConcept4Description}
+                      type="textarea"
+                      placeholder="Description du concept 4"
+                    >
+                      <p className="text-orange-800 text-sm">
+                        {content.formationSalairesKeyConcept4Description}
+                      </p>
+                    </EditableContent>
+                  </div>
                 </div>
-              </div>
             </div>
 
             {/* Objectives */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Objectifs d'Apprentissage</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Maîtriser la réglementation suisse des salaires</span>
+              <EditableContent
+                fieldName="formationSalairesObjectives"
+                value={content.formationSalairesObjectives}
+                type="textarea"
+                placeholder="Objectifs d'apprentissage de la formation"
+                className="mb-4"
+              >
+                <div className="grid md:grid-cols-2 gap-4">
+                  {content.formationSalairesObjectives.split('\n').map((objective, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-gray-700">{objective}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Gérer efficacement les avantages sociaux</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Optimiser les processus de gestion RH</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Assurer la conformité légale</span>
-                </div>
-              </div>
+              </EditableContent>
             </div>
           </div>
 
@@ -175,36 +319,55 @@ export default function SalairesFormationPage() {
             {/* Target Audience */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Public Cible</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li>• Responsables RH</li>
-                <li>• Comptables et contrôleurs</li>
-                <li>• Gestionnaires de paie</li>
-                <li>• Chefs d'entreprise</li>
-                <li>• Consultants en ressources humaines</li>
-              </ul>
+              <EditableContent
+                fieldName="formationSalairesTargetAudience"
+                value={content.formationSalairesTargetAudience}
+                type="textarea"
+                placeholder="Public cible de la formation"
+                className="mb-4"
+              >
+                <ul className="space-y-2 text-sm text-gray-700">
+                  {content.formationSalairesTargetAudience.split('\n').map((item, index) => (
+                    <li key={index}>• {item}</li>
+                  ))}
+                </ul>
+              </EditableContent>
             </div>
 
             {/* Prerequisites */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Prérequis</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li>• Connaissances de base en comptabilité</li>
-                <li>• Expérience en gestion d'entreprise</li>
-                <li>• Maîtrise du français</li>
-                <li>• Ordinateur portable (recommandé)</li>
-              </ul>
+              <EditableContent
+                fieldName="formationSalairesPrerequisites"
+                value={content.formationSalairesPrerequisites}
+                type="textarea"
+                placeholder="Prérequis de la formation"
+                className="mb-4"
+              >
+                <ul className="space-y-2 text-sm text-gray-700">
+                  {content.formationSalairesPrerequisites.split('\n').map((item, index) => (
+                    <li key={index}>• {item}</li>
+                  ))}
+                </ul>
+              </EditableContent>
             </div>
 
             {/* Included */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Inclus dans la Formation</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li>• Support de cours complet</li>
-                <li>• Cas pratiques et exercices</li>
-                <li>• Certificat de participation</li>
-                <li>• Accès aux ressources en ligne</li>
-                <li>• Support post-formation</li>
-              </ul>
+              <EditableContent
+                fieldName="formationSalairesIncluded"
+                value={content.formationSalairesIncluded}
+                type="textarea"
+                placeholder="Ce qui est inclus dans la formation"
+                className="mb-4"
+              >
+                <ul className="space-y-2 text-sm text-gray-700">
+                  {content.formationSalairesIncluded.split('\n').map((item, index) => (
+                    <li key={index}>• {item}</li>
+                  ))}
+                </ul>
+              </EditableContent>
             </div>
           </div>
         </div>
@@ -212,13 +375,29 @@ export default function SalairesFormationPage() {
         {/* Bottom CTA */}
         <div className="mt-16 text-center">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
-            <h2 className="text-2xl font-bold mb-4">
-              Prêt à Maîtriser la Gestion des Salaires ?
-            </h2>
-            <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-              Rejoignez notre formation et développez des compétences essentielles pour votre carrière 
-              et votre entreprise. Contactez-nous pour plus d'informations.
-            </p>
+            <EditableContent
+              fieldName="formationSalairesCtaTitle"
+              value={content.formationSalairesCtaTitle}
+              type="text"
+              placeholder="Titre de l'appel à l'action"
+              className="mb-4"
+            >
+              <h2 className="text-2xl font-bold">
+                {content.formationSalairesCtaTitle}
+              </h2>
+            </EditableContent>
+            
+            <EditableContent
+              fieldName="formationSalairesCtaDescription"
+              value={content.formationSalairesCtaDescription}
+              type="textarea"
+              placeholder="Description de l'appel à l'action"
+              className="mb-6 max-w-2xl mx-auto"
+            >
+              <p className="text-blue-100">
+                {content.formationSalairesCtaDescription}
+              </p>
+            </EditableContent>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <CalendarLink
                 theme="Salaire"

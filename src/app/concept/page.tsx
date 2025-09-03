@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { contentService, WebsiteContent } from '@/services/contentService';
+import EditableContent from '@/components/EditableContent';
 
 export default function ConceptPage() {
   const [content, setContent] = useState<WebsiteContent | null>(null);
@@ -16,8 +17,17 @@ export default function ConceptPage() {
       setContent(contentService.getContent());
     };
     
+    // Listen for custom content update events
+    const handleContentUpdate = () => {
+      setContent(contentService.getContent());
+    };
+    
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('contentUpdated', handleContentUpdate);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('contentUpdated', handleContentUpdate);
+    };
   }, []);
 
   if (!content) {
@@ -36,21 +46,59 @@ export default function ConceptPage() {
       <div className="container mx-auto max-w-4xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">{content.conceptTitle}</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            {content.conceptSubtitle}
-          </p>
+          <EditableContent
+            fieldName="conceptTitle"
+            value={content.conceptTitle}
+            type="text"
+            placeholder="Titre de la page concept"
+            className="mb-4"
+          >
+            <h1 className="text-4xl font-bold text-gray-900">
+              {content.conceptTitle}
+            </h1>
+          </EditableContent>
+          
+          <EditableContent
+            fieldName="conceptSubtitle"
+            value={content.conceptSubtitle}
+            type="text"
+            placeholder="Sous-titre de la page concept"
+            className="max-w-2xl mx-auto"
+          >
+            <p className="text-xl text-gray-600">
+              {content.conceptSubtitle}
+            </p>
+          </EditableContent>
         </div>
 
         {/* Blended Learning Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
           <div className="grid lg:grid-cols-3 gap-8 items-center">
             <div className="lg:col-span-2">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Apprentissage hybride (Blended Learning)</h2>
+              <EditableContent
+                fieldName="conceptContent"
+                value={content.conceptContent}
+                type="textarea"
+                placeholder="Contenu principal de la page concept"
+                className="mb-6"
+              >
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  Apprentissage hybride (Blended Learning)
+                </h2>
+              </EditableContent>
+              
               <div className="space-y-4">
-                <p className="text-lg text-gray-700 font-medium">
-                  Notre approche révolutionne la formation en combinant deux modalités d'apprentissage :
-                </p>
+                <EditableContent
+                  fieldName="conceptContent"
+                  value={content.conceptContent}
+                  type="textarea"
+                  placeholder="Contenu principal de la page concept"
+                  className="mb-4"
+                >
+                  <p className="text-lg text-gray-700 font-medium">
+                    Notre approche révolutionne la formation en combinant deux modalités d'apprentissage :
+                  </p>
+                </EditableContent>
                 <div className="space-y-3">
                   <div className="flex items-start space-x-3">
                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
@@ -98,26 +146,48 @@ export default function ConceptPage() {
           <div className="space-y-6">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Apprendre avec plaisir</h3>
-              <p className="text-gray-700 leading-relaxed">
-                {content.conceptContent}
-              </p>
+              <EditableContent
+                fieldName="conceptPhilosophy"
+                value={content.conceptPhilosophy}
+                type="textarea"
+                placeholder="Contenu de la philosophie"
+                className="mb-3"
+              >
+                <p className="text-gray-700 leading-relaxed">
+                  {content.conceptPhilosophy}
+                </p>
+              </EditableContent>
             </div>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <h4 className="font-semibold text-gray-900">Approche personnalisée</h4>
-                <p className="text-gray-600">
-                  Notre approche combine le meilleur de l'apprentissage en ligne et en présentiel 
-                  pour créer une expérience d'apprentissage optimale et engageante.
-                </p>
+                <EditableContent
+                  fieldName="conceptPersonalizedApproach"
+                  value={content.conceptPersonalizedApproach}
+                  type="textarea"
+                  placeholder="Contenu de l'approche personnalisée"
+                  className="mb-3"
+                >
+                  <p className="text-gray-600">
+                    {content.conceptPersonalizedApproach}
+                  </p>
+                </EditableContent>
               </div>
               
               <div className="space-y-3">
                 <h4 className="font-semibold text-gray-900">Validation des compétences</h4>
-                <p className="text-gray-600">
-                  Nous croyons que l'apprentissage efficace passe par une combinaison de flexibilité 
-                  numérique et de validation humaine des compétences acquises.
-                </p>
+                <EditableContent
+                  fieldName="conceptSkillsValidation"
+                  value={content.conceptSkillsValidation}
+                  type="textarea"
+                  placeholder="Contenu de la validation des compétences"
+                  className="mb-3"
+                >
+                  <p className="text-gray-600">
+                    {content.conceptSkillsValidation}
+                  </p>
+                </EditableContent>
               </div>
             </div>
           </div>

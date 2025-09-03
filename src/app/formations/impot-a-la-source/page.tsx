@@ -1,8 +1,47 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import CalendarLink from '@/components/CalendarLink';
+import { contentService, WebsiteContent } from '@/services/contentService';
+import EditableContent from '@/components/EditableContent';
 
 export default function ImpotALaSourceFormationPage() {
+  const [content, setContent] = useState<WebsiteContent | null>(null);
+
+  useEffect(() => {
+    // Load content from the content service
+    setContent(contentService.getContent());
+    
+    // Listen for content changes (when admin updates content)
+    const handleStorageChange = () => {
+      setContent(contentService.getContent());
+    };
+    
+    // Listen for custom content update events
+    const handleContentUpdate = () => {
+      setContent(contentService.getContent());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('contentUpdated', handleContentUpdate);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('contentUpdated', handleContentUpdate);
+    };
+  }, []);
+
+  if (!content) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement du contenu...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto max-w-4xl px-4">
@@ -20,31 +59,79 @@ export default function ImpotALaSourceFormationPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="text-6xl mb-6">🌍</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            Impôt à la Source
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Formation spécialisée sur l'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. 
-            Procédures, calculs et bonnes pratiques pour une gestion fiscale optimale.
-          </p>
+          <EditableContent
+            fieldName="formationImpotTitle"
+            value={content.formationImpotTitle}
+            type="text"
+            placeholder="Titre de la formation impôt à la source"
+            className="mb-6"
+          >
+            <h1 className="text-4xl font-bold text-gray-900">
+              {content.formationImpotTitle}
+            </h1>
+          </EditableContent>
+          
+          <EditableContent
+            fieldName="formationImpotDescription"
+            value={content.formationImpotDescription}
+            type="textarea"
+            placeholder="Description de la formation impôt à la source"
+            className="max-w-3xl mx-auto mb-8"
+          >
+            <p className="text-xl text-gray-600">
+              {content.formationImpotDescription}
+            </p>
+          </EditableContent>
           
           {/* Quick Info */}
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600">
             <div className="flex items-center">
               <span className="mr-2">⏱️</span>
-              <span>1.5 jours</span>
+              <EditableContent
+                fieldName="formationImpotDuration"
+                value={content.formationImpotDuration}
+                type="text"
+                placeholder="Durée de la formation"
+                className="inline"
+              >
+                <span>{content.formationImpotDuration}</span>
+              </EditableContent>
             </div>
             <div className="flex items-center">
               <span className="mr-2">📊</span>
-              <span>Niveau Spécialisé</span>
+              <EditableContent
+                fieldName="formationImpotLevel"
+                value={content.formationImpotLevel}
+                type="text"
+                placeholder="Niveau de la formation"
+                className="inline"
+              >
+                <span>{content.formationImpotLevel}</span>
+              </EditableContent>
             </div>
             <div className="flex items-center">
               <span className="mr-2">💰</span>
-              <span>CHF 750</span>
+              <EditableContent
+                fieldName="formationImpotPrice"
+                value={content.formationImpotPrice}
+                type="text"
+                placeholder="Prix de la formation"
+                className="inline"
+              >
+                <span>{content.formationImpotPrice}</span>
+              </EditableContent>
             </div>
             <div className="flex items-center">
               <span className="mr-2">👥</span>
-              <span>Max 8 participants</span>
+              <EditableContent
+                fieldName="formationImpotParticipants"
+                value={content.formationImpotParticipants}
+                type="text"
+                placeholder="Nombre de participants"
+                className="inline"
+              >
+                <span>{content.formationImpotParticipants}</span>
+              </EditableContent>
             </div>
           </div>
         </div>
@@ -56,41 +143,21 @@ export default function ImpotALaSourceFormationPage() {
             {/* Overview */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Aperçu de la Formation</h2>
-              <p className="text-gray-700 mb-4">
-                Cette formation intensive de 1.5 jours vous permettra de maîtriser tous les aspects de l'impôt à la source 
-                en Suisse, particulièrement important pour les travailleurs frontaliers et les employés étrangers.
-              </p>
-              <p className="text-gray-700">
-                Vous apprendrez à calculer, déclarer et optimiser l'impôt à la source tout en respectant 
-                la réglementation suisse et en maximisant les avantages pour votre entreprise et vos employés.
-              </p>
-            </div>
-
-            {/* Program */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Programme de la Formation</h2>
-              
-              <div className="space-y-6">
-                <div className="border-l-4 border-purple-600 pl-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Jour 1 : Fondamentaux de l'Impôt à la Source</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    <li>• Cadre légal suisse de l'impôt à la source</li>
-                    <li>• Définition et champ d'application</li>
-                    <li>• Catégories de travailleurs concernés</li>
-                    <li>• Obligations de l'employeur</li>
-                  </ul>
+              <EditableContent
+                fieldName="formationImpotOverview"
+                value={content.formationImpotOverview}
+                type="textarea"
+                placeholder="Aperçu de la formation impôt à la source"
+                className="mb-4"
+              >
+                <div className="text-gray-700">
+                  {content.formationImpotOverview.split('\n\n').map((paragraph, index) => (
+                    <p key={index} className={index > 0 ? 'mt-4' : ''}>
+                      {paragraph}
+                    </p>
+                  ))}
                 </div>
-
-                <div className="border-l-4 border-blue-600 pl-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Jour 2 : Calcul et Gestion (Matin)</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    <li>• Calcul de l'impôt à la source</li>
-                    <li>• Déclarations et procédures</li>
-                    <li>• Cas particuliers et exceptions</li>
-                    <li>• Bonnes pratiques et optimisation</li>
-                  </ul>
-                </div>
-              </div>
+              </EditableContent>
             </div>
 
             {/* Key Concepts */}
@@ -99,41 +166,105 @@ export default function ImpotALaSourceFormationPage() {
               
               <div className="space-y-6">
                 <div className="bg-purple-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-purple-900 mb-3">Qu'est-ce que l'Impôt à la Source ?</h3>
-                  <p className="text-purple-800 text-sm">
-                    L'impôt à la source est un prélèvement fiscal automatique effectué par l'employeur sur le salaire 
-                    des travailleurs étrangers et frontaliers, avant le versement du salaire net.
-                  </p>
+                  <EditableContent
+                    fieldName="formationImpotKeyConcept1Title"
+                    value={content.formationImpotKeyConcept1Title}
+                    type="text"
+                    placeholder="Titre du concept 1"
+                    className="mb-3"
+                  >
+                    <h3 className="text-lg font-semibold text-purple-900">
+                      {content.formationImpotKeyConcept1Title}
+                    </h3>
+                  </EditableContent>
+                  <EditableContent
+                    fieldName="formationImpotKeyConcept1Description"
+                    value={content.formationImpotKeyConcept1Description}
+                    type="textarea"
+                    placeholder="Description du concept 1"
+                  >
+                    <p className="text-purple-800 text-sm">
+                      {content.formationImpotKeyConcept1Description}
+                    </p>
+                  </EditableContent>
                 </div>
 
                 <div className="bg-blue-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-blue-900 mb-3">Travailleurs Concernés</h3>
-                  <p className="text-blue-800 text-sm">
-                    • Travailleurs frontaliers (France, Allemagne, Italie, Autriche)<br/>
-                    • Employés étrangers sans permis C<br/>
-                    • Stagiaires et apprentis étrangers<br/>
-                    • Consultants internationaux
-                  </p>
+                  <EditableContent
+                    fieldName="formationImpotKeyConcept2Title"
+                    value={content.formationImpotKeyConcept2Title}
+                    type="text"
+                    placeholder="Titre du concept 2"
+                    className="mb-3"
+                  >
+                    <h3 className="text-lg font-semibold text-blue-900">
+                      {content.formationImpotKeyConcept2Title}
+                    </h3>
+                  </EditableContent>
+                  <EditableContent
+                    fieldName="formationImpotKeyConcept2Description"
+                    value={content.formationImpotKeyConcept2Description}
+                    type="textarea"
+                    placeholder="Description du concept 2"
+                  >
+                    <div className="text-blue-800 text-sm">
+                      {content.formationImpotKeyConcept2Description.split('\n').map((item, index) => (
+                        <div key={index}>• {item}</div>
+                      ))}
+                    </div>
+                  </EditableContent>
                 </div>
 
                 <div className="bg-green-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-green-900 mb-3">Obligations de l'Employeur</h3>
-                  <p className="text-green-800 text-sm">
-                    • Calculer et prélever l'impôt à la source<br/>
-                    • Déclarer les salaires et impôts prélevés<br/>
-                    • Verser l'impôt aux autorités fiscales<br/>
-                    • Tenir une comptabilité détaillée
-                  </p>
+                  <EditableContent
+                    fieldName="formationImpotKeyConcept3Title"
+                    value={content.formationImpotKeyConcept3Title}
+                    type="text"
+                    placeholder="Titre du concept 3"
+                    className="mb-3"
+                  >
+                    <h3 className="text-lg font-semibold text-green-900">
+                      {content.formationImpotKeyConcept3Title}
+                    </h3>
+                  </EditableContent>
+                  <EditableContent
+                    fieldName="formationImpotKeyConcept3Description"
+                    value={content.formationImpotKeyConcept3Description}
+                    type="textarea"
+                    placeholder="Description du concept 3"
+                  >
+                    <div className="text-green-800 text-sm">
+                      {content.formationImpotKeyConcept3Description.split('\n').map((item, index) => (
+                        <div key={index}>• {item}</div>
+                      ))}
+                    </div>
+                  </EditableContent>
                 </div>
 
                 <div className="bg-orange-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-orange-900 mb-3">Avantages de l'Impôt à la Source</h3>
-                  <p className="text-orange-800 text-sm">
-                    • Simplification pour le travailleur<br/>
-                    • Pas de déclaration fiscale annuelle<br/>
-                    • Gestion centralisée par l'employeur<br/>
-                    • Respect automatique des obligations fiscales
-                  </p>
+                  <EditableContent
+                    fieldName="formationImpotKeyConcept4Title"
+                    value={content.formationImpotKeyConcept4Title}
+                    type="text"
+                    placeholder="Titre du concept 4"
+                    className="mb-3"
+                  >
+                    <h3 className="text-lg font-semibold text-orange-900">
+                      {content.formationImpotKeyConcept4Title}
+                    </h3>
+                  </EditableContent>
+                  <EditableContent
+                    fieldName="formationImpotKeyConcept4Description"
+                    value={content.formationImpotKeyConcept4Description}
+                    type="textarea"
+                    placeholder="Description du concept 4"
+                  >
+                    <div className="text-orange-800 text-sm">
+                      {content.formationImpotKeyConcept4Description.split('\n').map((item, index) => (
+                        <div key={index}>• {item}</div>
+                      ))}
+                    </div>
+                  </EditableContent>
                 </div>
               </div>
             </div>
@@ -141,40 +272,26 @@ export default function ImpotALaSourceFormationPage() {
             {/* Objectives */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Objectifs d'Apprentissage</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Comprendre la réglementation suisse</span>
+              <EditableContent
+                fieldName="formationImpotObjectives"
+                value={content.formationImpotObjectives}
+                type="textarea"
+                placeholder="Objectifs d'apprentissage de la formation"
+                className="mb-4"
+              >
+                <div className="grid md:grid-cols-2 gap-4">
+                  {content.formationImpotObjectives.split('\n').map((objective, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-gray-700">{objective}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Calculer précisément l'impôt à la source</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Gérer les déclarations fiscales</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Optimiser la gestion fiscale</span>
-                </div>
-              </div>
+              </EditableContent>
             </div>
           </div>
 
@@ -210,36 +327,55 @@ export default function ImpotALaSourceFormationPage() {
             {/* Target Audience */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Public Cible</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li>• Responsables RH internationaux</li>
-                <li>• Comptables spécialisés fiscalité</li>
-                <li>• Consultants en mobilité internationale</li>
-                <li>• Avocats fiscalistes</li>
-                <li>• Chefs d'entreprise frontaliers</li>
-              </ul>
+              <EditableContent
+                fieldName="formationImpotTargetAudience"
+                value={content.formationImpotTargetAudience}
+                type="textarea"
+                placeholder="Public cible de la formation"
+                className="mb-4"
+              >
+                <ul className="space-y-2 text-sm text-gray-700">
+                  {content.formationImpotTargetAudience.split('\n').map((item, index) => (
+                    <li key={index}>• {item}</li>
+                  ))}
+                </ul>
+              </EditableContent>
             </div>
 
             {/* Prerequisites */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Prérequis</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li>• Connaissances en fiscalité (2+ ans)</li>
-                <li>• Expérience en gestion RH</li>
-                <li>• Maîtrise du français</li>
-                <li>• Compréhension des relations internationales</li>
-              </ul>
+              <EditableContent
+                fieldName="formationImpotPrerequisites"
+                value={content.formationImpotPrerequisites}
+                type="textarea"
+                placeholder="Prérequis de la formation"
+                className="mb-4"
+              >
+                <ul className="space-y-2 text-sm text-gray-700">
+                  {content.formationImpotPrerequisites.split('\n').map((item, index) => (
+                    <li key={index}>• {item}</li>
+                  ))}
+                </ul>
+              </EditableContent>
             </div>
 
             {/* Included */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Inclus dans la Formation</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li>• Support de cours complet</li>
-                <li>• Calculateurs d'impôt à la source</li>
-                <li>• Certificat de participation</li>
-                <li>• Accès aux ressources en ligne</li>
-                <li>• Support post-formation</li>
-              </ul>
+              <EditableContent
+                fieldName="formationImpotIncluded"
+                value={content.formationImpotIncluded}
+                type="textarea"
+                placeholder="Ce qui est inclus dans la formation"
+                className="mb-4"
+              >
+                <ul className="space-y-2 text-sm text-gray-700">
+                  {content.formationImpotIncluded.split('\n').map((item, index) => (
+                    <li key={index}>• {item}</li>
+                  ))}
+                </ul>
+              </EditableContent>
             </div>
           </div>
         </div>
@@ -247,13 +383,30 @@ export default function ImpotALaSourceFormationPage() {
         {/* Bottom CTA */}
         <div className="mt-16 text-center">
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-white">
-            <h2 className="text-2xl font-bold mb-4">
-              Prêt à Maîtriser l'Impôt à la Source ?
-            </h2>
-            <p className="text-purple-100 mb-6 max-w-2xl mx-auto">
-              Rejoignez notre formation spécialisée et développez une expertise unique dans la gestion 
-              de l'impôt à la source pour les travailleurs internationaux en Suisse.
-            </p>
+            <EditableContent
+              fieldName="formationImpotCtaTitle"
+              value={content.formationImpotCtaTitle}
+              type="text"
+              placeholder="Titre de l'appel à l'action"
+              className="mb-4"
+            >
+              <h2 className="text-2xl font-bold">
+                {content.formationImpotCtaTitle}
+              </h2>
+            </EditableContent>
+            
+            <EditableContent
+              fieldName="formationImpotCtaDescription"
+              value={content.formationImpotCtaDescription}
+              type="textarea"
+              placeholder="Description de l'appel à l'action"
+              className="mb-6 max-w-2xl mx-auto"
+            >
+              <p className="text-purple-100">
+                {content.formationImpotCtaDescription}
+              </p>
+            </EditableContent>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <CalendarLink
                 theme="Impôt à la source"

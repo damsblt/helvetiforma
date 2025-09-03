@@ -1,8 +1,47 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import CalendarLink from '@/components/CalendarLink';
+import { contentService, WebsiteContent } from '@/services/contentService';
+import EditableContent from '@/components/EditableContent';
 
 export default function ChargesSocialesFormationPage() {
+  const [content, setContent] = useState<WebsiteContent | null>(null);
+
+  useEffect(() => {
+    // Load content from the content service
+    setContent(contentService.getContent());
+    
+    // Listen for content changes (when admin updates content)
+    const handleStorageChange = () => {
+      setContent(contentService.getContent());
+    };
+    
+    // Listen for custom content update events
+    const handleContentUpdate = () => {
+      setContent(contentService.getContent());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('contentUpdated', handleContentUpdate);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('contentUpdated', handleContentUpdate);
+    };
+  }, []);
+
+  if (!content) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement du contenu...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto max-w-4xl px-4">
@@ -20,13 +59,29 @@ export default function ChargesSocialesFormationPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="text-6xl mb-6">🏢</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            Charges Sociales & Cotisations
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres 
-            assurances sociales en entreprise. Formation avancée pour professionnels confirmés.
-          </p>
+          <EditableContent
+            fieldName="formationChargesTitle"
+            value={content.formationChargesTitle}
+            type="text"
+            placeholder="Titre de la formation charges sociales"
+            className="mb-6"
+          >
+            <h1 className="text-4xl font-bold text-gray-900">
+              {content.formationChargesTitle}
+            </h1>
+          </EditableContent>
+          
+          <EditableContent
+            fieldName="formationChargesDescription"
+            value={content.formationChargesDescription}
+            type="textarea"
+            placeholder="Description de la formation charges sociales"
+            className="max-w-3xl mx-auto mb-8"
+          >
+            <p className="text-xl text-gray-600">
+              {content.formationChargesDescription}
+            </p>
+          </EditableContent>
           
           {/* Quick Info */}
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600">
@@ -56,115 +111,147 @@ export default function ChargesSocialesFormationPage() {
             {/* Overview */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Aperçu de la Formation</h2>
-              <p className="text-gray-700 mb-4">
-                Cette formation intensive de 2 jours vous permettra de maîtriser tous les aspects des charges sociales 
-                et des cotisations en Suisse, de la théorie à la pratique.
-              </p>
-              <p className="text-gray-700">
-                Vous apprendrez à calculer, déclarer et optimiser les charges sociales tout en respectant 
-                la réglementation suisse et en maximisant les avantages pour votre entreprise.
-              </p>
+              <EditableContent
+                fieldName="formationChargesOverview"
+                value={content.formationChargesOverview}
+                type="textarea"
+                placeholder="Aperçu de la formation charges sociales"
+                className="mb-4"
+              >
+                <p className="text-gray-700">
+                  {content.formationChargesOverview}
+                </p>
+              </EditableContent>
             </div>
 
-            {/* Program */}
+
+
+            {/* Key Concepts */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Programme de la Formation</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Concepts Clés des Charges Sociales</h2>
               
-              <div className="space-y-6">
-                <div className="border-l-4 border-green-600 pl-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Jour 1 : Fondamentaux des Charges Sociales</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    <li>• Cadre légal suisse des assurances sociales</li>
-                    <li>• AVS, AI, APG : structure et fonctionnement</li>
-                    <li>• LPP et prévoyance professionnelle</li>
-                    <li>• Calcul des cotisations employeur et employé</li>
-                  </ul>
-                </div>
+                <div className="space-y-6">
+                  <div className="bg-blue-50 rounded-xl p-6">
+                    <EditableContent
+                      fieldName="formationChargesKeyConcept1Title"
+                      value={content.formationChargesKeyConcept1Title}
+                      type="text"
+                      placeholder="Titre du concept 1"
+                      className="mb-3"
+                    >
+                      <h3 className="text-lg font-semibold text-blue-900">
+                        {content.formationChargesKeyConcept1Title}
+                      </h3>
+                    </EditableContent>
+                    <EditableContent
+                      fieldName="formationChargesKeyConcept1Description"
+                      value={content.formationChargesKeyConcept1Description}
+                      type="textarea"
+                      placeholder="Description du concept 1"
+                    >
+                      <p className="text-blue-800 text-sm">
+                        {content.formationChargesKeyConcept1Description}
+                      </p>
+                    </EditableContent>
+                  </div>
 
-                <div className="border-l-4 border-blue-600 pl-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Jour 2 : Gestion Avancée et Optimisation</h3>
-                  <ul className="space-y-2 text-gray-700">
-                    <li>• Déclarations sociales et procédures</li>
-                    <li>• Gestion des cas particuliers</li>
-                    <li>• Optimisation fiscale et sociale</li>
-                    <li>• Contrôles et audits sociaux</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+                  <div className="bg-green-50 rounded-xl p-6">
+                    <EditableContent
+                      fieldName="formationChargesKeyConcept2Title"
+                      value={content.formationChargesKeyConcept2Title}
+                      type="text"
+                      placeholder="Titre du concept 2"
+                      className="mb-3"
+                    >
+                      <h3 className="text-lg font-semibold text-green-900">
+                        {content.formationChargesKeyConcept2Title}
+                      </h3>
+                    </EditableContent>
+                    <EditableContent
+                      fieldName="formationChargesKeyConcept2Description"
+                      value={content.formationChargesKeyConcept2Description}
+                      type="textarea"
+                      placeholder="Description du concept 2"
+                    >
+                      <p className="text-green-800 text-sm">
+                        {content.formationChargesKeyConcept2Description}
+                      </p>
+                    </EditableContent>
+                  </div>
 
-            {/* Social Charges Details */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Détail des Charges Sociales</h2>
-              
-              <div className="space-y-6">
-                <div className="bg-blue-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-blue-900 mb-3">AVS - Assurance Vieillesse et Survivants</h3>
-                  <p className="text-blue-800 text-sm">
-                    Cotisation de base obligatoire pour tous les employés. Taux : 8.7% partagé entre employeur et employé.
-                  </p>
-                </div>
+                  <div className="bg-purple-50 rounded-xl p-6">
+                    <EditableContent
+                      fieldName="formationChargesKeyConcept3Title"
+                      value={content.formationChargesKeyConcept3Title}
+                      type="text"
+                      placeholder="Titre du concept 3"
+                      className="mb-3"
+                    >
+                      <h3 className="text-lg font-semibold text-purple-900">
+                        {content.formationChargesKeyConcept3Title}
+                      </h3>
+                    </EditableContent>
+                    <EditableContent
+                      fieldName="formationChargesKeyConcept3Description"
+                      value={content.formationChargesKeyConcept3Description}
+                      type="textarea"
+                      placeholder="Description du concept 3"
+                    >
+                      <p className="text-purple-800 text-sm">
+                        {content.formationChargesKeyConcept3Description}
+                      </p>
+                    </EditableContent>
+                  </div>
 
-                <div className="bg-green-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-green-900 mb-3">AI - Assurance Invalidité</h3>
-                  <p className="text-green-800 text-sm">
-                    Protection en cas d'invalidité. Taux : 1.4% partagé entre employeur et employé.
-                  </p>
+                  <div className="bg-orange-50 rounded-xl p-6">
+                    <EditableContent
+                      fieldName="formationChargesKeyConcept4Title"
+                      value={content.formationChargesKeyConcept4Title}
+                      type="text"
+                      placeholder="Titre du concept 4"
+                      className="mb-3"
+                    >
+                      <h3 className="text-lg font-semibold text-orange-900">
+                        {content.formationChargesKeyConcept4Title}
+                      </h3>
+                    </EditableContent>
+                    <EditableContent
+                      fieldName="formationChargesKeyConcept4Description"
+                      value={content.formationChargesKeyConcept4Description}
+                      type="textarea"
+                      placeholder="Description du concept 4"
+                    >
+                      <p className="text-orange-800 text-sm">
+                        {content.formationChargesKeyConcept4Description}
+                      </p>
+                    </EditableContent>
+                  </div>
                 </div>
-
-                <div className="bg-purple-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-purple-900 mb-3">APG - Allocations pour Perte de Gain</h3>
-                  <p className="text-purple-800 text-sm">
-                    Indemnités pendant le service militaire et la maternité. Taux : 0.5% à la charge de l'employeur.
-                  </p>
-                </div>
-
-                <div className="bg-orange-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-orange-900 mb-3">LPP - Prévoyance Professionnelle</h3>
-                  <p className="text-orange-800 text-sm">
-                    Deuxième pilier de la prévoyance. Taux variable selon l'âge et le salaire, partagé entre employeur et employé.
-                  </p>
-                </div>
-              </div>
             </div>
 
             {/* Objectives */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Objectifs d'Apprentissage</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Maîtriser la réglementation des assurances sociales</span>
+              <EditableContent
+                fieldName="formationChargesObjectives"
+                value={content.formationChargesObjectives}
+                type="textarea"
+                placeholder="Objectifs d'apprentissage de la formation"
+                className="mb-4"
+              >
+                <div className="grid md:grid-cols-2 gap-4">
+                  {content.formationChargesObjectives.split('\n').map((objective, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="text-gray-700">{objective}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Calculer précisément toutes les cotisations</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Gérer les déclarations sociales</span>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">Optimiser les charges sociales</span>
-                </div>
-              </div>
+              </EditableContent>
             </div>
           </div>
 
@@ -200,36 +287,55 @@ export default function ChargesSocialesFormationPage() {
             {/* Target Audience */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Public Cible</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li>• Comptables confirmés</li>
-                <li>• Responsables RH seniors</li>
-                <li>• Contrôleurs de gestion</li>
-                <li>• Consultants en fiscalité</li>
-                <li>• Chefs comptables</li>
-              </ul>
+              <EditableContent
+                fieldName="formationChargesTargetAudience"
+                value={content.formationChargesTargetAudience}
+                type="textarea"
+                placeholder="Public cible de la formation"
+                className="mb-4"
+              >
+                <ul className="space-y-2 text-sm text-gray-700">
+                  {content.formationChargesTargetAudience.split('\n').map((item, index) => (
+                    <li key={index}>• {item}</li>
+                  ))}
+                </ul>
+              </EditableContent>
             </div>
 
             {/* Prerequisites */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Prérequis</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li>• Expérience en comptabilité (3+ ans)</li>
-                <li>• Connaissances de base en fiscalité</li>
-                <li>• Maîtrise du français</li>
-                <li>• Compréhension des processus RH</li>
-              </ul>
+              <EditableContent
+                fieldName="formationChargesPrerequisites"
+                value={content.formationChargesPrerequisites}
+                type="textarea"
+                placeholder="Prérequis de la formation"
+                className="mb-4"
+              >
+                <ul className="space-y-2 text-sm text-gray-700">
+                  {content.formationChargesPrerequisites.split('\n').map((item, index) => (
+                    <li key={index}>• {item}</li>
+                  ))}
+                </ul>
+              </EditableContent>
             </div>
 
             {/* Included */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Inclus dans la Formation</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li>• Support de cours complet</li>
-                <li>• Calculateurs et outils pratiques</li>
-                <li>• Certificat de participation</li>
-                <li>• Accès aux ressources en ligne</li>
-                <li>• Support post-formation</li>
-              </ul>
+              <EditableContent
+                fieldName="formationChargesIncluded"
+                value={content.formationChargesIncluded}
+                type="textarea"
+                placeholder="Ce qui est inclus dans la formation"
+                className="mb-4"
+              >
+                <ul className="space-y-2 text-sm text-gray-700">
+                  {content.formationChargesIncluded.split('\n').map((item, index) => (
+                    <li key={index}>• {item}</li>
+                  ))}
+                </ul>
+              </EditableContent>
             </div>
           </div>
         </div>
@@ -237,13 +343,29 @@ export default function ChargesSocialesFormationPage() {
         {/* Bottom CTA */}
         <div className="mt-16 text-center">
           <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-8 text-white">
-            <h2 className="text-2xl font-bold mb-4">
-              Prêt à Maîtriser les Charges Sociales ?
-            </h2>
-            <p className="text-green-100 mb-6 max-w-2xl mx-auto">
-              Rejoignez notre formation avancée et développez une expertise reconnue dans la gestion 
-              des charges sociales et des cotisations en Suisse.
-            </p>
+            <EditableContent
+              fieldName="formationChargesCtaTitle"
+              value={content.formationChargesCtaTitle}
+              type="text"
+              placeholder="Titre de l'appel à l'action"
+              className="mb-4"
+            >
+              <h2 className="text-2xl font-bold">
+                {content.formationChargesCtaTitle}
+              </h2>
+            </EditableContent>
+            
+            <EditableContent
+              fieldName="formationChargesCtaDescription"
+              value={content.formationChargesCtaDescription}
+              type="textarea"
+              placeholder="Description de l'appel à l'action"
+              className="mb-6 max-w-2xl mx-auto"
+            >
+              <p className="text-green-100">
+                {content.formationChargesCtaDescription}
+              </p>
+            </EditableContent>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <CalendarLink
                 theme="Assurances sociales"

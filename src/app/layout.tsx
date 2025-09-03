@@ -5,6 +5,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import HeaderButtons from '../components/HeaderButtons';
 import StructuredData from '../components/StructuredData';
+import AdminNavbar from '../components/AdminNavbar';
 
 export const metadata: Metadata = {
   title: {
@@ -98,6 +99,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <HeaderButtons />
           </div>
         </header>
+
+        {/* Admin Navbar */}
+        <AdminNavbar />
 
         <main className="flex-1 w-full pt-0">{children}</main>
 

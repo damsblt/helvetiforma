@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import emailjs from '@emailjs/browser';
 import { emailjsConfig } from '../../config/emailjs';
 import { contentService, WebsiteContent } from '@/services/contentService';
+import EditableContent from '@/components/EditableContent';
 
 export default function ContactPage() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -21,8 +22,17 @@ export default function ContactPage() {
       setContent(contentService.getContent());
     };
     
+    // Listen for custom content update events
+    const handleContentUpdate = () => {
+      setContent(contentService.getContent());
+    };
+    
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('contentUpdated', handleContentUpdate);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('contentUpdated', handleContentUpdate);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,10 +102,29 @@ export default function ContactPage() {
       <div className="container mx-auto max-w-4xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">{content.contactTitle}</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            {content.contactDescription}
-          </p>
+          <EditableContent
+            fieldName="contactTitle"
+            value={content.contactTitle}
+            type="text"
+            placeholder="Titre de la page contact"
+            className="mb-4"
+          >
+            <h1 className="text-4xl font-bold text-gray-900">
+              {content.contactTitle}
+            </h1>
+          </EditableContent>
+          
+          <EditableContent
+            fieldName="contactDescription"
+            value={content.contactDescription}
+            type="textarea"
+            placeholder="Description de la page contact"
+            className="max-w-2xl mx-auto"
+          >
+            <p className="text-xl text-gray-600">
+              {content.contactDescription}
+            </p>
+          </EditableContent>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
@@ -113,7 +142,15 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">Email</h3>
-                    <p className="text-gray-600">info@helvetiforma.ch</p>
+                    <EditableContent
+                      fieldName="contactEmail"
+                      value={content.contactEmail}
+                      type="text"
+                      placeholder="Adresse email de contact"
+                      className="text-gray-600"
+                    >
+                      <p className="text-gray-600">{content.contactEmail}</p>
+                    </EditableContent>
                   </div>
                 </div>
 
@@ -126,7 +163,15 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">Localisation</h3>
-                    <p className="text-gray-600">Suisse</p>
+                    <EditableContent
+                      fieldName="contactLocation"
+                      value={content.contactLocation}
+                      type="text"
+                      placeholder="Localisation"
+                      className="text-gray-600"
+                    >
+                      <p className="text-gray-600">{content.contactLocation}</p>
+                    </EditableContent>
                   </div>
                 </div>
 
@@ -138,7 +183,15 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">Réponse rapide</h3>
-                    <p className="text-gray-600">Sous 24-48 heures</p>
+                    <EditableContent
+                      fieldName="contactResponseTime"
+                      value={content.contactResponseTime}
+                      type="text"
+                      placeholder="Temps de réponse"
+                      className="text-gray-600"
+                    >
+                      <p className="text-gray-600">{content.contactResponseTime}</p>
+                    </EditableContent>
                   </div>
                 </div>
               </div>
@@ -146,25 +199,60 @@ export default function ContactPage() {
 
             {/* Why Choose Us */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Pourquoi nous choisir ?</h3>
+              <EditableContent
+                fieldName="whyChooseUsTitle"
+                value={content.whyChooseUsTitle}
+                type="text"
+                placeholder="Titre de la section pourquoi nous choisir"
+                className="mb-4"
+              >
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {content.whyChooseUsTitle}
+                </h3>
+              </EditableContent>
+              
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-center space-x-2">
                   <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Formations certifiantes</span>
+                  <EditableContent
+                    fieldName="whyChooseUsPoint1"
+                    value={content.whyChooseUsPoint1}
+                    type="text"
+                    placeholder="Premier point"
+                    className="inline"
+                  >
+                    <span>{content.whyChooseUsPoint1}</span>
+                  </EditableContent>
                 </li>
                 <li className="flex items-center space-x-2">
                   <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Support personnalisé</span>
+                  <EditableContent
+                    fieldName="whyChooseUsPoint2"
+                    value={content.whyChooseUsPoint2}
+                    type="text"
+                    placeholder="Deuxième point"
+                    className="inline"
+                  >
+                    <span>{content.whyChooseUsPoint2}</span>
+                  </EditableContent>
                 </li>
                 <li className="flex items-center space-x-2">
                   <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Flexibilité d'apprentissage</span>
+                  <EditableContent
+                    fieldName="whyChooseUsPoint3"
+                    value={content.whyChooseUsPoint3}
+                    type="text"
+                    placeholder="Troisième point"
+                    className="inline"
+                  >
+                    <span>{content.whyChooseUsPoint3}</span>
+                  </EditableContent>
                 </li>
               </ul>
             </div>
@@ -277,27 +365,109 @@ export default function ContactPage() {
 
         {/* FAQ Section */}
         <div className="mt-16">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Questions fréquentes</h2>
+          <EditableContent
+            fieldName="faqTitle"
+            value={content.faqTitle}
+            type="text"
+            placeholder="Titre de la section FAQ"
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl font-bold text-gray-900">
+              {content.faqTitle}
+            </h2>
+          </EditableContent>
           
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Comment s'inscrire à une formation ?</h3>
-              <p className="text-gray-600">Contactez-nous via ce formulaire ou par email. Nous vous guiderons dans le processus d'inscription et répondrons à toutes vos questions.</p>
+              <EditableContent
+                fieldName="faqQuestion1"
+                value={content.faqQuestion1}
+                type="text"
+                placeholder="Première question FAQ"
+                className="mb-3"
+              >
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {content.faqQuestion1}
+                </h3>
+              </EditableContent>
+              <EditableContent
+                fieldName="faqAnswer1"
+                value={content.faqAnswer1}
+                type="textarea"
+                placeholder="Réponse à la première question"
+                className="text-gray-600"
+              >
+                <p className="text-gray-600">{content.faqAnswer1}</p>
+              </EditableContent>
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Les formations sont-elles certifiantes ?</h3>
-              <p className="text-gray-600">Oui, nos formations délivrent des certificats reconnus qui attestent de vos compétences acquises.</p>
+              <EditableContent
+                fieldName="faqQuestion2"
+                value={content.faqQuestion2}
+                type="text"
+                placeholder="Deuxième question FAQ"
+                className="mb-3"
+              >
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {content.faqQuestion2}
+                </h3>
+              </EditableContent>
+              <EditableContent
+                fieldName="faqAnswer2"
+                value={content.faqAnswer2}
+                type="textarea"
+                placeholder="Réponse à la deuxième question"
+                className="text-gray-600"
+              >
+                <p className="text-gray-600">{content.faqAnswer2}</p>
+              </EditableContent>
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Quels sont les délais de réponse ?</h3>
-              <p className="text-gray-600">Nous nous engageons à répondre à toutes les demandes sous 24-48 heures maximum.</p>
+              <EditableContent
+                fieldName="faqQuestion3"
+                value={content.faqQuestion3}
+                type="text"
+                placeholder="Troisième question FAQ"
+                className="mb-3"
+              >
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {content.faqQuestion3}
+                </h3>
+              </EditableContent>
+              <EditableContent
+                fieldName="faqAnswer3"
+                value={content.faqAnswer3}
+                type="textarea"
+                placeholder="Réponse à la troisième question"
+                className="text-gray-600"
+              >
+                <p className="text-gray-600">{content.faqAnswer3}</p>
+              </EditableContent>
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Proposez-vous des formations sur mesure ?</h3>
-              <p className="text-gray-600">Absolument ! Nous adaptons nos programmes aux besoins spécifiques de votre entreprise ou organisation.</p>
+              <EditableContent
+                fieldName="faqQuestion4"
+                value={content.faqQuestion4}
+                type="text"
+                placeholder="Quatrième question FAQ"
+                className="mb-3"
+              >
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {content.faqQuestion4}
+                </h3>
+              </EditableContent>
+              <EditableContent
+                fieldName="faqAnswer4"
+                value={content.faqAnswer4}
+                type="textarea"
+                placeholder="Réponse à la quatrième question"
+                className="text-gray-600"
+              >
+                <p className="text-gray-600">{content.faqAnswer4}</p>
+              </EditableContent>
             </div>
           </div>
         </div>

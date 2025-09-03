@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { authService } from '@/services/authService';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -10,13 +11,12 @@ export default function Navigation() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Check if user is admin (for now, we'll use localStorage)
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      // For now, consider admin if email contains 'admin' or specific admin emails
-      setIsAdmin(user.email?.includes('admin') || user.email === 'admin@helvetiforma.com');
-    }
+    // Check if user is admin using authService
+    const checkAdmin = () => {
+      const admin = authService.isAuthenticated() && authService.getUser()?.isAdmin;
+      setIsAdmin(admin || false);
+    };
+    checkAdmin();
   }, []);
 
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function Navigation() {
               className={`transition-colors whitespace-nowrap ${
                 isActive
                   ? 'font-bold text-blue-700'
-                  : 'text-gray-700 hover:text-blue-700'
+                  : 'text-gray-900 hover:text-blue-700'
               }`}
             >
               {item.label}
@@ -86,7 +86,7 @@ export default function Navigation() {
       {/* Mobile Menu Button */}
       <button
         onClick={toggleMobileMenu}
-        className="lg:hidden p-2 rounded-md text-gray-700 hover:text-blue-700 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        className="lg:hidden p-2 rounded-md text-gray-900 hover:text-blue-700 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         aria-label="Toggle mobile menu"
         aria-expanded={isMobileMenuOpen}
       >
@@ -120,7 +120,7 @@ export default function Navigation() {
                     className={`block px-4 py-3 rounded-lg transition-colors text-base font-medium ${
                       isActive
                         ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-blue-700'
+                        : 'text-gray-900 hover:bg-gray-50 hover:text-blue-700'
                     }`}
                   >
                     {item.label}

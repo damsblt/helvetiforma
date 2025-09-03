@@ -61,7 +61,7 @@ export default function ContentManagement() {
       try {
         const isAuth = authService.isAuthenticated();
         const user = authService.getUser();
-        setAuthStatus(`Auth: ${isAuth}, User: ${JSON.stringify(user)}`);
+        // setAuthStatus(`Auth: ${isAuth}, User: ${JSON.stringify(user)}`);
         console.log('Auth check:', { isAuth, user });
       } catch (error) {
         setAuthStatus(`Error: ${error}`);
@@ -113,18 +113,18 @@ export default function ContentManagement() {
               placeholder: 'Titre de la section à propos'
             },
             {
-              name: 'aboutContent',
-              label: 'Contenu',
-              type: 'textarea',
+              name: 'aboutSubtitle',
+              label: 'Sous-titre de la section',
+              type: 'text',
               value: '',
-              placeholder: 'Contenu de la section à propos'
+              placeholder: 'Sous-titre de la section à propos'
             },
             {
-              name: 'aboutSubContent',
-              label: 'Contenu supplémentaire',
+              name: 'aboutContent',
+              label: 'Contenu principal',
               type: 'textarea',
               value: '',
-              placeholder: 'Contenu supplémentaire de la section à propos'
+              placeholder: 'Contenu principal de la section à propos'
             }
           ]
         },
@@ -138,6 +138,13 @@ export default function ContentManagement() {
               type: 'text',
               value: '',
               placeholder: 'Titre de la section fonctionnalités'
+            },
+            {
+              name: 'featuresSubtitle',
+              label: 'Sous-titre de la section',
+              type: 'text',
+              value: '',
+              placeholder: 'Sous-titre de la section fonctionnalités'
             },
             {
               name: 'feature1Title',
@@ -298,244 +305,248 @@ export default function ContentManagement() {
               type: 'textarea',
               value: '',
               placeholder: 'Contenu principal de la section concept'
-            },
-            {
-              name: 'conceptFeatures',
-              label: 'Fonctionnalités du concept',
-              type: 'textarea',
-              value: '',
-              placeholder: 'Fonctionnalités du concept (une par ligne)'
             }
           ]
         }
       ]
     },
+    {
+      id: 'formations',
+      title: 'Page Formations',
+      description: 'Modifiez le contenu des formations : 3 sections séparées pour Salaires, Charges Sociales et Impôt à la Source.',
+      icon: '📚',
+      color: 'purple',
+      sections: [
+        {
+          id: 'formationSalaires',
+          title: 'Formation Salaires',
+          fields: [
             {
-          id: 'formations',
-          title: 'Page Formations',
-          description: 'Modifiez le contenu des formations : 3 sections séparées pour Salaires, Charges Sociales et Impôt à la Source.',
-          icon: '📚',
-          color: 'purple',
-          sections: [
-            {
-              id: 'formations',
-              title: 'Formation Salaires',
-              fields: [
-                {
-                  name: 'formationSalairesTitle',
-                  label: 'Formation Salaires - Titre',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'Titre de la formation salaires'
-                },
-                {
-                  name: 'formationSalairesDescription',
-                  label: 'Formation Salaires - Description',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Description de la formation salaires'
-                },
-                {
-                  name: 'formationSalairesOverview',
-                  label: 'Formation Salaires - Aperçu détaillé',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Aperçu détaillé de la formation salaires'
-                },
-                {
-                  name: 'formationSalairesDay1',
-                  label: 'Formation Salaires - Jour 1 contenu',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Contenu détaillé du jour 1'
-                },
-                {
-                  name: 'formationSalairesDay2',
-                  label: 'Formation Salaires - Jour 2 contenu',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Contenu détaillé du jour 2'
-                },
-                {
-                  name: 'formationSalairesDay3',
-                  label: 'Formation Salaires - Jour 3 contenu',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Contenu détaillé du jour 3'
-                },
-                {
-                  name: 'formationSalairesTargetAudience',
-                  label: 'Formation Salaires - Public cible',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Liste du public cible (une ligne par rôle)'
-                },
-                {
-                  name: 'formationSalairesPrerequisites',
-                  label: 'Formation Salaires - Prérequis',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Liste des prérequis (une ligne par prérequis)'
-                },
-                {
-                  name: 'formationSalairesDuration',
-                  label: 'Formation Salaires - Durée',
-                  type: 'text',
-                  value: '',
-                  placeholder: '3 jours'
-                },
-                {
-                  name: 'formationSalairesMaxParticipants',
-                  label: 'Formation Salaires - Participants max',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'Max 12 participants'
-                },
-                {
-                  name: 'formationSalairesPrice',
-                  label: 'Formation Salaires - Prix',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'CHF 1,200'
-                },
-                {
-                  name: 'formationSalairesLevel',
-                  label: 'Formation Salaires - Niveau',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'Niveau Intermédiaire'
-                },
-                {
-                  name: 'formationChargesTitle',
-                  label: 'Formation Charges Sociales - Titre',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'Titre de la formation charges sociales'
-                },
-                {
-                  name: 'formationChargesDescription',
-                  label: 'Formation Charges Sociales - Description',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Description de la formation charges sociales'
-                },
-                {
-                  name: 'formationChargesOverview',
-                  label: 'Formation Charges Sociales - Aperçu détaillé',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Aperçu détaillé de la formation charges sociales'
-                },
-                {
-                  name: 'formationChargesTargetAudience',
-                  label: 'Formation Charges Sociales - Public cible',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Liste du public cible (une ligne par rôle)'
-                },
-                {
-                  name: 'formationChargesPrerequisites',
-                  label: 'Formation Charges Sociales - Prérequis',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Liste des prérequis (une ligne par prérequis)'
-                },
-                {
-                  name: 'formationChargesDuration',
-                  label: 'Formation Charges Sociales - Durée',
-                  type: 'text',
-                  value: '',
-                  placeholder: '2 jours'
-                },
-                {
-                  name: 'formationChargesMaxParticipants',
-                  label: 'Formation Charges Sociales - Participants max',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'Max 10 participants'
-                },
-                {
-                  name: 'formationChargesPrice',
-                  label: 'Formation Charges Sociales - Prix',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'CHF 800'
-                },
-                {
-                  name: 'formationChargesLevel',
-                  label: 'Formation Charges Sociales - Niveau',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'Niveau Débutant'
-                },
-                {
-                  name: 'formationImpotTitle',
-                  label: 'Formation Impôt à la Source - Titre',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'Titre de la formation impôt à la source'
-                },
-                {
-                  name: 'formationImpotDescription',
-                  label: 'Formation Impôt à la Source - Description',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Description de la formation impôt à la source'
-                },
-                {
-                  name: 'formationImpotOverview',
-                  label: 'Formation Impôt à la Source - Aperçu détaillé',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Aperçu détaillé de la formation impôt à la source'
-                },
-                {
-                  name: 'formationImpotTargetAudience',
-                  label: 'Formation Impôt à la Source - Public cible',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Liste du public cible (une ligne par rôle)'
-                },
-                {
-                  name: 'formationImpotPrerequisites',
-                  label: 'Formation Impôt à la Source - Prérequis',
-                  type: 'textarea',
-                  value: '',
-                  placeholder: 'Liste des prérequis (une ligne par prérequis)'
-                },
-                {
-                  name: 'formationImpotDuration',
-                  label: 'Formation Impôt à la Source - Durée',
-                  type: 'text',
-                  value: '',
-                  placeholder: '2.5 jours'
-                },
-                {
-                  name: 'formationImpotMaxParticipants',
-                  label: 'Formation Impôt à la Source - Participants max',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'Max 8 participants'
-                },
-                {
-                  name: 'formationImpotPrice',
-                  label: 'Formation Impôt à la Source - Prix',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'CHF 1,000'
-                },
-                {
-                  name: 'formationImpotLevel',
-                  label: 'Formation Impôt à la Source - Niveau',
-                  type: 'text',
-                  value: '',
-                  placeholder: 'Niveau Avancé'
-                }
-              ]
+              name: 'formationSalairesTitle',
+              label: 'Titre',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la formation salaires'
             },
-
+            {
+              name: 'formationSalairesDescription',
+              label: 'Description courte',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description courte de la formation salaires'
+            },
+            {
+              name: 'formationSalairesOverview',
+              label: 'Aperçu détaillé',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Aperçu détaillé de la formation salaires'
+            },
+            {
+              name: 'formationSalairesDay1',
+              label: 'Jour 1 - Contenu',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Contenu détaillé du jour 1 (une ligne par point)'
+            },
+            {
+              name: 'formationSalairesDay2',
+              label: 'Jour 2 - Contenu',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Contenu détaillé du jour 2 (une ligne par point)'
+            },
+            {
+              name: 'formationSalairesDay3',
+              label: 'Jour 3 - Contenu',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Contenu détaillé du jour 3 (une ligne par point)'
+            },
+            {
+              name: 'formationSalairesTargetAudience',
+              label: 'Public cible',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Liste du public cible (une ligne par rôle)'
+            },
+            {
+              name: 'formationSalairesPrerequisites',
+              label: 'Prérequis',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Liste des prérequis (une ligne par prérequis)'
+            },
+            {
+              name: 'formationSalairesDuration',
+              label: 'Durée',
+              type: 'text',
+              value: '',
+              placeholder: '3 jours'
+            },
+            {
+              name: 'formationSalairesMaxParticipants',
+              label: 'Participants maximum',
+              type: 'text',
+              value: '',
+              placeholder: 'Max 12 participants'
+            },
+            {
+              name: 'formationSalairesPrice',
+              label: 'Prix',
+              type: 'text',
+              value: '',
+              placeholder: 'CHF 1,200'
+            },
+            {
+              name: 'formationSalairesLevel',
+              label: 'Niveau',
+              type: 'text',
+              value: '',
+              placeholder: 'Niveau Intermédiaire'
+            }
           ]
         },
+        {
+          id: 'formationCharges',
+          title: 'Formation Charges Sociales',
+          fields: [
+            {
+              name: 'formationChargesTitle',
+              label: 'Titre',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la formation charges sociales'
+            },
+            {
+              name: 'formationChargesDescription',
+              label: 'Description courte',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description courte de la formation charges sociales'
+            },
+            {
+              name: 'formationChargesOverview',
+              label: 'Aperçu détaillé',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Aperçu détaillé de la formation charges sociales'
+            },
+            {
+              name: 'formationChargesTargetAudience',
+              label: 'Public cible',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Liste du public cible (une ligne par rôle)'
+            },
+            {
+              name: 'formationChargesPrerequisites',
+              label: 'Prérequis',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Liste des prérequis (une ligne par prérequis)'
+            },
+            {
+              name: 'formationChargesDuration',
+              label: 'Durée',
+              type: 'text',
+              value: '',
+              placeholder: '2 jours'
+            },
+            {
+              name: 'formationChargesMaxParticipants',
+              label: 'Participants maximum',
+              type: 'text',
+              value: '',
+              placeholder: 'Max 10 participants'
+            },
+            {
+              name: 'formationChargesPrice',
+              label: 'Prix',
+              type: 'text',
+              value: '',
+              placeholder: 'CHF 800'
+            },
+            {
+              name: 'formationChargesLevel',
+              label: 'Niveau',
+              type: 'text',
+              value: '',
+              placeholder: 'Niveau Débutant'
+            }
+          ]
+        },
+        {
+          id: 'formationImpot',
+          title: 'Formation Impôt à la Source',
+          fields: [
+            {
+              name: 'formationImpotTitle',
+              label: 'Titre',
+              type: 'text',
+              value: '',
+              placeholder: 'Titre de la formation impôt à la source'
+            },
+            {
+              name: 'formationImpotDescription',
+              label: 'Description courte',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description courte de la formation impôt à la source'
+            },
+            {
+              name: 'formationImpotOverview',
+              label: 'Aperçu détaillé',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Aperçu détaillé de la formation impôt à la source'
+            },
+            {
+              name: 'formationImpotTargetAudience',
+              label: 'Public cible',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Liste du public cible (une ligne par rôle)'
+            },
+            {
+              name: 'formationImpotPrerequisites',
+              label: 'Prérequis',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Liste des prérequis (une ligne par prérequis)'
+            },
+            {
+              name: 'formationImpotDuration',
+              label: 'Durée',
+              type: 'text',
+              value: '',
+              placeholder: '2.5 jours'
+            },
+            {
+              name: 'formationImpotMaxParticipants',
+              label: 'Participants maximum',
+              type: 'text',
+              value: '',
+              placeholder: 'Max 8 participants'
+            },
+            {
+              name: 'formationImpotPrice',
+              label: 'Prix',
+              type: 'text',
+              value: '',
+              placeholder: 'CHF 1,000'
+            },
+            {
+              name: 'formationImpotLevel',
+              label: 'Niveau',
+              type: 'text',
+              value: '',
+              placeholder: 'Niveau Avancé'
+            }
+          ]
+        }
+      ]
+    },
     {
       id: 'contact',
       title: 'Page Contact',
@@ -640,56 +651,56 @@ export default function ContentManagement() {
               label: 'Question 1',
               type: 'text',
               value: '',
-              placeholder: 'Comment s\'inscrire à une formation ?'
+              placeholder: 'Première question fréquente'
             },
             {
               name: 'faqAnswer1',
               label: 'Réponse 1',
               type: 'textarea',
               value: '',
-              placeholder: 'Contactez-nous via ce formulaire ou par email. Nous vous guiderons dans le processus d\'inscription et répondrons à toutes vos questions.'
+              placeholder: 'Réponse à la première question'
             },
             {
               name: 'faqQuestion2',
               label: 'Question 2',
               type: 'text',
               value: '',
-              placeholder: 'Les formations sont-elles certifiantes ?'
+              placeholder: 'Deuxième question fréquente'
             },
             {
               name: 'faqAnswer2',
               label: 'Réponse 2',
               type: 'textarea',
               value: '',
-              placeholder: 'Oui, nos formations délivrent des certificats reconnus qui attestent de vos compétences acquises.'
+              placeholder: 'Réponse à la deuxième question'
             },
             {
               name: 'faqQuestion3',
               label: 'Question 3',
               type: 'text',
               value: '',
-              placeholder: 'Quels sont les délais de réponse ?'
+              placeholder: 'Troisième question fréquente'
             },
             {
               name: 'faqAnswer3',
               label: 'Réponse 3',
               type: 'textarea',
               value: '',
-              placeholder: 'Nous nous engageons à répondre à toutes les demandes sous 24-48 heures maximum.'
+              placeholder: 'Réponse à la troisième question'
             },
             {
               name: 'faqQuestion4',
               label: 'Question 4',
               type: 'text',
               value: '',
-              placeholder: 'Proposez-vous des formations sur mesure ?'
+              placeholder: 'Quatrième question fréquente'
             },
             {
               name: 'faqAnswer4',
               label: 'Réponse 4',
               type: 'textarea',
               value: '',
-              placeholder: 'Absolument ! Nous adaptons nos programmes aux besoins spécifiques de votre entreprise ou organisation.'
+              placeholder: 'Réponse à la quatrième question'
             }
           ]
         }
@@ -697,249 +708,251 @@ export default function ContentManagement() {
     }
   ];
 
-  const handlePageSelect = (pageId: string) => {
-    setSelectedPage(pageId);
-    const selectedPageOption = pageOptions.find(page => page.id === pageId);
-    if (selectedPageOption) {
-      // Load existing content for the selected page
-      const existingContent = contentService.getContent();
-      const sectionsWithContent = selectedPageOption.sections.map(section => ({
-        ...section,
-        fields: section.fields.map(field => ({
-          ...field,
-          value: existingContent[field.name as keyof WebsiteContent] || ''
-        }))
-      }));
-      setSections(sectionsWithContent);
+  // Load content when a page is selected
+  useEffect(() => {
+    if (selectedPage) {
+      const page = pageOptions.find(p => p.id === selectedPage);
+      console.log('Selected page:', selectedPage);
+      console.log('Found page:', page);
+      console.log('Page sections:', page?.sections);
+      if (page) {
+        setSections(page.sections);
+        loadExistingContent(page.id);
+      }
+    }
+  }, [selectedPage]);
+
+  const loadExistingContent = async (pageId: string) => {
+    try {
+      const existingContent = await contentService.getContent();
+      const page = pageOptions.find(p => p.id === pageId);
+      if (page) {
+        const updatedSections = page.sections.map(section => ({
+          ...section,
+          fields: section.fields.map(field => ({
+            ...field,
+            value: existingContent[field.name as keyof WebsiteContent] || ''
+          }))
+        }));
+        setSections(updatedSections);
+      }
+    } catch (error) {
+      console.error('Error loading content:', error);
     }
   };
 
-  const handleBackToPages = () => {
-    setSelectedPage(null);
-    setSections([]);
-  };
+  const handleSave = () => {
+    if (!selectedPage) return;
 
-  const handleFieldChange = (sectionId: string, fieldName: string, value: string) => {
-    setSections(prevSections => 
-      prevSections.map(section => 
-        section.id === sectionId 
-          ? {
-              ...section,
-              fields: section.fields.map(field => 
-                field.name === fieldName 
-                  ? { ...field, value }
-                  : field
-              )
-            }
-          : section
-      )
-    );
-  };
-
-  const handleSave = async () => {
+    setIsLoading(true);
     setSaveStatus('saving');
-    
+
     try {
-      // Get existing content first
-      const existingContent = contentService.getContent();
-      
-      // Create new content data for current page
-      const newContentData = sections.reduce((acc, section) => {
+      const contentToSave = sections.reduce((acc, section) => {
         section.fields.forEach(field => {
           acc[field.name] = field.value;
         });
         return acc;
       }, {} as Record<string, string>);
-      
-      // Merge new content with existing content (don't overwrite other pages)
-      const mergedContent = {
-        ...existingContent,
-        ...newContentData
-      };
-      
-      // Save merged content to localStorage
-      localStorage.setItem('websiteContent', JSON.stringify(mergedContent));
-      
-      // Refresh contentService to ensure consistency
-      contentService.refreshContent();
-      
-      console.log('Content saved successfully:', mergedContent);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
+      contentService.updateFields(contentToSave);
       setSaveStatus('saved');
       
-      // Refresh the page after successful save
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-      
+      setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (error) {
       console.error('Error saving content:', error);
       setSaveStatus('error');
-      setTimeout(() => setSaveStatus('idle'), 3000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Page Selection Interface
-  if (!selectedPage) {
+  const handleFieldChange = (sectionId: string, fieldName: string, value: string) => {
+    setSections(prev => prev.map(section => 
+      section.id === sectionId 
+        ? {
+            ...section,
+            fields: section.fields.map(field => 
+              field.name === fieldName 
+                ? { ...field, value }
+                : field
+            )
+          }
+        : section
+    ));
+  };
+
+  if (selectedPage) {
+    const page = pageOptions.find(p => p.id === selectedPage);
+    if (!page) return null;
+    
+    console.log('Rendering page:', page.title);
+    console.log('Page sections count:', page.sections.length);
+    console.log('Current sections state:', sections.length);
+
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion du Contenu</h1>
-                <p className="text-gray-600">
-                  Choisissez la page que vous souhaitez modifier. Tous les changements sont sauvegardés automatiquement.
-                </p>
-                {/* Debug Authentication Status */}
-                <div className="mt-2 p-2 bg-gray-100 rounded text-xs font-mono">
-                  <p className="text-gray-700">{authStatus}</p>
-                </div>
-              </div>
-              <Link 
-                href="/admin" 
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-              >
-                ← Retour au dashboard
-              </Link>
-            </div>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Administration HelvetiForma</h1>
+            <Link href="/admin" className="text-gray-500 hover:text-gray-700">
+              <span className="text-2xl">×</span>
+            </Link>
           </div>
 
-          {/* Page Selection Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-            {pageOptions.map((page) => (
-              <div
-                key={page.id}
-                className="bg-white rounded-lg shadow-lg border border-gray-200 hover:shadow-xl transition-shadow cursor-pointer"
-                onClick={() => handlePageSelect(page.id)}
-              >
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl mr-4 bg-${page.color}-100`}>
-                      {page.icon}
-                    </div>
-                    <h2 className="text-xl font-semibold text-gray-900">{page.title}</h2>
-                  </div>
-                  <p className="text-gray-600 mb-4">{page.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">
-                      {page.sections.length} section{page.sections.length > 1 ? 's' : ''}
-                    </span>
-                    <button className="text-blue-600 hover:text-blue-800 font-medium">
-                      Modifier →
-                    </button>
+          {/* Navigation */}
+          <div className="flex justify-between items-center mb-8">
+            <Link 
+              href="#" 
+              onClick={() => setSelectedPage(null)}
+              className="text-blue-600 hover:text-blue-800 flex items-center"
+            >
+              ← Retour à la sélection des pages
+            </Link>
+            <Link 
+              href="/admin/dashboard" 
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              ← Retour au dashboard
+            </Link>
+          </div>
+
+          {/* Page Content */}
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Modifier : {page.title}
+            </h2>
+            <p className="text-gray-600 mb-6">{page.description}</p>
+
+            {/* Save Button */}
+            <button
+              onClick={handleSave}
+              disabled={isLoading}
+              className={`mb-8 px-6 py-3 rounded-lg font-medium transition-colors ${
+                isLoading 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Sauvegarde...
+                </span>
+              ) : (
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h-1v5.586l-2.293-2.293z"/>
+                  </svg>
+                  Sauvegarder
+                </span>
+              )}
+            </button>
+
+            {/* Save Status */}
+            {saveStatus === 'saved' && (
+              <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                ✅ Contenu sauvegardé avec succès !
+              </div>
+            )}
+            {saveStatus === 'error' && (
+              <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                ❌ Erreur lors de la sauvegarde. Veuillez réessayer.
+              </div>
+            )}
+
+            {/* Sections */}
+            <div className="space-y-8">
+              {sections.map((section) => (
+                <div key={section.id} className="border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    {section.title}
+                  </h3>
+                  <div className="space-y-4">
+                    {section.fields.map((field) => (
+                      <div key={field.name}>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {field.label}
+                        </label>
+                        {field.type === 'textarea' ? (
+                          <textarea
+                            value={field.value}
+                            onChange={(e) => handleFieldChange(section.id, field.name, e.target.value)}
+                            placeholder={field.placeholder}
+                            rows={4}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        ) : field.type === 'html' ? (
+                          <textarea
+                            value={field.value}
+                            onChange={(e) => handleFieldChange(section.id, field.name, e.target.value)}
+                            placeholder={field.placeholder}
+                            rows={6}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={field.value}
+                            onChange={(e) => handleFieldChange(section.id, field.name, e.target.value)}
+                            placeholder={field.placeholder}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Page Editing Interface
-  const selectedPageOption = pageOptions.find(page => page.id === selectedPage);
-  
-  if (!selectedPageOption) {
-    return <div>Page non trouvée</div>;
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <button
-                onClick={handleBackToPages}
-                className="text-blue-600 hover:text-blue-800 mb-2 inline-block"
-              >
-                ← Retour à la sélection des pages
-              </button>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Modifier : {selectedPageOption.title}
-              </h1>
-              <p className="text-gray-600">
-                {selectedPageOption.description}
-              </p>
-            </div>
-            <Link 
-              href="/admin" 
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-            >
-              ← Retour au dashboard
-            </Link>
-          </div>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Administration HelvetiForma</h1>
+          <Link href="/admin" className="text-gray-500 hover:text-gray-700">
+            <span className="text-2xl">×</span>
+          </Link>
         </div>
 
-        {/* Action Buttons */}
-        <div className="mb-6 flex flex-wrap gap-4">
-          <button
-            onClick={handleSave}
-            disabled={saveStatus === 'saving'}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+        {/* Navigation */}
+        <div className="flex justify-between items-center mb-8">
+          <div></div>
+          <Link 
+            href="/admin/dashboard" 
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
-            {saveStatus === 'saving' ? 'Sauvegarde...' : 
-             saveStatus === 'saved' ? '✓ Sauvegardé' : 
-             saveStatus === 'error' ? '❌ Erreur' : '💾 Sauvegarder'}
-          </button>
+            ← Retour au dashboard
+          </Link>
         </div>
 
-        {/* Content Sections */}
-        <div className="space-y-8">
-          {sections.map((section) => (
-            <div key={section.id} className="bg-white rounded-lg shadow-lg border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900">{section.title}</h2>
+        {/* Page Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pageOptions.map((page) => (
+            <div
+              key={page.id}
+              onClick={() => setSelectedPage(page.id)}
+              className="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow border-l-4 border-l-transparent hover:border-l-blue-500"
+            >
+              <div className="flex items-center mb-4">
+                <span className="text-3xl mr-3">{page.icon}</span>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">{page.title}</h3>
+                  <p className="text-sm text-gray-500">{page.sections.length} section{page.sections.length > 1 ? 's' : ''}</p>
+                </div>
               </div>
-              
-              <div className="p-6 space-y-4">
-                {section.fields.map((field) => (
-                  <div key={field.name}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {field.label}
-                    </label>
-                    
-                    {field.type === 'textarea' ? (
-                      <textarea
-                        value={field.value}
-                        onChange={(e) => handleFieldChange(section.id, field.name, e.target.value)}
-                        placeholder={field.placeholder}
-                        rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    ) : field.type === 'html' ? (
-                      <textarea
-                        value={field.value}
-                        onChange={(e) => handleFieldChange(section.id, field.name, e.target.value)}
-                        placeholder={field.placeholder}
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={field.value}
-                        onChange={(e) => handleFieldChange(section.id, field.name, e.target.value)}
-                        placeholder={field.placeholder}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    )}
-                    
-                    {field.type === 'html' && (
-                      <p className="mt-1 text-xs text-gray-500">
-                        Support HTML: utilisez des balises comme &lt;span&gt;, &lt;strong&gt;, &lt;em&gt;
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <p className="text-gray-600 text-sm">{page.description}</p>
             </div>
           ))}
         </div>
