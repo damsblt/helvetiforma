@@ -257,6 +257,12 @@ class AuthService {
             success: false,
             message: 'Ce nom d\'utilisateur est déjà pris.',
           };
+        } else if (errorData.code === 'rest_forbidden' || errorData.code === 'rest_cannot_create_user') {
+          // WordPress requires authentication for user creation
+          return {
+            success: false,
+            message: 'La création de compte est temporairement désactivée. Veuillez contacter l\'administrateur.',
+          };
         } else {
           return {
             success: false,
