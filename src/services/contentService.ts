@@ -140,6 +140,24 @@ export interface WebsiteContent {
   conceptPhilosophy: string;
   conceptPersonalizedApproach: string;
   conceptSkillsValidation: string;
+  conceptDistanceTitle: string;
+  conceptDistanceDescription: string;
+  conceptPresentialTitle: string;
+  conceptPresentialDescription: string;
+  conceptHybridTitle: string;
+  conceptHybridSubtitle: string;
+  conceptAdvantage1Title: string;
+  conceptAdvantage1Description: string;
+  conceptAdvantage2Title: string;
+  conceptAdvantage2Description: string;
+  conceptAdvantage3Title: string;
+  conceptAdvantage3Description: string;
+  conceptAdvantage4Title: string;
+  conceptAdvantage4Description: string;
+  conceptFeaturesTitle: string;
+  conceptFeaturesContent: string;
+  conceptCtaTitle: string;
+  conceptCtaDescription: string;
   conceptBenefits: string;
 }
 
@@ -280,6 +298,24 @@ const defaultContent: WebsiteContent = {
   conceptPhilosophy: 'HelvetiForma est une plateforme de formation en ligne qui vous offre la liberté d\'apprendre à votre rythme, où et quand vous voulez. Nous vous aidons à acquérir les compétences nécessaires pour réussir dans votre carrière.',
   conceptPersonalizedApproach: 'Notre approche combine le meilleur de l\'apprentissage en ligne et en présentiel pour créer une expérience d\'apprentissage optimale et engageante.',
   conceptSkillsValidation: 'Nous croyons que l\'apprentissage efficace passe par une combinaison de flexibilité numérique et de validation humaine des compétences acquises.',
+  conceptDistanceTitle: 'Formation à distance',
+  conceptDistanceDescription: 'Modules en ligne flexibles et accessibles 24h/24',
+  conceptPresentialTitle: 'Sessions en présentiel',
+  conceptPresentialDescription: 'Validation des acquis et pratique avec nos formateurs experts',
+  conceptHybridTitle: 'Formation hybride',
+  conceptHybridSubtitle: 'Le meilleur des deux mondes',
+  conceptAdvantage1Title: 'Flexibilité maximale',
+  conceptAdvantage1Description: 'Apprenez à votre rythme, où et quand vous voulez',
+  conceptAdvantage2Title: 'Suivi personnalisé',
+  conceptAdvantage2Description: 'Accompagnement sur mesure avec nos formateurs experts',
+  conceptAdvantage3Title: 'Ressources de qualité',
+  conceptAdvantage3Description: 'Contenu pédagogique créé par des experts du domaine',
+  conceptAdvantage4Title: 'Certification reconnue',
+  conceptAdvantage4Description: 'Diplômes et certificats valorisés par les employeurs',
+  conceptFeaturesTitle: 'Fonctionnalités de notre concept',
+  conceptFeaturesContent: 'Nos avantages : Flexibilité, Accessibilité, Suivi Personnalisé, Support 24/7',
+  conceptCtaTitle: 'Prêt à commencer votre formation ?',
+  conceptCtaDescription: 'Découvrez nos formations spécialisées et commencez votre parcours d\'apprentissage dès aujourd\'hui avec notre approche hybride innovante.',
   conceptBenefits: 'Nos avantages : Flexibilité, Accessibilité, Suivi Personnalisé, Support 24/7'
 };
 

@@ -107,8 +107,27 @@ export default function ConceptPage() {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">Formation à distance</h3>
-                      <p className="text-gray-600">Modules en ligne flexibles et accessibles 24h/24</p>
+                      <EditableContent
+                        fieldName="conceptDistanceTitle"
+                        value={content.conceptDistanceTitle}
+                        type="text"
+                        placeholder="Titre formation à distance"
+                        className="mb-1"
+                      >
+                        <h3 className="font-semibold text-gray-900">
+                          {content.conceptDistanceTitle}
+                        </h3>
+                      </EditableContent>
+                      <EditableContent
+                        fieldName="conceptDistanceDescription"
+                        value={content.conceptDistanceDescription}
+                        type="text"
+                        placeholder="Description formation à distance"
+                      >
+                        <p className="text-gray-600">
+                          {content.conceptDistanceDescription}
+                        </p>
+                      </EditableContent>
                     </div>
                   </div>
                   
@@ -120,8 +139,27 @@ export default function ConceptPage() {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">Sessions en présentiel</h3>
-                      <p className="text-gray-600">Validation des acquis et pratique avec nos formateurs experts</p>
+                      <EditableContent
+                        fieldName="conceptPresentialTitle"
+                        value={content.conceptPresentialTitle}
+                        type="text"
+                        placeholder="Titre sessions présentiel"
+                        className="mb-1"
+                      >
+                        <h3 className="font-semibold text-gray-900">
+                          {content.conceptPresentialTitle}
+                        </h3>
+                      </EditableContent>
+                      <EditableContent
+                        fieldName="conceptPresentialDescription"
+                        value={content.conceptPresentialDescription}
+                        type="text"
+                        placeholder="Description sessions présentiel"
+                      >
+                        <p className="text-gray-600">
+                          {content.conceptPresentialDescription}
+                        </p>
+                      </EditableContent>
                     </div>
                   </div>
                 </div>
@@ -134,8 +172,27 @@ export default function ConceptPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 5.477 5.754 5 7.5 5s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Formation hybride</h3>
-              <p className="text-sm text-gray-600">Le meilleur des deux mondes</p>
+              <EditableContent
+                fieldName="conceptHybridTitle"
+                value={content.conceptHybridTitle}
+                type="text"
+                placeholder="Titre formation hybride"
+                className="mb-2"
+              >
+                <h3 className="font-semibold text-gray-900">
+                  {content.conceptHybridTitle}
+                </h3>
+              </EditableContent>
+              <EditableContent
+                fieldName="conceptHybridSubtitle"
+                value={content.conceptHybridSubtitle}
+                type="text"
+                placeholder="Sous-titre formation hybride"
+              >
+                <p className="text-sm text-gray-600">
+                  {content.conceptHybridSubtitle}
+                </p>
+              </EditableContent>
             </div>
           </div>
         </div>
@@ -206,8 +263,27 @@ export default function ConceptPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Flexibilité maximale</h3>
-                  <p className="text-gray-600">Apprenez à votre rythme, où et quand vous voulez</p>
+                  <EditableContent
+                    fieldName="conceptAdvantage1Title"
+                    value={content.conceptAdvantage1Title}
+                    type="text"
+                    placeholder="Titre avantage 1"
+                    className="mb-1"
+                  >
+                    <h3 className="font-semibold text-gray-900">
+                      {content.conceptAdvantage1Title}
+                    </h3>
+                  </EditableContent>
+                  <EditableContent
+                    fieldName="conceptAdvantage1Description"
+                    value={content.conceptAdvantage1Description}
+                    type="text"
+                    placeholder="Description avantage 1"
+                  >
+                    <p className="text-gray-600">
+                      {content.conceptAdvantage1Description}
+                    </p>
+                  </EditableContent>
                 </div>
               </div>
               
@@ -218,8 +294,27 @@ export default function ConceptPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Suivi personnalisé</h3>
-                  <p className="text-gray-600">Accompagnement sur mesure avec nos formateurs experts</p>
+                  <EditableContent
+                    fieldName="conceptAdvantage2Title"
+                    value={content.conceptAdvantage2Title}
+                    type="text"
+                    placeholder="Titre avantage 2"
+                    className="mb-1"
+                  >
+                    <h3 className="font-semibold text-gray-900">
+                      {content.conceptAdvantage2Title}
+                    </h3>
+                  </EditableContent>
+                  <EditableContent
+                    fieldName="conceptAdvantage2Description"
+                    value={content.conceptAdvantage2Description}
+                    type="text"
+                    placeholder="Description avantage 2"
+                  >
+                    <p className="text-gray-600">
+                      {content.conceptAdvantage2Description}
+                    </p>
+                  </EditableContent>
                 </div>
               </div>
             </div>
@@ -232,8 +327,27 @@ export default function ConceptPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Ressources de qualité</h3>
-                  <p className="text-gray-600">Contenu pédagogique créé par des experts du domaine</p>
+                  <EditableContent
+                    fieldName="conceptAdvantage3Title"
+                    value={content.conceptAdvantage3Title}
+                    type="text"
+                    placeholder="Titre avantage 3"
+                    className="mb-1"
+                  >
+                    <h3 className="font-semibold text-gray-900">
+                      {content.conceptAdvantage3Title}
+                    </h3>
+                  </EditableContent>
+                  <EditableContent
+                    fieldName="conceptAdvantage3Description"
+                    value={content.conceptAdvantage3Description}
+                    type="text"
+                    placeholder="Description avantage 3"
+                  >
+                    <p className="text-gray-600">
+                      {content.conceptAdvantage3Description}
+                    </p>
+                  </EditableContent>
                 </div>
               </div>
               
@@ -244,8 +358,27 @@ export default function ConceptPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Certification reconnue</h3>
-                  <p className="text-gray-600">Diplômes et certificats valorisés par les employeurs</p>
+                  <EditableContent
+                    fieldName="conceptAdvantage4Title"
+                    value={content.conceptAdvantage4Title}
+                    type="text"
+                    placeholder="Titre avantage 4"
+                    className="mb-1"
+                  >
+                    <h3 className="font-semibold text-gray-900">
+                      {content.conceptAdvantage4Title}
+                    </h3>
+                  </EditableContent>
+                  <EditableContent
+                    fieldName="conceptAdvantage4Description"
+                    value={content.conceptAdvantage4Description}
+                    type="text"
+                    placeholder="Description avantage 4"
+                  >
+                    <p className="text-gray-600">
+                      {content.conceptAdvantage4Description}
+                    </p>
+                  </EditableContent>
                 </div>
               </div>
             </div>
@@ -254,26 +387,61 @@ export default function ConceptPage() {
 
         {/* Concept Features Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
-            Fonctionnalités de notre concept
-          </h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {content.conceptFeatures.split('\n').map((feature, index) => (
-              <div key={index} className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-gray-700">{feature.replace('• ', '')}</span>
-              </div>
-            ))}
-          </div>
+          <EditableContent
+            fieldName="conceptFeaturesTitle"
+            value={content.conceptFeaturesTitle}
+            type="text"
+            placeholder="Titre des fonctionnalités"
+            className="mb-6 text-center"
+          >
+            <h2 className="text-2xl font-semibold text-gray-900">
+              {content.conceptFeaturesTitle}
+            </h2>
+          </EditableContent>
+          
+          <EditableContent
+            fieldName="conceptFeaturesContent"
+            value={content.conceptFeaturesContent}
+            type="textarea"
+            placeholder="Contenu des fonctionnalités"
+            className="mb-4"
+          >
+            <div className="grid md:grid-cols-2 gap-6">
+              {content.conceptFeaturesContent.split('\n').map((feature, index) => (
+                <div key={index} className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-700">{feature.replace('• ', '')}</span>
+                </div>
+              ))}
+            </div>
+          </EditableContent>
         </div>
 
         {/* Call to Action */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-sm p-8 text-center">
-          <h3 className="text-2xl font-bold text-white mb-4">Prêt à commencer votre formation ?</h3>
-          <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-            Découvrez nos formations spécialisées et commencez votre parcours d'apprentissage 
-            dès aujourd'hui avec notre approche hybride innovante.
-          </p>
+          <EditableContent
+            fieldName="conceptCtaTitle"
+            value={content.conceptCtaTitle}
+            type="text"
+            placeholder="Titre de l'appel à l'action"
+            className="mb-4"
+          >
+            <h3 className="text-2xl font-bold text-white">
+              {content.conceptCtaTitle}
+            </h3>
+          </EditableContent>
+          
+          <EditableContent
+            fieldName="conceptCtaDescription"
+            value={content.conceptCtaDescription}
+            type="textarea"
+            placeholder="Description de l'appel à l'action"
+            className="mb-6 max-w-2xl mx-auto"
+          >
+            <p className="text-blue-100">
+              {content.conceptCtaDescription}
+            </p>
+          </EditableContent>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               href="/formations" 
