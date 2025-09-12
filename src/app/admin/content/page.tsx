@@ -741,7 +741,7 @@ export default function ContentManagement() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedPage) return;
 
     setIsLoading(true);
@@ -755,7 +755,7 @@ export default function ContentManagement() {
         return acc;
       }, {} as Record<string, string>);
 
-      contentService.updateFields(contentToSave);
+      await contentService.updateFields(contentToSave);
       setSaveStatus('saved');
       
       setTimeout(() => setSaveStatus('idle'), 3000);

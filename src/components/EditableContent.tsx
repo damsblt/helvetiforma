@@ -43,7 +43,7 @@ export default function EditableContent({
     setIsSaving(true);
     try {
       // Update the content service
-      (contentService as any).updateField(fieldName, editValue);
+      await (contentService as any).updateField(fieldName, editValue);
       
       // Dispatch custom event to notify other components
       window.dispatchEvent(new CustomEvent('contentUpdated'));

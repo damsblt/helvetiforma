@@ -13,7 +13,15 @@ export default function Home() {
 
   useEffect(() => {
     // Load content from the content service
-    setContent(contentService.getContent());
+    const loadContent = async () => {
+      // Wait for content to be loaded
+      while (!contentService.isContentLoaded()) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      setContent(contentService.getContent());
+    };
+    
+    loadContent();
     
     // Check if user is admin
     const checkAdmin = () => {
