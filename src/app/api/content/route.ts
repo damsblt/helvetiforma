@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
 
 const CONTENT_KEY = 'website_content';
 
@@ -121,20 +120,34 @@ const defaultContent = {
   conceptFeatures: 'Nos avantages : Flexibilité, Accessibilité, Suivi Personnalisé, Support 24/7'
 };
 
-// GET - Load content from Vercel KV
+// Check if Vercel KV is available
+const isVercelKVAvailable = () => {
+  return process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+};
+
+// GET - Load content from Vercel KV or return default
 export async function GET() {
   try {
+    // Check if Vercel KV is available
+    if (!isVercelKVAvailable()) {
+      console.log('Vercel KV not configured, returning default content');
+      return NextResponse.json({ success: true, content: defaultContent });
+    }
+
     // Try to load from Vercel KV
+    const { kv } = await import('@vercel/kv');
     const content = await kv.get(CONTENT_KEY);
     
     if (content) {
+      console.log('Content loaded from Vercel KV');
       return NextResponse.json({ success: true, content });
     }
     
     // If no content in KV, return default content
+    console.log('No content in Vercel KV, returning default content');
     return NextResponse.json({ success: true, content: defaultContent });
   } catch (error) {
-    console.warn('Vercel KV not available, returning default content:', error);
+    console.warn('Vercel KV error, returning default content:', error);
     // Fallback to default content if KV is not available
     return NextResponse.json({ success: true, content: defaultContent });
   }
@@ -150,8 +163,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Content is required' }, { status: 400 });
     }
     
+    // Check if Vercel KV is available
+    if (!isVercelKVAvailable()) {
+      console.log('Vercel KV not configured, content not saved');
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Vercel KV not configured. Content cannot be saved.' 
+      }, { status: 500 });
+    }
+    
     // Save content to Vercel KV
+    const { kv } = await import('@vercel/kv');
     await kv.set(CONTENT_KEY, content);
+    console.log('Content saved to Vercel KV');
     
     return NextResponse.json({ success: true, message: 'Content saved successfully' });
   } catch (error) {

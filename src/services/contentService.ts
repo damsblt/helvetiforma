@@ -290,32 +290,40 @@ class ContentService {
   
   // Load content from server API or localStorage fallback
   private async loadContent(): Promise<void> {
-    try {
-      // Try to load from server first
-      const response = await fetch('/api/content');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.content) {
-          this.content = { ...defaultContent, ...data.content };
-          this.isLoaded = true;
-          return;
+    // Only try to load from server if we're in the browser
+    if (typeof window !== 'undefined') {
+      try {
+        // Try to load from server first
+        const response = await fetch('/api/content');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.content) {
+            this.content = { ...defaultContent, ...data.content };
+            this.isLoaded = true;
+            console.log('Content loaded from server API');
+            return;
+          }
         }
+      } catch (error) {
+        console.warn('Failed to load content from server, trying localStorage:', error);
       }
-    } catch (error) {
-      console.warn('Failed to load content from server, trying localStorage:', error);
-    }
-    
-    // Fallback to localStorage
-    try {
-      if (typeof window !== 'undefined') {
+      
+      // Fallback to localStorage
+      try {
         const savedContent = localStorage.getItem('websiteContent');
         if (savedContent) {
           const parsed = JSON.parse(savedContent);
           this.content = { ...defaultContent, ...parsed };
+          console.log('Content loaded from localStorage');
+        } else {
+          console.log('No saved content found, using defaults');
         }
+      } catch (error) {
+        console.error('Error loading content from localStorage:', error);
       }
-    } catch (error) {
-      console.error('Error loading content from localStorage:', error);
+    } else {
+      // Server-side: use default content
+      console.log('Server-side: using default content');
     }
     
     this.isLoaded = true;
@@ -365,21 +373,30 @@ class ContentService {
         body: JSON.stringify({ content: this.content }),
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to save content to server');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          console.log('Content saved to server successfully');
+        } else {
+          console.warn('Server returned error:', data.error);
+        }
+      } else {
+        console.warn('Failed to save content to server, status:', response.status);
       }
       
-      // Also save to localStorage as backup
+      // Always save to localStorage as backup
       if (typeof window !== 'undefined') {
         localStorage.setItem('websiteContent', JSON.stringify(this.content));
+        console.log('Content saved to localStorage as backup');
       }
     } catch (error) {
-      console.error('Error saving content:', error);
+      console.error('Error saving content to server:', error);
       
       // Fallback to localStorage only
       try {
         if (typeof window !== 'undefined') {
           localStorage.setItem('websiteContent', JSON.stringify(this.content));
+          console.log('Content saved to localStorage only');
         }
       } catch (localError) {
         console.error('Error saving to localStorage:', localError);
