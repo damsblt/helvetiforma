@@ -1,8 +1,8 @@
 # 🚀 Content Persistence Deployment Guide for helvetiforma.ch
 
-## ✅ **Problem Solved: Content Persistence for Production**
+## ✅ **Problem Solved: Content Persistence with Supabase**
 
-Your content editing system now works with **Vercel KV (Redis)** for persistent storage on helvetiforma.ch, making it fully compatible with Vercel deployment.
+Your content editing system now works with **Supabase PostgreSQL** for persistent storage on helvetiforma.ch, making it fully compatible with Vercel deployment and leveraging your existing Supabase account.
 
 ---
 
@@ -14,10 +14,11 @@ Your content editing system now works with **Vercel KV (Redis)** for persistent 
 - Not persistent across deployments
 
 ### **After (✅ Working on Vercel)**
-- Content saved to **Vercel KV** (Redis database)
+- Content saved to **Supabase PostgreSQL** database
 - Serverless-compatible
 - **Persistent across deployments**
 - **Real-time editing** on helvetiforma.ch
+- **Leverages your existing Supabase account**
 
 ---
 
@@ -29,38 +30,42 @@ Your content editing system now works with **Vercel KV (Redis)** for persistent 
 2. **Import your GitHub repository**
 3. **Deploy the project**
 
-### **Step 2: Set up Vercel KV**
+### **Step 2: Set up Supabase Table**
+
+1. **Go to your Supabase Dashboard**
+2. **Open the SQL Editor** (like in your screenshot)
+3. **Run the SQL script** from `supabase-setup.sql`:
+
+```sql
+-- Copy and paste the entire content of supabase-setup.sql
+-- This will create the website_content table with default content
+```
+
+### **Step 3: Get Supabase Credentials**
+
+1. **In Supabase Dashboard**:
+   - Go to your project
+   - Click "Settings" → "API"
+   - Copy these values:
+     - `Project URL` (NEXT_PUBLIC_SUPABASE_URL)
+     - `anon public` key (NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
+### **Step 4: Add Environment Variables to Vercel**
 
 1. **In Vercel Dashboard**:
    - Go to your project (helvetiforma)
-   - Click "Storage" tab
-   - Click "Create Database"
-   - Select "KV" (Key-Value)
-   - Name it: `helvetiforma-content`
-   - Click "Create"
-
-2. **Copy the connection details**:
-   - `KV_REST_API_URL`
-   - `KV_REST_API_TOKEN`
-   - `KV_REST_API_READ_ONLY_TOKEN`
-
-### **Step 3: Add Environment Variables**
-
-1. **In Vercel Dashboard**:
-   - Go to your project
    - Click "Settings" tab
    - Click "Environment Variables"
    - Add these variables:
 
    ```env
-   KV_REST_API_URL=your_kv_url_here
-   KV_REST_API_TOKEN=your_kv_token_here
-   KV_REST_API_READ_ONLY_TOKEN=your_readonly_token_here
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
 2. **Redeploy** after adding environment variables
 
-### **Step 4: Test Content Editing**
+### **Step 5: Test Content Editing**
 
 1. **Go to helvetiforma.ch/admin/content**
 2. **Edit any content** (e.g., change a title)
@@ -73,62 +78,65 @@ Your content editing system now works with **Vercel KV (Redis)** for persistent 
 ## 🎯 **How It Works Now**
 
 ### **Content Editing Flow**:
-1. **Admin edits content** → Saves to Vercel KV
+1. **Admin edits content** → Saves to Supabase PostgreSQL
 2. **Content persists** → Survives deployments
 3. **All users see changes** → Real-time updates
 
 ### **Fallback System**:
-- **Primary**: Vercel KV (production)
+- **Primary**: Supabase PostgreSQL (production)
 - **Fallback**: localStorage (development)
 - **Default**: Hardcoded content (if both fail)
 
 ---
 
-## ✅ **Benefits**
+## ✅ **Benefits of Using Supabase**
 
-- **✅ Vercel Compatible**: Works on serverless architecture
-- **✅ Persistent**: Content survives deployments
-- **✅ Scalable**: Redis database handles high traffic
-- **✅ Fast**: Sub-millisecond read/write operations
-- **✅ Real-time**: Changes appear immediately
+- **✅ Already Set Up**: You have an existing account
+- **✅ PostgreSQL**: Robust relational database
+- **✅ Real-time**: Built-in real-time subscriptions
+- **✅ Scalable**: Handles high traffic
+- **✅ SQL Editor**: Easy to manage data
+- **✅ Vercel Compatible**: Works perfectly with serverless
 
 ---
 
 ## 🔍 **Troubleshooting**
 
 ### **If content doesn't save:**
-1. Check Vercel KV is configured
-2. Check environment variables are set
-3. Check Vercel logs for errors
+1. Check Supabase credentials are correct
+2. Check environment variables are set in Vercel
+3. Check Supabase logs for errors
+4. Verify the `website_content` table exists
 
 ### **If content doesn't load:**
-1. Check Vercel KV connection
+1. Check Supabase connection
 2. Check API route is working
 3. Check browser console for errors
+4. Verify the table has data
 
-### **If you see "Vercel KV not configured":**
+### **If you see "Supabase not configured":**
 1. Go to Vercel Dashboard
-2. Set up Vercel KV database
-3. Add environment variables
-4. Redeploy
+2. Add environment variables
+3. Redeploy
 
 ---
 
 ## 📝 **Current Status**
 
-- ✅ **API Route**: `/api/content` working
-- ✅ **Content Service**: Updated for Vercel KV
+- ✅ **API Route**: `/api/content` updated for Supabase
+- ✅ **Content Service**: Updated for Supabase
 - ✅ **Build**: Successful
 - ✅ **Development**: Working with localStorage fallback
-- ⏳ **Production**: Needs Vercel KV setup
+- ✅ **SQL Script**: Ready to run in Supabase
+- ⏳ **Production**: Needs Supabase setup
 
 ---
 
 ## 🎉 **Next Steps**
 
-1. **Deploy to Vercel** (if not already done)
-2. **Set up Vercel KV** database
-3. **Add environment variables**
+1. **Run the SQL script** in your Supabase SQL Editor
+2. **Add environment variables** to Vercel
+3. **Redeploy** the project
 4. **Test content editing** on helvetiforma.ch
 5. **Enjoy persistent content editing!**
 
@@ -136,7 +144,23 @@ Your content editing system now works with **Vercel KV (Redis)** for persistent 
 
 ## 📞 **Support**
 
-If you need help with the Vercel KV setup, check:
-- [Vercel KV Documentation](https://vercel.com/docs/storage/vercel-kv)
-- [Vercel Dashboard](https://vercel.com/dashboard)
-- [Environment Variables Guide](https://vercel.com/docs/projects/environment-variables)
+If you need help with the Supabase setup, check:
+- [Supabase Documentation](https://supabase.com/docs)
+- [Supabase Dashboard](https://supabase.com/dashboard)
+- [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables)
+
+---
+
+## 🗄️ **Database Schema**
+
+The `website_content` table structure:
+```sql
+CREATE TABLE website_content (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  content JSONB NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+This stores all your website content as JSON in a single row, making it easy to manage and update.
