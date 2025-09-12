@@ -41,18 +41,64 @@ export interface WebsiteContent {
   formationSalairesDay3: string;
   formationSalairesTargetAudience: string;
   formationSalairesPrerequisites: string;
+  formationSalairesDuration: string;
+  formationSalairesPrice: string;
+  formationSalairesLevel: string;
+  formationSalairesParticipants: string;
+  formationSalairesKeyConcept1Title: string;
+  formationSalairesKeyConcept1Description: string;
+  formationSalairesKeyConcept2Title: string;
+  formationSalairesKeyConcept2Description: string;
+  formationSalairesKeyConcept3Title: string;
+  formationSalairesKeyConcept3Description: string;
+  formationSalairesKeyConcept4Title: string;
+  formationSalairesKeyConcept4Description: string;
+  formationSalairesCtaTitle: string;
+  formationSalairesCtaDescription: string;
+  formationSalairesObjectives: string;
+  formationSalairesIncluded: string;
   
   formationChargesTitle: string;
   formationChargesDescription: string;
   formationChargesOverview: string;
   formationChargesTargetAudience: string;
   formationChargesPrerequisites: string;
+  formationChargesKeyConcept1Title: string;
+  formationChargesKeyConcept1Description: string;
+  formationChargesKeyConcept2Title: string;
+  formationChargesKeyConcept2Description: string;
+  formationChargesKeyConcept3Title: string;
+  formationChargesKeyConcept3Description: string;
+  formationChargesKeyConcept4Title: string;
+  formationChargesKeyConcept4Description: string;
+  formationChargesCtaTitle: string;
+  formationChargesCtaDescription: string;
+  formationChargesObjectives: string;
+  formationChargesIncluded: string;
+  formationChargesDuration: string;
+  formationChargesPrice: string;
   
   formationImpotTitle: string;
   formationImpotDescription: string;
   formationImpotOverview: string;
   formationImpotTargetAudience: string;
   formationImpotPrerequisites: string;
+  formationImpotKeyConcept1Title: string;
+  formationImpotKeyConcept1Description: string;
+  formationImpotKeyConcept2Title: string;
+  formationImpotKeyConcept2Description: string;
+  formationImpotKeyConcept3Title: string;
+  formationImpotKeyConcept3Description: string;
+  formationImpotKeyConcept4Title: string;
+  formationImpotKeyConcept4Description: string;
+  formationImpotCtaTitle: string;
+  formationImpotCtaDescription: string;
+  formationImpotObjectives: string;
+  formationImpotIncluded: string;
+  formationImpotDuration: string;
+  formationImpotPrice: string;
+  formationImpotLevel: string;
+  formationImpotParticipants: string;
   
   // Formation Details
   formationDuration: string;
@@ -133,6 +179,22 @@ const defaultContent: WebsiteContent = {
   formationSalairesDay3: '• Déclarations sociales et fiscales\n• Contrôles et audits\n• Bonnes pratiques et optimisation\n• Cas pratiques et mise en situation',
   formationSalairesTargetAudience: 'Responsables RH\nComptables et contrôleurs\nGestionnaires de paie\nChefs d\'entreprise\nConsultants en ressources humaines',
   formationSalairesPrerequisites: 'Connaissances de base en comptabilité\nExpérience en gestion d\'entreprise\nMaîtrise du français\nOrdinateur portable (recommandé)',
+  formationSalairesDuration: '3 jours',
+  formationSalairesPrice: 'CHF 1,200',
+  formationSalairesLevel: 'Niveau Intermédiaire',
+  formationSalairesParticipants: 'Max 12 participants',
+  formationSalairesKeyConcept1Title: 'Cadre légal',
+  formationSalairesKeyConcept1Description: 'Comprendre les obligations légales et les réglementations suisses en matière de salaires.',
+  formationSalairesKeyConcept2Title: 'Calcul des salaires',
+  formationSalairesKeyConcept2Description: 'Maîtriser les différents types de salaires et leurs calculs spécifiques.',
+  formationSalairesKeyConcept3Title: 'Gestion RH',
+  formationSalairesKeyConcept3Description: 'Outils et processus de gestion des ressources humaines et de la paie.',
+  formationSalairesKeyConcept4Title: 'Déclarations',
+  formationSalairesKeyConcept4Description: 'Procédures de déclaration et de conformité fiscale et sociale.',
+  formationSalairesCtaTitle: 'Prêt à maîtriser la gestion des salaires ?',
+  formationSalairesCtaDescription: 'Inscrivez-vous dès maintenant à notre formation spécialisée.',
+  formationSalairesObjectives: '• Maîtriser la gestion des salaires en Suisse\n• Comprendre le cadre légal et les obligations\n• Utiliser les outils de gestion RH\n• Optimiser les processus de paie',
+  formationSalairesIncluded: '• Formation de 3 jours\n• Support de cours complet\n• Cas pratiques et exercices\n• Certificat de participation\n• Support post-formation',
   
   // Formation Charges Sociales
   formationChargesTitle: 'Charges Sociales',
@@ -140,6 +202,20 @@ const defaultContent: WebsiteContent = {
   formationChargesOverview: 'Formation complète sur la gestion des charges sociales et assurances en Suisse.',
   formationChargesTargetAudience: 'Responsables RH\nComptables\nGestionnaires de paie\nChefs d\'entreprise',
   formationChargesPrerequisites: 'Connaissances de base en comptabilité\nExpérience en gestion d\'entreprise\nMaîtrise du français',
+  formationChargesKeyConcept1Title: 'AVS/AI/APG',
+  formationChargesKeyConcept1Description: 'Comprendre les cotisations pour l\'assurance-vieillesse et survivants, l\'assurance-invalidité et l\'assurance-chômage.',
+  formationChargesKeyConcept2Title: 'AC/APL',
+  formationChargesKeyConcept2Description: 'Gestion des cotisations pour l\'assurance-accidents et l\'assurance perte de gains.',
+  formationChargesKeyConcept3Title: 'LPP',
+  formationChargesKeyConcept3Description: 'Prévoyance professionnelle et cotisations obligatoires pour la retraite.',
+  formationChargesKeyConcept4Title: 'Déclarations',
+  formationChargesKeyConcept4Description: 'Procédures de déclaration et de versement des cotisations sociales.',
+  formationChargesCtaTitle: 'Prêt à maîtriser les charges sociales ?',
+  formationChargesCtaDescription: 'Inscrivez-vous dès maintenant à notre formation spécialisée.',
+  formationChargesObjectives: '• Comprendre le système de charges sociales suisse\n• Maîtriser le calcul des cotisations\n• Gérer les déclarations et versements\n• Optimiser la gestion RH',
+  formationChargesIncluded: '• Formation de 3 jours\n• Support de cours complet\n• Cas pratiques et exercices\n• Certificat de participation\n• Support post-formation',
+  formationChargesDuration: '3 jours',
+  formationChargesPrice: 'CHF 1,200',
   
   // Formation Impôt à la Source
   formationImpotTitle: 'Impôt à la Source',
@@ -147,6 +223,22 @@ const defaultContent: WebsiteContent = {
   formationImpotOverview: 'Formation complète sur l\'impôt à la source en Suisse.',
   formationImpotTargetAudience: 'Responsables RH\nComptables\nGestionnaires de paie\nChefs d\'entreprise',
   formationImpotPrerequisites: 'Connaissances de base en comptabilité\nExpérience en gestion d\'entreprise\nMaîtrise du français',
+  formationImpotKeyConcept1Title: 'Calcul de l\'impôt',
+  formationImpotKeyConcept1Description: 'Méthodes de calcul de l\'impôt à la source selon les barèmes fédéraux et cantonaux.',
+  formationImpotKeyConcept2Title: 'Déductions',
+  formationImpotKeyConcept2Description: 'Déductions sociales et professionnelles applicables au calcul de l\'impôt.',
+  formationImpotKeyConcept3Title: 'Déclarations',
+  formationImpotKeyConcept3Description: 'Procédures de déclaration et de versement de l\'impôt à la source.',
+  formationImpotKeyConcept4Title: 'Contrôles',
+  formationImpotKeyConcept4Description: 'Gestion des contrôles fiscaux et des régularisations.',
+  formationImpotCtaTitle: 'Maîtrisez l\'impôt à la source',
+  formationImpotCtaDescription: 'Formation complète pour une gestion optimale de l\'impôt à la source.',
+  formationImpotObjectives: '• Maîtriser le calcul de l\'impôt à la source\n• Comprendre les barèmes fédéraux et cantonaux\n• Gérer les déductions et exemptions\n• Optimiser la gestion fiscale',
+  formationImpotIncluded: '• Formation de 3 jours\n• Support de cours complet\n• Cas pratiques et exercices\n• Certificat de participation\n• Support post-formation',
+  formationImpotDuration: '3 jours',
+  formationImpotPrice: 'CHF 1,200',
+  formationImpotLevel: 'Niveau Intermédiaire',
+  formationImpotParticipants: 'Max 12 participants',
   
   // Formation Details
   formationDuration: '3 jours',
