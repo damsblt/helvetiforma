@@ -110,40 +110,117 @@ class HelvetiFormaRegistration {
     
     /**
      * Integrate new user with Tutor LMS
-     * This ensures the user appears in the learners list
+     * This ensures the user appears in the learners list as "Apprenant"
      */
     private function integrate_with_tutor_lms($user_id) {
         // Check if Tutor LMS is active
         if (!class_exists('TUTOR\Tutor')) {
+            error_log("Tutor LMS not active - skipping integration for user ID: " . $user_id);
             return;
         }
         
         // Get user data
         $user = get_userdata($user_id);
         if (!$user) {
+            error_log("User not found for ID: " . $user_id);
             return;
         }
         
-        // Ensure user has the correct role for Tutor LMS
+        // Ensure user has the correct role for Tutor LMS (subscriber = Apprenant)
         if (!in_array('subscriber', $user->roles)) {
             $user->set_role('subscriber');
+            error_log("Set subscriber role for user ID: " . $user_id);
         }
         
-        // Trigger Tutor LMS user creation hooks
-        do_action('tutor_after_user_register', $user_id);
-        
-        // Add user meta that Tutor LMS expects
+        // Add comprehensive Tutor LMS user meta
         update_user_meta($user_id, '_is_tutor_student', 'yes');
         update_user_meta($user_id, 'tutor_profile_bio', '');
         update_user_meta($user_id, 'tutor_profile_photo', '');
+        update_user_meta($user_id, 'tutor_register_time', current_time('mysql'));
+        update_user_meta($user_id, 'tutor_profile_phone', '');
+        update_user_meta($user_id, 'tutor_profile_website', '');
+        update_user_meta($user_id, 'tutor_profile_occupation', '');
+        update_user_meta($user_id, 'tutor_profile_about', '');
         
-        // Force refresh of Tutor LMS user cache
+        // Set user as active student in Tutor LMS
+        update_user_meta($user_id, 'tutor_student_status', 'active');
+        
+        // Trigger Tutor LMS user creation hooks
+        do_action('tutor_after_user_register', $user_id);
+        do_action('tutor_after_student_register', $user_id);
+        
+        // Force refresh of Tutor LMS user cache and data
         if (function_exists('tutor_utils')) {
             tutor_utils()->update_user_profile($user_id);
         }
         
-        // Log integration for debugging
-        error_log("Tutor LMS integration completed for user ID: " . $user_id);
+        // Clear any Tutor LMS caches
+        if (function_exists('tutor_cache')) {
+            tutor_cache()->flush();
+        }
+        
+        // Log successful integration
+        error_log("Tutor LMS integration completed for user ID: " . $user_id . " - Role: subscriber (Apprenant)");
+        
+        // Send webhook to Next.js app (optional)
+        $this->send_webhook_to_nextjs('tutor_lms_integration_completed', $user_id, array(
+            'role' => 'subscriber',
+            'tutor_student' => 'yes',
+            'integration_time' => current_time('mysql')
+        ));
+        
+        // Optional: Send notification to admin about new student
+        $this->notify_admin_new_student($user_id);
+    }
+    
+    /**
+     * Notify admin about new student registration
+     */
+    private function notify_admin_new_student($user_id) {
+        $user = get_userdata($user_id);
+        if (!$user) return;
+        
+        $admin_email = get_option('admin_email');
+        $subject = 'Nouvel Apprenant inscrit - ' . get_bloginfo('name');
+        $message = "Un nouvel apprenant s'est inscrit sur votre plateforme de formation :\n\n";
+        $message .= "Nom : " . $user->first_name . " " . $user->last_name . "\n";
+        $message .= "Email : " . $user->user_email . "\n";
+        $message .= "Date d'inscription : " . current_time('d/m/Y H:i') . "\n";
+        $message .= "Rôle : Apprenant (subscriber)\n\n";
+        $message .= "L'utilisateur a été automatiquement ajouté à Tutor LMS.";
+        
+        wp_mail($admin_email, $subject, $message);
+    }
+    
+    /**
+     * Send webhook to Next.js app
+     */
+    private function send_webhook_to_nextjs($action, $user_id, $data = array()) {
+        // Get Next.js app URL from WordPress options or environment
+        $nextjs_url = get_option('helvetiforma_nextjs_url', 'https://helvetiforma.ch');
+        $webhook_url = $nextjs_url . '/api/wordpress-webhook';
+        
+        // Prepare webhook data
+        $webhook_data = array(
+            'action' => $action,
+            'user_id' => $user_id,
+            'user_data' => $data,
+            'timestamp' => current_time('mysql'),
+            'source' => 'wordpress'
+        );
+        
+        // Send webhook (non-blocking)
+        wp_remote_post($webhook_url, array(
+            'body' => json_encode($webhook_data),
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'x-webhook-secret' => get_option('helvetiforma_webhook_secret', '')
+            ),
+            'timeout' => 5,
+            'blocking' => false // Don't wait for response
+        ));
+        
+        error_log("Webhook sent to Next.js: " . $action . " for user ID: " . $user_id);
     }
     
     private function send_welcome_email($email, $username, $password, $first_name) {
