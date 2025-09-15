@@ -321,6 +321,30 @@ class TutorLmsService {
     }
   }
 
+  // Get course categories
+  async getCourseCategories(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/course-category`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch categories: ${response.statusText}`);
+      }
+
+      const categories = await response.json();
+      return categories.map((category: any) => ({
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        count: category.count
+      }));
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      return [];
+    }
+  }
+
   // Get dashboard statistics
   async getStats(): Promise<TutorStats> {
     try {
