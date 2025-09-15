@@ -12,6 +12,8 @@ export interface TutorCourse {
   date: string;
   modified: string;
   slug: string;
+  categories: number[];
+  tags: number[];
   meta: {
     course_duration: string;
     course_level: string;
@@ -103,6 +105,8 @@ class TutorLmsService {
         date: course.post_date,
         modified: course.post_modified,
         slug: course.post_name,
+        categories: course.course_category?.map((cat: any) => cat.term_id) || [],
+        tags: course.course_tag?.map((tag: any) => tag.term_id) || [],
         meta: {
           course_duration: course.additional_info?.course_duration?.[0] ? 
             `${course.additional_info.course_duration[0].hours}h ${course.additional_info.course_duration[0].minutes}min` : 'N/A',
@@ -146,6 +150,8 @@ class TutorLmsService {
         date: course.post_date,
         modified: course.post_modified,
         slug: course.post_name,
+        categories: course.course_category?.map((cat: any) => cat.term_id) || [],
+        tags: course.course_tag?.map((tag: any) => tag.term_id) || [],
         meta: {
           course_duration: course.additional_info?.course_duration?.[0] ? 
             `${course.additional_info.course_duration[0].hours}h ${course.additional_info.course_duration[0].minutes}min` : 'N/A',
