@@ -207,9 +207,9 @@ class TutorLmsService {
             
             if (coursesResponse.ok) {
               const coursesData = await coursesResponse.json();
-              if (coursesData.code === 'success' && coursesData.data) {
-                coursesCount = coursesData.data.length;
-                completedCourses = coursesData.data.filter((course: any) => course.status === 'completed').length;
+              if (coursesData.code === 'tutor_read_student' && coursesData.data && coursesData.data.enrolled_courses) {
+                coursesCount = coursesData.data.enrolled_courses.length;
+                completedCourses = coursesData.data.completed_courses ? coursesData.data.completed_courses.length : 0;
               }
             }
             

@@ -2,7 +2,59 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import tutorLmsService, { TutorCourse, TutorStudent, TutorEnrollment, TutorStats } from '@/services/tutorLmsService';
+
+// Types for the dashboard data
+interface TutorCourse {
+  id: number;
+  title: string;
+  content: string;
+  excerpt: string;
+  status: string;
+  author: number;
+  featured_media: number;
+  date: string;
+  modified: string;
+  slug: string;
+  categories: number[];
+  tags: number[];
+  meta: {
+    course_duration: string;
+    course_level: string;
+    course_price: string;
+    course_rating: number;
+    course_students_count: number;
+  };
+}
+
+interface TutorStudent {
+  id: number;
+  name: string;
+  email: string;
+  avatar_url: string;
+  registered_date: string;
+  last_activity: string;
+  courses_count: number;
+  completed_courses: number;
+}
+
+interface TutorEnrollment {
+  id: number;
+  user_id: number;
+  course_id: number;
+  status: string;
+  enrolled_date: string;
+  completed_date?: string;
+  progress: number;
+}
+
+interface TutorStats {
+  total_courses: number;
+  total_students: number;
+  total_enrollments: number;
+  active_courses: number;
+  completed_courses: number;
+  revenue: number;
+}
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<TutorStats | null>(null);
@@ -19,24 +71,28 @@ export default function AdminDashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const [statsData, coursesData, studentsData, enrollmentsData] = await Promise.all([
-        tutorLmsService.getStats(),
-        tutorLmsService.getCourses(),
-        tutorLmsService.getStudents(),
-        tutorLmsService.getEnrollments()
-      ]);
-
-      console.log('Dashboard data loaded:', {
-        stats: statsData,
-        courses: coursesData.length,
-        students: studentsData.length,
-        enrollments: enrollmentsData.length
-      });
       
-      setStats(statsData);
-      setCourses(coursesData);
-      setStudents(studentsData);
-      setEnrollments(enrollmentsData);
+      // Fetch data from server-side API
+      const response = await fetch('/api/dashboard');
+      const result = await response.json();
+      
+      if (result.success) {
+        const { stats: statsData, courses: coursesData, students: studentsData, enrollments: enrollmentsData } = result.data;
+        
+        console.log('Dashboard data loaded:', {
+          stats: statsData,
+          courses: coursesData.length,
+          students: studentsData.length,
+          enrollments: enrollmentsData.length
+        });
+        
+        setStats(statsData);
+        setCourses(coursesData);
+        setStudents(studentsData);
+        setEnrollments(enrollmentsData);
+      } else {
+        console.error('Dashboard API error:', result.error);
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
