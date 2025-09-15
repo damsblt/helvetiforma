@@ -207,11 +207,11 @@ class AuthService {
     }
   }
 
-  // Register using WordPress - try custom endpoint first, then fallback
+  // Register using our working Tutor LMS integration
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
-      // First, try our custom registration endpoint
-      const response = await fetch(`${this.baseUrl}/wp-json/helvetiforma/v1/register`, {
+      // Use our working Tutor LMS registration endpoint
+      const response = await fetch('/api/tutor-register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -226,10 +226,10 @@ class AuthService {
       if (response.ok) {
         const data = await response.json();
         
-        // WordPress user created successfully
+        // Tutor LMS user created and enrolled successfully
         return {
           success: true,
-          message: data.message || 'Compte créé avec succès. Vérifiez votre email pour le mot de passe.',
+          message: data.message || 'Compte créé avec succès ! Vous êtes maintenant inscrit à nos formations.',
           redirectTo: '/login', // Redirect to login page
           user: {
             id: data.user_id,
@@ -243,27 +243,16 @@ class AuthService {
       } else {
         const errorData = await response.json();
         
-        // Handle WordPress-specific errors
-        if (errorData.code === 'email_exists' || errorData.code === 'existing_user_email') {
+        // Handle registration errors
+        if (errorData.error && errorData.error.includes('email')) {
           return {
             success: false,
             message: 'Un compte avec cet email existe déjà.',
           };
-        } else if (errorData.code === 'existing_user_login') {
-          return {
-            success: false,
-            message: 'Ce nom d\'utilisateur est déjà pris.',
-          };
-        } else if (errorData.code === 'rest_forbidden' || errorData.code === 'rest_cannot_create_user') {
-          // WordPress requires authentication for user creation
-          return {
-            success: false,
-            message: 'La création de compte est temporairement désactivée. Veuillez contacter l\'administrateur.',
-          };
         } else {
           return {
             success: false,
-            message: errorData.message || 'Erreur lors de la création du compte',
+            message: errorData.error || 'Erreur lors de la création du compte',
           };
         }
       }
