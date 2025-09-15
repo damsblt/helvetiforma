@@ -174,7 +174,7 @@ class TutorLmsService {
     }
   }
 
-  // Get all students (admin only) - using WordPress users + Tutor LMS Pro API
+  // Get all students (admin only) - only users enrolled in Tutor LMS courses
   async getStudents(): Promise<TutorStudent[]> {
     try {
       console.log('Fetching students from WordPress users API...');
@@ -194,7 +194,7 @@ class TutorLmsService {
       console.log('WordPress users fetched:', users.length, users.map(s => ({ id: s.id, name: s.name, slug: s.slug })));
       
       // For each user, get their course information using Tutor LMS Pro API
-      const studentsWithCourses = await Promise.all(
+      const usersWithCourses = await Promise.all(
         users.map(async (user: any) => {
           try {
             // Get courses for this specific student using Tutor LMS Pro API
@@ -239,8 +239,11 @@ class TutorLmsService {
         })
       );
       
-      console.log('Students with course data:', studentsWithCourses.length);
-      return studentsWithCourses;
+      // Filter to only include users who are actually enrolled in courses (Tutor LMS students)
+      const students = usersWithCourses.filter(user => user.courses_count > 0);
+      
+      console.log('Tutor LMS students (enrolled in courses):', students.length, students.map(s => ({ id: s.id, name: s.name, courses_count: s.courses_count })));
+      return students;
     } catch (error) {
       console.error('Error fetching students:', error);
       return [];
