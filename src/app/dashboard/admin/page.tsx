@@ -26,6 +26,13 @@ export default function AdminDashboard() {
         tutorLmsService.getEnrollments()
       ]);
 
+      console.log('Dashboard data loaded:', {
+        stats: statsData,
+        courses: coursesData.length,
+        students: studentsData.length,
+        enrollments: enrollmentsData.length
+      });
+      
       setStats(statsData);
       setCourses(coursesData);
       setStudents(studentsData);

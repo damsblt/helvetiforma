@@ -15,7 +15,8 @@ export function middleware(request: NextRequest) {
     '/images',
     '/css',
     '/js',
-    '/formations'  // Allow access to formation pages
+    '/formations',  // Allow access to formation pages
+    '/dashboard'    // Allow access to dashboard for testing
   ];
   
   // Check if the current path is allowed

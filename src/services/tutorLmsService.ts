@@ -59,7 +59,7 @@ class TutorLmsService {
   private secretKey: string;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
+    this.baseUrl = process.env.TUTOR_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
     this.clientId = process.env.TUTOR_CLIENT_ID || '';
     this.secretKey = process.env.TUTOR_SECRET_KEY || '';
   }
@@ -170,6 +170,7 @@ class TutorLmsService {
   // Get all students (admin only) - using WordPress users endpoint
   async getStudents(): Promise<TutorStudent[]> {
     try {
+      console.log('Fetching students from:', `${this.baseUrl}/wp-json/wp/v2/users`);
       const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/users`, {
         headers: {
           'Authorization': `Basic ${Buffer.from(`gibivawa:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`,
@@ -182,10 +183,12 @@ class TutorLmsService {
       }
 
       const students = await response.json();
+      console.log('WordPress users fetched:', students.length, students.map(s => ({ id: s.id, name: s.name, slug: s.slug })));
+      
       return students.map((student: any) => ({
         id: student.id,
         name: student.name,
-        email: student.slug, // Using slug as email placeholder
+        email: student.slug, // Using slug as email placeholder since WordPress users API doesn't return email
         avatar_url: student.avatar_urls?.['96'] || '',
         registered_date: 'N/A', // Not available in this endpoint
         last_activity: 'N/A',
