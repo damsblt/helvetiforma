@@ -345,6 +345,88 @@ class TutorLmsService {
     }
   }
 
+  // Get course lessons
+  async getCourseLessons(courseId: number): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/wp-json/tutor/v1/lessons?course_id=${courseId}`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch lessons: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching lessons:', error);
+      return [];
+    }
+  }
+
+  // Get course topics
+  async getCourseTopics(courseId: number): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/wp-json/tutor/v1/topics?course_id=${courseId}`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch topics: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching topics:', error);
+      return [];
+    }
+  }
+
+  // Get course quizzes
+  async getCourseQuizzes(courseId: number): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/wp-json/tutor/v1/quizzes?course_id=${courseId}`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch quizzes: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching quizzes:', error);
+      return [];
+    }
+  }
+
+  // Get course statistics
+  async getCourseStats(courseId: number): Promise<any> {
+    try {
+      // Get enrollments for this course
+      const enrollments = await this.getCourseEnrollments(courseId);
+      
+      return {
+        total_enrollments: enrollments.length,
+        completed_enrollments: enrollments.filter(e => e.status === 'completed').length,
+        in_progress_enrollments: enrollments.filter(e => e.status === 'enrolled' && e.progress < 100).length,
+        average_progress: enrollments.length > 0 
+          ? Math.round(enrollments.reduce((sum, e) => sum + e.progress, 0) / enrollments.length)
+          : 0
+      };
+    } catch (error) {
+      console.error('Error fetching course stats:', error);
+      return {
+        total_enrollments: 0,
+        completed_enrollments: 0,
+        in_progress_enrollments: 0,
+        average_progress: 0
+      };
+    }
+  }
+
   // Get dashboard statistics
   async getStats(): Promise<TutorStats> {
     try {
