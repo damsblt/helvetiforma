@@ -174,34 +174,73 @@ class TutorLmsService {
     }
   }
 
-  // Get all students (admin only) - using WordPress users endpoint
+  // Get all students (admin only) - using WordPress users + Tutor LMS Pro API
   async getStudents(): Promise<TutorStudent[]> {
     try {
-      console.log('Fetching students from:', `${this.baseUrl}/wp-json/wp/v2/users`);
-      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/users`, {
+      console.log('Fetching students from WordPress users API...');
+      // First get all WordPress users
+      const usersResponse = await fetch(`${this.baseUrl}/wp-json/wp/v2/users`, {
         headers: {
           'Authorization': `Basic ${Buffer.from(`gibivawa:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`,
           'Content-Type': 'application/json'
         }
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch students: ${response.statusText}`);
+      if (!usersResponse.ok) {
+        throw new Error(`Failed to fetch users: ${usersResponse.statusText}`);
       }
 
-      const students = await response.json();
-      console.log('WordPress users fetched:', students.length, students.map(s => ({ id: s.id, name: s.name, slug: s.slug })));
+      const users = await usersResponse.json();
+      console.log('WordPress users fetched:', users.length, users.map(s => ({ id: s.id, name: s.name, slug: s.slug })));
       
-      return students.map((student: any) => ({
-        id: student.id,
-        name: student.name,
-        email: student.slug, // Using slug as email placeholder since WordPress users API doesn't return email
-        avatar_url: student.avatar_urls?.['96'] || '',
-        registered_date: 'N/A', // Not available in this endpoint
-        last_activity: 'N/A',
-        courses_count: 0, // Would need to be calculated separately
-        completed_courses: 0
-      }));
+      // For each user, get their course information using Tutor LMS Pro API
+      const studentsWithCourses = await Promise.all(
+        users.map(async (user: any) => {
+          try {
+            // Get courses for this specific student using Tutor LMS Pro API
+            const coursesResponse = await fetch(`${this.baseUrl}/wp-json/tutor/v1/students/${user.id}/courses`, {
+              headers: this.getAuthHeaders()
+            });
+            
+            let coursesCount = 0;
+            let completedCourses = 0;
+            
+            if (coursesResponse.ok) {
+              const coursesData = await coursesResponse.json();
+              if (coursesData.code === 'success' && coursesData.data) {
+                coursesCount = coursesData.data.length;
+                completedCourses = coursesData.data.filter((course: any) => course.status === 'completed').length;
+              }
+            }
+            
+            return {
+              id: user.id,
+              name: user.name,
+              email: user.slug, // Using slug as email placeholder
+              avatar_url: user.avatar_urls?.['96'] || '',
+              registered_date: 'N/A',
+              last_activity: 'N/A',
+              courses_count: coursesCount,
+              completed_courses: completedCourses
+            };
+          } catch (error) {
+            console.error(`Error fetching courses for user ${user.id}:`, error);
+            return {
+              id: user.id,
+              name: user.name,
+              email: user.slug,
+              avatar_url: user.avatar_urls?.['96'] || '',
+              registered_date: 'N/A',
+              last_activity: 'N/A',
+              courses_count: 0,
+              completed_courses: 0
+            };
+          }
+        })
+      );
+      
+      console.log('Students with course data:', studentsWithCourses.length);
+      return studentsWithCourses;
     } catch (error) {
       console.error('Error fetching students:', error);
       return [];
