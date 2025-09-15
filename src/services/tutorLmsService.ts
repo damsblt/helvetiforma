@@ -62,6 +62,13 @@ class TutorLmsService {
     this.baseUrl = process.env.TUTOR_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
     this.clientId = process.env.TUTOR_CLIENT_ID || '';
     this.secretKey = process.env.TUTOR_SECRET_KEY || '';
+    
+    console.log('TutorLmsService initialized with:', {
+      baseUrl: this.baseUrl,
+      hasClientId: !!this.clientId,
+      hasSecretKey: !!this.secretKey,
+      wordpressAppPassword: process.env.WORDPRESS_APP_PASSWORD ? 'SET' : 'NOT SET'
+    });
   }
 
   // Get authentication headers
