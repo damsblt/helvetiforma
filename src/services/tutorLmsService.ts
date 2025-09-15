@@ -479,6 +479,103 @@ class TutorLmsService {
     }
   }
 
+  // Get student dashboard data
+  async getStudentDashboard(studentId: number): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/wp-json/tutor/v1/students/${studentId}/dashboard`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch student dashboard: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.data || {};
+    } catch (error) {
+      console.error('Error fetching student dashboard:', error);
+      return {};
+    }
+  }
+
+  // Get student order history
+  async getStudentOrderHistory(studentId: number): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/wp-json/tutor/v1/students/${studentId}/order-histories`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch student order history: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching student order history:', error);
+      return [];
+    }
+  }
+
+  // Get student calendar
+  async getStudentCalendar(studentId: number): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/wp-json/tutor/v1/students/${studentId}/calendar`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch student calendar: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching student calendar:', error);
+      return [];
+    }
+  }
+
+  // Get subscriptions (for subscription workflow)
+  async getSubscriptions(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/wp-json/tutor/v1/subscriptions`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch subscriptions: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching subscriptions:', error);
+      return [];
+    }
+  }
+
+  // Create subscription
+  async createSubscription(subscriptionData: any): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/wp-json/tutor/v1/subscriptions`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(subscriptionData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create subscription: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.data || {};
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      throw error;
+    }
+  }
+
   // Get dashboard statistics
   async getStats(): Promise<TutorStats> {
     try {

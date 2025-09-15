@@ -166,6 +166,28 @@ export default function AdminDashboard() {
           </nav>
         </div>
 
+        {/* Quick Actions */}
+        <div className="mb-6 flex space-x-4">
+          <Link
+            href="/dashboard/student/enhanced"
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Tableau de bord Étudiant (Nouveau)
+          </Link>
+          <Link
+            href="/dashboard/subscriptions"
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Gestion des Abonnements
+          </Link>
+          <Link
+            href="/subscribe"
+            className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+          >
+            S'abonner
+          </Link>
+        </div>
+
         {/* Overview Tab */}
         {activeTab === 'overview' && stats && (
           <div className="space-y-8">
