@@ -57,6 +57,12 @@ export default function Navigation() {
     { href: '/contact', label: 'Contact' },
   ];
 
+  // Add dashboard link if user is authenticated
+  const isAuthenticated = authService.isAuthenticated();
+  if (isAuthenticated) {
+    navItems.push({ href: '/dashboard', label: 'Tableau de bord' });
+  }
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
