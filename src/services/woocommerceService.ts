@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+// WooCommerce Service with enhanced error handling and retry logic for Vercel
 
 const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
 const WOOCOMMERCE_CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b';
@@ -55,7 +55,7 @@ const handleWooCommerceError = async (response: Response) => {
 };
 
 // Rate limiting and retry logic
-const fetchWithRetry = async (url: string, options: RequestInit, retries = 3) => {
+const fetchWithRetry = async (url: string, options: RequestInit, retries = 3): Promise<Response> => {
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url, {
@@ -83,6 +83,9 @@ const fetchWithRetry = async (url: string, options: RequestInit, retries = 3) =>
       await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
     }
   }
+  
+  // This should never be reached, but TypeScript needs it
+  throw new Error('All retry attempts failed');
 };
 
 // Performance monitoring
