@@ -1,25 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
-  try {
-    const revalidateSecret = process.env.REVALIDATE_SECRET;
-    
-    return NextResponse.json({
-      success: true,
-      message: 'Environment variables check',
-      data: {
-        revalidateSecret: revalidateSecret ? 'Set (length: ' + revalidateSecret.length + ')' : 'Not set',
-        nodeEnv: process.env.NODE_ENV,
-        wordpressUrl: process.env.NEXT_PUBLIC_WORDPRESS_URL
-      }
-    });
-  } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
-  }
+export async function GET() {
+  return NextResponse.json({
+    NEXT_PUBLIC_WORDPRESS_URL: process.env.NEXT_PUBLIC_WORDPRESS_URL || 'NOT SET',
+    WOOCOMMERCE_CONSUMER_KEY: process.env.WOOCOMMERCE_CONSUMER_KEY ? 'SET' : 'NOT SET',
+    WOOCOMMERCE_CONSUMER_SECRET: process.env.WOOCOMMERCE_CONSUMER_SECRET ? 'SET' : 'NOT SET',
+    NODE_ENV: process.env.NODE_ENV,
+    timestamp: new Date().toISOString()
+  });
 }
