@@ -3,45 +3,15 @@ import { wooCommerceService } from '@/services/woocommerceService';
 
 export async function GET(request: NextRequest) {
   try {
-    // Try direct API call first to debug the issue
-    const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
-    const WOOCOMMERCE_CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b';
-    const WOOCOMMERCE_CONSUMER_SECRET = process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076';
+    console.log('WooCommerce course products API - Starting request');
     
-    const baseUrl = `${WORDPRESS_URL}/wp-json/wc/v3`;
-    const auth = Buffer.from(
-      `${WOOCOMMERCE_CONSUMER_KEY}:${WOOCOMMERCE_CONSUMER_SECRET}`
-    ).toString('base64');
-    
-    console.log('Direct API call - Environment check:', {
-      WORDPRESS_URL,
-      hasConsumerKey: !!WOOCOMMERCE_CONSUMER_KEY,
-      hasConsumerSecret: !!WOOCOMMERCE_CONSUMER_SECRET,
-      baseUrl,
-      authLength: auth.length
+    // Use the enhanced WooCommerce service with retry logic and better error handling
+    const products = await wooCommerceService.getProducts({
+      status: 'publish',
+      per_page: 50
     });
     
-    const url = `${baseUrl}/products?status=publish&per_page=50`;
-    console.log('Direct API call - Fetching URL:', url);
-    
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json',
-      },
-      signal: AbortSignal.timeout(15000), // 15 second timeout
-    });
-    
-    console.log('Direct API call - Response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Direct API call - Error response:', errorText);
-      throw new Error(`WooCommerce API error: ${response.status} - ${errorText}`);
-    }
-    
-    const products = await response.json();
-    console.log('Direct API call - Successfully fetched products:', products.length);
+    console.log('WooCommerce course products API - Successfully fetched products:', products.length);
 
     console.log('All WooCommerce products:', products.length);
     console.log('Sample product meta_data:', products[0]?.meta_data);
@@ -95,43 +65,82 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('WooCommerce course products API error:', error);
     
-    // If WooCommerce API is not accessible, return mock data for development
-    if (error instanceof Error && (error.message.includes('ENOTFOUND') || error.message.includes('fetch failed'))) {
-      console.log('WooCommerce API not accessible, returning mock data');
-      return NextResponse.json({
-        success: true,
-        data: [
-          {
-            id: 1,
-            name: 'Gestion des salaires - 30000',
-            price: '30000',
-            description: 'Description du cours de gestion des salaires',
-            short_description: 'Cours complet sur la gestion des salaires',
-            images: [],
-            tutor_course_id: '1',
-            course_duration: '3 jours',
-            course_level: 'Intermédiaire',
-            course_slug: 'gestion-des-salaires-30000',
-            virtual: true,
-            downloadable: false
+    // Enhanced error handling with specific error types
+    if (error instanceof Error) {
+      // Network/connectivity issues
+      if (error.message.includes('ENOTFOUND') || error.message.includes('fetch failed') || error.message.includes('network error')) {
+        console.log('WooCommerce API not accessible, returning mock data');
+        return NextResponse.json({
+          success: true,
+          data: [
+            {
+              id: 1,
+              name: 'Gestion des salaires - 30000',
+              price: '30000',
+              description: 'Description du cours de gestion des salaires',
+              short_description: 'Cours complet sur la gestion des salaires',
+              images: [],
+              tutor_course_id: '1',
+              course_duration: '3 jours',
+              course_level: 'Intermédiaire',
+              course_slug: 'gestion-des-salaires-30000',
+              virtual: true,
+              downloadable: false
+            },
+            {
+              id: 2,
+              name: 'Charges sociales - 25000',
+              price: '25000',
+              description: 'Description du cours de charges sociales',
+              short_description: 'Cours sur les charges sociales et cotisations',
+              images: [],
+              tutor_course_id: '2',
+              course_duration: '2 jours',
+              course_level: 'Avancé',
+              course_slug: 'charges-sociales-25000',
+              virtual: true,
+              downloadable: false
+            }
+          ],
+          message: 'Mock course products (WooCommerce API not accessible)'
+        });
+      }
+      
+      // Authentication errors
+      if (error.message.includes('Authentication failed') || error.message.includes('401')) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'WooCommerce API authentication failed',
+            message: 'Erreur d\'authentification - vérifiez les clés API'
           },
-          {
-            id: 2,
-            name: 'Charges sociales - 25000',
-            price: '25000',
-            description: 'Description du cours de charges sociales',
-            short_description: 'Cours sur les charges sociales et cotisations',
-            images: [],
-            tutor_course_id: '2',
-            course_duration: '2 jours',
-            course_level: 'Avancé',
-            course_slug: 'charges-sociales-25000',
-            virtual: true,
-            downloadable: false
-          }
-        ],
-        message: 'Mock course products (WooCommerce API not accessible)'
-      });
+          { status: 401 }
+        );
+      }
+      
+      // Configuration errors
+      if (error.message.includes('Missing required environment variables') || error.message.includes('configuration error')) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'WooCommerce API configuration error',
+            message: 'Erreur de configuration - variables d\'environnement manquantes'
+          },
+          { status: 500 }
+        );
+      }
+      
+      // Timeout errors
+      if (error.message.includes('timeout') || error.message.includes('took too long')) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'WooCommerce API timeout',
+            message: 'Délai d\'attente dépassé - réessayez plus tard'
+          },
+          { status: 408 }
+        );
+      }
     }
     
     return NextResponse.json(
