@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.informaniak.com',
-    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'https://informaniak.com',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://helvetiforma.vercel.app' : 'http://localhost:3000'),
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === 'production' ? 'https://helvetiforma.vercel.app' : 'http://localhost:3000'),
   },
   images: {
     unoptimized: true,
@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   },
   // Disable static generation completely
   trailingSlash: false,
+  // Enable static exports for Netlify (disabled for development with API routes)
+  // output: 'export',
+  // distDir: 'out',
   async headers() {
     return [
       {
@@ -32,9 +35,10 @@ const nextConfig: NextConfig = {
       }
     ];
   },
-  // Enable static exports for GitHub Pages
-  // output: 'export',
-  // trailingSlash: true,
+  // Disable server-side features for static export
+  // experimental: {
+  //   esmExternals: false,
+  // },
 };
 
 export default nextConfig;
