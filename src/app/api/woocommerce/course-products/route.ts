@@ -100,6 +100,20 @@ export async function GET(request: NextRequest) {
               course_slug: 'charges-sociales-25000',
               virtual: true,
               downloadable: false
+            },
+            {
+              id: 167,
+              name: 'Gestions des salaires - new',
+              price: '100',
+              description: 'Nouveau cours de gestion des salaires',
+              short_description: 'Cours mis à jour sur la gestion des salaires',
+              images: [],
+              tutor_course_id: '167',
+              course_duration: '3 jours',
+              course_level: 'Intermédiaire',
+              course_slug: 'gestions-des-salaires-new',
+              virtual: true,
+              downloadable: false
             }
           ],
           message: 'Mock course products (WooCommerce API not accessible)'
