@@ -41,20 +41,43 @@ export class WooCommerceService {
 
       const url = `${this.baseUrl}/products${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
       
+      console.log('WooCommerceService - Fetching URL:', url);
+      console.log('WooCommerceService - Auth header length:', this.auth.length);
+      
       const response = await fetch(url, {
         headers: {
           'Authorization': `Basic ${this.auth}`,
           'Content-Type': 'application/json',
         },
+        // Add timeout for Vercel
+        signal: AbortSignal.timeout(10000), // 10 second timeout
       });
+      
+      console.log('WooCommerceService - Response status:', response.status);
+      console.log('WooCommerceService - Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        throw new Error(`WooCommerce API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error('WooCommerce API error response:', errorText);
+        throw new Error(`WooCommerce API error: ${response.status} - ${errorText}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log('WooCommerceService - Successfully fetched products:', data.length);
+      return data;
     } catch (error) {
       console.error('WooCommerce getProducts error:', error);
+      
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          throw new Error('WooCommerce API timeout - request took too long');
+        }
+        if (error.message.includes('ENOTFOUND') || error.message.includes('fetch failed')) {
+          throw new Error('WooCommerce API not accessible - network error');
+        }
+      }
+      
       throw error;
     }
   }
