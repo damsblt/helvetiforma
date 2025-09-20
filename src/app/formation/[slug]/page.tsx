@@ -140,11 +140,30 @@ export default function FormationDetailsPage() {
     console.log('Formation page - filterProducts: eLearningProducts count:', eLearningProducts.length);
     console.log('Formation page - filterProducts: eLearningProducts:', eLearningProducts.map(p => p.name));
     
-    let filtered = eLearningProducts.filter(product => 
-      product.name.toLowerCase().includes(formation.title.toLowerCase()) ||
-      product.name.toLowerCase().includes(formation.id.toLowerCase()) ||
-      product.description.toLowerCase().includes(formation.title.toLowerCase())
-    );
+    // Normalize text for better matching (remove accents, convert to lowercase)
+    const normalizeText = (text: string) => {
+      return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove accents
+        .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
+        .trim();
+    };
+
+    const normalizedFormationTitle = normalizeText(formation.title);
+    const normalizedFormationId = normalizeText(formation.id);
+    
+    let filtered = eLearningProducts.filter(product => {
+      const normalizedProductName = normalizeText(product.name);
+      const normalizedProductDescription = normalizeText(product.description || '');
+      
+      return normalizedProductName.includes(normalizedFormationTitle) ||
+             normalizedProductName.includes(normalizedFormationId) ||
+             normalizedProductDescription.includes(normalizedFormationTitle) ||
+             // Additional matching for "impot" variations
+             (normalizedFormationId.includes('impot') && normalizedProductName.includes('impot')) ||
+             (normalizedFormationTitle.includes('impot') && normalizedProductName.includes('impot'));
+    });
 
     console.log('Formation page - filterProducts: filtered count:', filtered.length);
     console.log('Formation page - filterProducts: filtered products:', filtered.map(p => p.name));

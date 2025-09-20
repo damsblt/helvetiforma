@@ -98,78 +98,12 @@ export default function FormationDetails({ formationId }: FormationDetailsProps)
   const [filterText, setFilterText] = useState('');
 
   useEffect(() => {
-    const loadFormation = async () => {
-      try {
-        const content = await contentService.getContent();
-        
-        // Get formation data based on formationId
-        let formationData: Formation | null = null;
-        
-        if (formationId === 'salaires') {
-          formationData = {
-            id: 'salaires',
-            title: content.formationSalairesCardTitle || 'Gestion des Salaires',
-            description: content.formationSalairesCardDescription || 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Formation pratique avec cas concrets et outils modernes.',
-            duration: content.formationSalairesCardDuration || '3 jours',
-            level: content.formationSalairesCardLevel || 'Intermédiaire',
-            price: content.formationSalairesCardPrice || 'CHF 1,200',
-            icon: content.formationSalairesIcon || '💰',
-            color: 'blue',
-            features: [
-              content.formationSalairesFeature1 || 'Calcul des salaires et avantages',
-              content.formationSalairesFeature2 || 'Conformité légale suisse',
-              content.formationSalairesFeature3 || 'Outils de gestion RH',
-              content.formationSalairesFeature4 || 'Gestion des congés et absences'
-            ]
-          };
-        } else if (formationId === 'charges-sociales') {
-          formationData = {
-            id: 'charges-sociales',
-            title: content.formationChargesSocialesCardTitle || 'Charges Sociales & Cotisations',
-            description: content.formationChargesSocialesCardDescription || 'Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres assurances sociales en entreprise.',
-            duration: content.formationChargesSocialesCardDuration || '2 jours',
-            level: content.formationChargesSocialesCardLevel || 'Avancé',
-            price: content.formationChargesSocialesCardPrice || 'CHF 980',
-            icon: content.formationChargesSocialesIcon || '🏢',
-            color: 'green',
-            features: [
-              content.formationChargesSocialesFeature1 || 'AVS, AI, APG et LPP',
-              content.formationChargesSocialesFeature2 || 'Calcul des cotisations',
-              content.formationChargesSocialesFeature3 || 'Déclarations sociales',
-              content.formationChargesSocialesFeature4 || 'Optimisation fiscale'
-            ]
-          };
-        } else if (formationId === 'impot-a-la-source') {
-          formationData = {
-            id: 'impot-a-la-source',
-            title: content.formationImpotALaSourceCardTitle || 'Impôt à la Source',
-            description: content.formationImpotALaSourceCardDescription || 'Formation spécialisée sur l\'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. Procédures et bonnes pratiques.',
-            duration: content.formationImpotALaSourceCardDuration || '1.5 jours',
-            level: content.formationImpotALaSourceCardLevel || 'Spécialisé',
-            price: content.formationImpotALaSourceCardPrice || 'CHF 750',
-            icon: content.formationImpotALaSourceIcon || '🌍',
-            color: 'purple',
-            features: [
-              content.formationImpotALaSourceFeature1 || 'Réglementation suisse',
-              content.formationImpotALaSourceFeature2 || 'Calcul de l\'impôt à la source',
-              content.formationImpotALaSourceFeature3 || 'Déclarations fiscales',
-              content.formationImpotALaSourceFeature4 || 'Cas particuliers frontaliers'
-            ]
-          };
-        }
-        
-        setFormation(formationData);
-      } catch (error) {
-        console.error('Error loading formation:', error);
-        // Fallback to hardcoded data
-        const foundFormation = formations.find(f => f.id === formationId);
-        setFormation(foundFormation || null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadFormation();
+    // Use hardcoded data for now to test
+    console.log('FormationDetails - useEffect: formationId:', formationId);
+    const foundFormation = formations.find(f => f.id === formationId);
+    console.log('FormationDetails - useEffect: foundFormation:', foundFormation);
+    setFormation(foundFormation || null);
+    setIsLoading(false);
   }, [formationId]);
 
   useEffect(() => {
@@ -184,39 +118,76 @@ export default function FormationDetails({ formationId }: FormationDetailsProps)
 
   const fetchELearningProducts = async () => {
     try {
+      console.log('FormationDetails - fetchELearningProducts: starting fetch');
       const response = await fetch('/api/woocommerce/course-products');
       const result = await response.json();
       
+      console.log('FormationDetails - fetchELearningProducts: response:', result);
+      
       if (result.success && result.data) {
+        console.log('FormationDetails - fetchELearningProducts: setting products:', result.data.length);
         setELearningProducts(result.data);
+      } else {
+        console.log('FormationDetails - fetchELearningProducts: no data or success false');
       }
     } catch (error) {
-      console.error('Error fetching eLearning products:', error);
+      console.error('FormationDetails - fetchELearningProducts error:', error);
     }
   };
 
   const filterProducts = () => {
-    if (!formation) return;
+    if (!formation) {
+      console.log('FormationDetails - filterProducts: no formation');
+      return;
+    }
+    
+    console.log('FormationDetails - filterProducts: formation:', formation.title);
+    console.log('FormationDetails - filterProducts: eLearningProducts count:', eLearningProducts.length);
+    console.log('FormationDetails - filterProducts: eLearningProducts:', eLearningProducts.map(p => p.name));
+    
+    // Normalize text for better matching (remove accents, convert to lowercase)
+    const normalizeText = (text: string) => {
+      return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove accents
+        .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
+        .trim();
+    };
+
+    const normalizedFormationTitle = normalizeText(formation.title);
+    const normalizedFormationId = normalizeText(formation.id);
     
     // Create search terms based on formation
     const searchTerms = [
-      formation.title.toLowerCase(),
-      formation.id.toLowerCase(),
+      normalizedFormationTitle,
+      normalizedFormationId,
       // Add specific variations for each formation
-      ...(formation.id === 'salaires' ? ['gestion des salaires', 'salaires'] : []),
+      ...(formation.id === 'salaires' ? ['gestion des salaires', 'gestions des salaires', 'salaires'] : []),
       ...(formation.id === 'charges-sociales' ? ['charges sociales', 'charges-sociales', 'cotisations'] : []),
-      ...(formation.id === 'impot-a-la-source' ? ['impôt à la source', 'impot a la source', 'impôt', 'impot'] : [])
+      ...(formation.id === 'impot-a-la-source' ? ['impot a la source', 'impot', 'impot a la source'] : [])
     ];
 
+    console.log('FormationDetails - filterProducts: searchTerms:', searchTerms);
+
     let filtered = eLearningProducts.filter(product => {
-      const productName = product.name.toLowerCase();
-      const productDescription = product.description.toLowerCase();
+      const normalizedProductName = normalizeText(product.name);
+      const normalizedProductDescription = normalizeText(product.description || '');
       
-      // Check if product name contains any of the search terms
-      return searchTerms.some(term => 
-        productName.includes(term) || productDescription.includes(term)
+      const matches = searchTerms.some(term => 
+        normalizedProductName.includes(normalizeText(term)) || 
+        normalizedProductDescription.includes(normalizeText(term))
       );
+      
+      if (matches) {
+        console.log('FormationDetails - filterProducts: product matches:', product.name);
+      }
+      
+      return matches;
     });
+
+    console.log('FormationDetails - filterProducts: filtered count:', filtered.length);
+    console.log('FormationDetails - filterProducts: filtered products:', filtered.map(p => p.name));
 
     // Apply additional filter if user typed something
     if (filterText) {
