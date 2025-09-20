@@ -8,7 +8,7 @@ const TUTOR_SECRET_KEY = process.env.TUTOR_SECRET_KEY || '';
 
 export async function POST(request: NextRequest) {
   try {
-    const { first_name, last_name, email } = await request.json();
+    const { first_name, last_name, email, course_ids } = await request.json();
 
     // Validate input
     if (!first_name || !last_name || !email) {
@@ -20,83 +20,108 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating student with Tutor LMS Pro API...');
 
-    // Step 1: Create WordPress user
+    // Step 1: Try to create WordPress user via WooCommerce API (more reliable)
     const userData = {
-      username: email.split('@')[0] + '_' + Date.now(),
       email: email,
       first_name: first_name,
       last_name: last_name,
-      password: generatePassword(),
-      roles: ['subscriber']
+      username: email.split('@')[0] + '_' + Date.now(),
+      password: generatePassword()
     };
 
-    const userResponse = await fetch(`${TUTOR_API_URL}/wp-json/wp/v2/users`, {
+    // Use WooCommerce API for customer creation (more reliable than WordPress API)
+    const wooAuth = Buffer.from(
+      `${process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b'}:${process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076'}`
+    ).toString('base64');
+
+    const userResponse = await fetch(`${TUTOR_API_URL}/wp-json/wc/v3/customers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(`gibivawa:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`,
+        'Authorization': `Basic ${wooAuth}`,
       },
       body: JSON.stringify(userData),
     });
 
     if (!userResponse.ok) {
       const errorData = await userResponse.json();
-      console.error('WordPress user creation failed:', errorData);
+      console.error('WooCommerce customer creation failed:', errorData);
+      
       return NextResponse.json(
-        { success: false, error: 'Erreur lors de la création du compte utilisateur' },
+        { success: false, error: `Erreur lors de la création du compte utilisateur: ${errorData.message || 'Erreur inconnue'}` },
         { status: userResponse.status }
       );
     }
 
-    const user = await userResponse.json();
-    console.log('WordPress user created:', user.id);
+    const userResponseData = await userResponse.json();
+    console.log('WooCommerce customer created:', userResponseData.id);
 
-    // Step 2: Enroll user in course using native Tutor LMS Pro API
-    const enrollmentData = {
-      user_id: user.id,
-      course_id: process.env.DEFAULT_COURSE_ID || 24 // Gestion des Salaires
-    };
+    // Step 2: Enroll user in courses using native Tutor LMS Pro API
+    const coursesToEnroll = course_ids && course_ids.length > 0 
+      ? course_ids 
+      : [process.env.DEFAULT_COURSE_ID || 24]; // Default course if none specified
 
     // Use Tutor LMS Pro API credentials for authentication
     const tutorAuth = TUTOR_CLIENT_ID && TUTOR_SECRET_KEY 
       ? `Basic ${Buffer.from(`${TUTOR_CLIENT_ID}:${TUTOR_SECRET_KEY}`).toString('base64')}`
       : `Basic ${Buffer.from(`gibivawa:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`;
 
-    const enrollmentResponse = await fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': tutorAuth,
-      },
-      body: JSON.stringify(enrollmentData),
-    });
+    // Enroll user in all courses
+    const enrollments = [];
+    const enrollmentErrors = [];
 
-    if (!enrollmentResponse.ok) {
-      const errorData = await enrollmentResponse.json();
-      console.error('Course enrollment failed:', errorData);
-      // User was created but not enrolled - still return success but with warning
-      return NextResponse.json({
-        success: true,
-        message: 'Compte créé avec succès ! Vérifiez votre email pour le mot de passe.',
-        user_id: user.id,
-        username: userData.username,
-        warning: 'Compte créé mais inscription au cours en attente'
-      });
+    for (const courseId of coursesToEnroll) {
+      try {
+        const enrollmentData = {
+          user_id: userResponseData.id,
+          course_id: parseInt(courseId.toString())
+        };
+
+        const enrollmentResponse = await fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': tutorAuth,
+          },
+          body: JSON.stringify(enrollmentData),
+        });
+
+        if (enrollmentResponse.ok) {
+          const enrollment = await enrollmentResponse.json();
+          enrollments.push({ course_id: courseId, enrollment });
+          console.log(`User enrolled in course ${courseId}:`, enrollment);
+        } else {
+          const errorData = await enrollmentResponse.json();
+          enrollmentErrors.push({ course_id: courseId, error: errorData });
+          console.error(`Course ${courseId} enrollment failed:`, errorData);
+        }
+      } catch (error) {
+        enrollmentErrors.push({ course_id: courseId, error: error instanceof Error ? error.message : 'Unknown error' });
+        console.error(`Course ${courseId} enrollment error:`, error);
+      }
     }
 
-    const enrollment = await enrollmentResponse.json();
-    console.log('User enrolled in course:', enrollment);
-
     // Step 3: Send welcome email (optional)
-    await sendWelcomeEmail(email, userData.username, userData.password, first_name);
+    await sendWelcomeEmail(email, userResponseData.username, userResponseData.password, first_name);
+
+    // Prepare response based on enrollment results
+    const successMessage = enrollments.length > 0 
+      ? `Compte créé avec succès ! Vous êtes maintenant inscrit à ${enrollments.length} formation(s).`
+      : 'Compte créé avec succès ! Vérifiez votre email pour le mot de passe.';
 
     return NextResponse.json({
       success: true,
-      message: 'Compte créé avec succès ! Vous êtes maintenant inscrit à nos formations.',
-      user_id: user.id,
-      username: userData.username,
-      enrollment_id: enrollment.id,
-      course_id: enrollmentData.course_id
+      message: successMessage,
+      user_id: userResponseData.id,
+      username: userResponseData.username,
+      email: userResponseData.email,
+      first_name: userResponseData.first_name,
+      last_name: userResponseData.last_name,
+      enrollments: enrollments,
+      enrollment_errors: enrollmentErrors.length > 0 ? enrollmentErrors : undefined,
+      warning: enrollmentErrors.length > 0 
+        ? `Compte créé mais ${enrollmentErrors.length} inscription(s) en attente` 
+        : undefined
     });
 
   } catch (error) {

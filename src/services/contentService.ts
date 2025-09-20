@@ -139,6 +139,42 @@ export interface WebsiteContent {
   conceptBlendedLearningTitle: string;
   conceptBlendedLearningDescription: string;
   conceptFeatures: string;
+
+  // Formation Card Fields - Salaires
+  formationSalairesIcon: string;
+  formationSalairesCardTitle: string;
+  formationSalairesCardDescription: string;
+  formationSalairesCardDuration: string;
+  formationSalairesCardLevel: string;
+  formationSalairesCardPrice: string;
+  formationSalairesFeature1: string;
+  formationSalairesFeature2: string;
+  formationSalairesFeature3: string;
+  formationSalairesFeature4: string;
+
+  // Formation Card Fields - Charges Sociales
+  formationChargesSocialesIcon: string;
+  formationChargesSocialesCardTitle: string;
+  formationChargesSocialesCardDescription: string;
+  formationChargesSocialesCardDuration: string;
+  formationChargesSocialesCardLevel: string;
+  formationChargesSocialesCardPrice: string;
+  formationChargesSocialesFeature1: string;
+  formationChargesSocialesFeature2: string;
+  formationChargesSocialesFeature3: string;
+  formationChargesSocialesFeature4: string;
+
+  // Formation Card Fields - Impôt à la Source
+  formationImpotALaSourceIcon: string;
+  formationImpotALaSourceCardTitle: string;
+  formationImpotALaSourceCardDescription: string;
+  formationImpotALaSourceCardDuration: string;
+  formationImpotALaSourceCardLevel: string;
+  formationImpotALaSourceCardPrice: string;
+  formationImpotALaSourceFeature1: string;
+  formationImpotALaSourceFeature2: string;
+  formationImpotALaSourceFeature3: string;
+  formationImpotALaSourceFeature4: string;
 }
 
 // Default content values
@@ -276,7 +312,43 @@ const defaultContent: WebsiteContent = {
   conceptContent: 'HelvetiForma est une plateforme de formation en ligne qui vous offre la liberté d\'apprendre à votre rythme, où et quand vous voulez. Nous vous aidons à acquérir les compétences nécessaires pour réussir dans votre carrière.',
   conceptBlendedLearningTitle: 'Apprentissage hybride (Blended Learning)',
   conceptBlendedLearningDescription: 'Notre approche révolutionne la formation en combinant deux modalités d\'apprentissage :',
-  conceptFeatures: 'Nos avantages : Flexibilité, Accessibilité, Suivi Personnalisé, Support 24/7'
+  conceptFeatures: 'Nos avantages : Flexibilité, Accessibilité, Suivi Personnalisé, Support 24/7',
+
+  // Formation Card Fields - Salaires
+  formationSalairesIcon: '💰',
+  formationSalairesCardTitle: 'Gestion des Salaires',
+  formationSalairesCardDescription: 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Formation pratique avec cas concrets et outils modernes.',
+  formationSalairesCardDuration: '3 jours',
+  formationSalairesCardLevel: 'Intermédiaire',
+  formationSalairesCardPrice: 'CHF 1,200',
+  formationSalairesFeature1: 'Calcul des salaires et avantages',
+  formationSalairesFeature2: 'Conformité légale suisse',
+  formationSalairesFeature3: 'Outils de gestion RH',
+  formationSalairesFeature4: 'Gestion des congés et absences',
+
+  // Formation Card Fields - Charges Sociales
+  formationChargesSocialesIcon: '🏢',
+  formationChargesSocialesCardTitle: 'Charges Sociales & Cotisations',
+  formationChargesSocialesCardDescription: 'Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres assurances sociales en entreprise.',
+  formationChargesSocialesCardDuration: '2 jours',
+  formationChargesSocialesCardLevel: 'Avancé',
+  formationChargesSocialesCardPrice: 'CHF 980',
+  formationChargesSocialesFeature1: 'AVS, AI, APG et LPP',
+  formationChargesSocialesFeature2: 'Calcul des cotisations',
+  formationChargesSocialesFeature3: 'Déclarations sociales',
+  formationChargesSocialesFeature4: 'Optimisation fiscale',
+
+  // Formation Card Fields - Impôt à la Source
+  formationImpotALaSourceIcon: '🌍',
+  formationImpotALaSourceCardTitle: 'Impôt à la Source',
+  formationImpotALaSourceCardDescription: 'Formation spécialisée sur l\'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. Procédures et bonnes pratiques.',
+  formationImpotALaSourceCardDuration: '1.5 jours',
+  formationImpotALaSourceCardLevel: 'Spécialisé',
+  formationImpotALaSourceCardPrice: 'CHF 750',
+  formationImpotALaSourceFeature1: 'Réglementation suisse',
+  formationImpotALaSourceFeature2: 'Calcul de l\'impôt à la source',
+  formationImpotALaSourceFeature3: 'Déclarations fiscales',
+  formationImpotALaSourceFeature4: 'Cas particuliers frontaliers'
 };
 
 class ContentService {

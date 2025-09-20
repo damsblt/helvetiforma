@@ -3,61 +3,101 @@
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import CalendarLink from '@/components/CalendarLink';
+import EditableFormationCard from '@/components/EditableFormationCard';
+import { contentService } from '@/services/contentService';
 
 export default function FormationsPage() {
-  const formations = [
-    {
-      id: 'salaires',
-      title: 'Gestion des Salaires',
-      description: 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Formation pratique avec cas concrets et outils modernes.',
-      duration: '3 jours',
-      level: 'Intermédiaire',
-      price: 'CHF 1,200',
-      icon: '💰',
-      color: 'blue',
-      features: [
-        'Calcul des salaires et avantages',
-        'Conformité légale suisse',
-        'Outils de gestion RH',
-        'Gestion des congés et absences'
-      ]
-    },
-    {
-      id: 'charges-sociales',
-      title: 'Charges Sociales & Cotisations',
-      description: 'Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres assurances sociales en entreprise.',
-      duration: '2 jours',
-      level: 'Avancé',
-      price: 'CHF 980',
-      icon: '🏢',
-      color: 'green',
-      features: [
-        'AVS, AI, APG et LPP',
-        'Calcul des cotisations',
-        'Déclarations sociales',
-        'Optimisation fiscale'
-      ]
-    },
-    {
-      id: 'impot-a-la-source',
-      title: 'Impôt à la Source',
-      description: 'Formation spécialisée sur l\'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. Procédures et bonnes pratiques.',
-      duration: '1.5 jours',
-      level: 'Spécialisé',
-      price: 'CHF 750',
-      icon: '🌍',
-      color: 'purple',
-      features: [
-        'Réglementation suisse',
-        'Calcul de l\'impôt à la source',
-        'Déclarations fiscales',
-        'Cas particuliers frontaliers'
-      ]
-    }
-  ];
+  const [formations, setFormations] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadFormations = async () => {
+      try {
+        const content = await contentService.getContent();
+        
+        const formationsData = [
+          {
+            id: 'salaires',
+            title: content.formationSalairesCardTitle || 'Gestion des Salaires',
+            description: content.formationSalairesCardDescription || 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Formation pratique avec cas concrets et outils modernes.',
+            duration: content.formationSalairesCardDuration || '3 jours',
+            level: content.formationSalairesCardLevel || 'Intermédiaire',
+            price: content.formationSalairesCardPrice || 'CHF 1,200',
+            icon: content.formationSalairesIcon || '💰',
+            color: 'blue',
+            features: [
+              content.formationSalairesFeature1 || 'Calcul des salaires et avantages',
+              content.formationSalairesFeature2 || 'Conformité légale suisse',
+              content.formationSalairesFeature3 || 'Outils de gestion RH',
+              content.formationSalairesFeature4 || 'Gestion des congés et absences'
+            ]
+          },
+          {
+            id: 'charges-sociales',
+            title: content.formationChargesSocialesCardTitle || 'Charges Sociales & Cotisations',
+            description: content.formationChargesSocialesCardDescription || 'Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres assurances sociales en entreprise.',
+            duration: content.formationChargesSocialesCardDuration || '2 jours',
+            level: content.formationChargesSocialesCardLevel || 'Avancé',
+            price: content.formationChargesSocialesCardPrice || 'CHF 980',
+            icon: content.formationChargesSocialesIcon || '🏢',
+            color: 'green',
+            features: [
+              content.formationChargesSocialesFeature1 || 'AVS, AI, APG et LPP',
+              content.formationChargesSocialesFeature2 || 'Calcul des cotisations',
+              content.formationChargesSocialesFeature3 || 'Déclarations sociales',
+              content.formationChargesSocialesFeature4 || 'Optimisation fiscale'
+            ]
+          },
+          {
+            id: 'impot-a-la-source',
+            title: content.formationImpotALaSourceCardTitle || 'Impôt à la Source',
+            description: content.formationImpotALaSourceCardDescription || 'Formation spécialisée sur l\'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. Procédures et bonnes pratiques.',
+            duration: content.formationImpotALaSourceCardDuration || '1.5 jours',
+            level: content.formationImpotALaSourceCardLevel || 'Spécialisé',
+            price: content.formationImpotALaSourceCardPrice || 'CHF 750',
+            icon: content.formationImpotALaSourceIcon || '🌍',
+            color: 'purple',
+            features: [
+              content.formationImpotALaSourceFeature1 || 'Réglementation suisse',
+              content.formationImpotALaSourceFeature2 || 'Calcul de l\'impôt à la source',
+              content.formationImpotALaSourceFeature3 || 'Déclarations fiscales',
+              content.formationImpotALaSourceFeature4 || 'Cas particuliers frontaliers'
+            ]
+          }
+        ];
+        
+        setFormations(formationsData);
+      } catch (error) {
+        console.error('Error loading formations:', error);
+        // Fallback to default data
+        setFormations([
+          {
+            id: 'salaires',
+            title: 'Gestion des Salaires',
+            description: 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Formation pratique avec cas concrets et outils modernes.',
+            duration: '3 jours',
+            level: 'Intermédiaire',
+            price: 'CHF 1,200',
+            icon: '💰',
+            color: 'blue',
+            features: [
+              'Calcul des salaires et avantages',
+              'Conformité légale suisse',
+              'Outils de gestion RH',
+              'Gestion des congés et absences'
+            ]
+          }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFormations();
+  }, []);
 
   const getColorClasses = (color: string) => {
     switch (color) {
@@ -85,6 +125,19 @@ export default function FormationsPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto max-w-6xl px-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement des formations...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto max-w-6xl px-4">
@@ -102,57 +155,15 @@ export default function FormationsPage() {
         {/* Formations Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {formations.map((formation) => (
-            <div
+            <EditableFormationCard
               key={formation.id}
-              className={`bg-white rounded-2xl shadow-lg border-2 transition-all duration-300 transform hover:scale-105 ${getColorClasses(formation.color)}`}
-            >
-              {/* Header */}
-              <div className="p-6 border-b border-gray-100">
-                <div className="text-4xl mb-4">{formation.icon}</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  {formation.title}
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {formation.description}
-                </p>
-              </div>
-
-              {/* Features */}
-              <div className="p-6">
-                <ul className="space-y-2 mb-6">
-                  {formation.features.map((feature, index) => (
-                    <li key={index} className="flex items-center text-sm text-gray-600">
-                      <svg className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Info Bar */}
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
-                  <span>⏱️ {formation.duration}</span>
-                  <span>📊 {formation.level}</span>
-                  <span className="font-semibold text-gray-700">{formation.price}</span>
-                </div>
-
-                {/* CTA Button */}
-                <div className="flex gap-2">
-                  <Link
-                    href={`/formations/${formation.id}`}
-                    className={`flex-1 text-center py-3 px-6 rounded-lg font-medium transition-colors ${getButtonColor(formation.color)}`}
-                  >
-                    Découvrir la formation
-                  </Link>
-                  <CalendarLink
-                    theme={formation.id === 'salaires' ? 'Salaire' : formation.id === 'charges-sociales' ? 'Assurances sociales' : 'Impôt à la source'}
-                    variant="icon"
-                    className={`py-3 px-3 rounded-lg font-medium transition-colors ${getButtonColor(formation.color)}`}
-                  />
-                </div>
-              </div>
-            </div>
+              formation={formation}
+              onUpdate={(updatedFormation) => {
+                setFormations(prev => 
+                  prev.map(f => f.id === updatedFormation.id ? updatedFormation : f)
+                );
+              }}
+            />
           ))}
         </div>
 
@@ -174,8 +185,8 @@ export default function FormationsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
-        </div>
+          </div>
       </div>
     </div>
   );
-} 
+}

@@ -63,18 +63,54 @@ const localStorage = {
       const now = new Date();
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
+      const nextWeek = new Date(now);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      const nextMonth = new Date(now);
+      nextMonth.setDate(nextMonth.getDate() + 30);
       
       this.sessions = [
         {
           id: 1,
           date: tomorrow.toISOString(),
-          formation: 1,
+          formation: 1, // Salaires
           duration: 2,
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString()
+        },
+        {
+          id: 2,
+          date: nextWeek.toISOString(),
+          formation: 2, // Charges Sociales
+          duration: 3,
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString()
+        },
+        {
+          id: 3,
+          date: nextMonth.toISOString(),
+          formation: 3, // Impôt à la Source
+          duration: 2,
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString()
+        },
+        {
+          id: 4,
+          date: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
+          formation: 1, // Salaires
+          duration: 2,
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString()
+        },
+        {
+          id: 5,
+          date: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(), // 2 weeks from now
+          formation: 2, // Charges Sociales
+          duration: 3,
           createdAt: now.toISOString(),
           updatedAt: now.toISOString()
         }
       ];
-      console.log('Initialized local storage with sample session');
+      console.log('Initialized local storage with sample sessions');
     }
   }
 };
@@ -231,9 +267,78 @@ export async function GET() {
   try {
     const sessions = await loadSessions();
     
+    // Mock formations data (same as in formations API)
+    const formations = [
+      {
+        id: 1,
+        attributes: {
+          Title: "Formation Salaires",
+          Theme: "salaires",
+          Description: "Formation complète sur la gestion des salaires",
+          Type: "Présentiel",
+          difficulty: "Intermédiaire",
+          estimatedDuration: 2
+        }
+      },
+      {
+        id: 2,
+        attributes: {
+          Title: "Charges Sociales",
+          Theme: "charges-sociales",
+          Description: "Formation sur les charges sociales et assurances",
+          Type: "Présentiel",
+          difficulty: "Avancé",
+          estimatedDuration: 3
+        }
+      },
+      {
+        id: 3,
+        attributes: {
+          Title: "Impôt à la Source",
+          Theme: "impot-a-la-source",
+          Description: "Formation sur l'impôt à la source",
+          Type: "En ligne",
+          difficulty: "Débutant",
+          estimatedDuration: 2
+        }
+      }
+    ];
+
+    // Merge sessions with formation data
+    const sessionsWithFormations = sessions.map(session => {
+      const formation = formations.find(f => f.id === session.formation);
+      return {
+        ...session,
+        formation: formation ? {
+          id: formation.id,
+          title: formation.attributes.Title,
+          theme: formation.attributes.Theme,
+          type: formation.attributes.Type,
+          difficulty: formation.attributes.difficulty,
+          estimatedDuration: formation.attributes.estimatedDuration,
+          description: formation.attributes.Description
+        } : {
+          id: session.formation,
+          title: 'Formation inconnue',
+          theme: 'unknown',
+          type: 'Présentiel',
+          difficulty: 'Inconnu',
+          estimatedDuration: 2,
+          description: 'Formation non trouvée'
+        },
+        // Add additional session properties for the sessions interface
+        location: 'Centre de Formation',
+        maxParticipants: 20,
+        currentParticipants: Math.floor(Math.random() * 15) + 5, // Random for demo
+        status: 'scheduled' as const,
+        instructor: 'Instructeur Principal',
+        notes: 'Session de formation en présentiel'
+      };
+    });
+    
     return NextResponse.json({
       success: true,
-      data: sessions
+      data: sessionsWithFormations
     });
   } catch (error) {
     console.error('Error fetching sessions:', error);

@@ -3,42 +3,31 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const { hostname } = request.nextUrl;
   
-  // Allow access to construction page, login, and static assets
-  const allowedPaths = [
-    '/construction',
-    '/login',
-    '/register',
-    '/api',
-    '/_next',
-    '/favicon.ico',
-    '/images',
-    '/css',
-    '/js',
-    '/formations',  // Allow access to formation pages
-    '/dashboard'    // Allow access to dashboard for testing
-  ];
+  // Handle page redirects for new structure
+  if (pathname === '/formations-archive') {
+    return NextResponse.redirect(new URL('/formations', request.url));
+  }
   
-  // Check if the current path is allowed
-  const isAllowedPath = allowedPaths.some(path => pathname.startsWith(path));
+  // Skip construction page redirect for localhost development and Vercel preview
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('localhost');
+  const isVercelPreview = hostname.includes('vercel.app') || hostname.includes('vercel.com');
   
-  // If it's an allowed path, continue normally
-  if (isAllowedPath) {
+  // In development mode or Vercel preview, allow all pages
+  if (isLocalhost || isVercelPreview) {
     return NextResponse.next();
   }
   
-  // Check if user has authentication cookie
-  const authCookie = request.cookies.get('auth') || request.cookies.get('user');
-  const hasAuth = authCookie && authCookie.value !== 'undefined';
+  // For production (helvetiforma.ch), redirect to construction page
+  const isProduction = hostname === 'helvetiforma.ch' || hostname === 'www.helvetiforma.ch';
   
-  // If no authentication and not on an allowed path, redirect to construction with current path
-  if (!hasAuth) {
-    const constructionUrl = new URL('/construction', request.url);
-    constructionUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(constructionUrl);
+  if (isProduction && pathname !== '/construction') {
+    // Redirect to construction page for main domain
+    return NextResponse.redirect(new URL('/construction', request.url));
   }
   
-  // User is authenticated, allow access to the requested page
+  // For Vercel domain, allow access to all pages
   return NextResponse.next();
 }
 

@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import HeaderButtons from '../components/HeaderButtons';
 import StructuredData from '../components/StructuredData';
 import AdminNavbar from '../components/AdminNavbar';
+import { CartProvider } from '../contexts/CartContext';
 
 export const metadata: Metadata = {
   title: {
@@ -75,35 +76,45 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr">
       <head>
         <StructuredData />
-        {/* Preload critical images for better performance */}
-        <link 
-          rel="preload" 
-          href="/images/hero-bg.jpg" 
-          as="image" 
-          type="image/jpeg"
+        {/* Preload critical images for better performance - only on homepage */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (window.location.pathname === '/') {
+                const link = document.createElement('link');
+                link.rel = 'preload';
+                link.href = '/images/hero-bg.jpg';
+                link.as = 'image';
+                link.type = 'image/jpeg';
+                document.head.appendChild(link);
+              }
+            `,
+          }}
         />
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-          <div className="container mx-auto flex items-center justify-between py-3 px-4 lg:px-8">
-            {/* Logo/Brand */}
-            <div className="flex items-center">
-              <Link href="/" className="text-xl font-bold text-blue-700 mr-6 lg:mr-8">
-                HelvetiForma
-              </Link>
-              <Navigation />
+        <CartProvider>
+          {/* Header */}
+          <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+            <div className="container mx-auto flex items-center justify-between py-3 px-4 lg:px-8">
+              {/* Logo/Brand */}
+              <div className="flex items-center">
+                <Link href="/" className="text-xl font-bold text-blue-700 mr-6 lg:mr-8">
+                  HelvetiForma
+                </Link>
+                <Navigation />
+              </div>
+
+              {/* Right side buttons */}
+              <HeaderButtons />
             </div>
+          </header>
 
-            {/* Right side buttons */}
-            <HeaderButtons />
-          </div>
-        </header>
+          {/* Admin Navbar */}
+          <AdminNavbar />
 
-        {/* Admin Navbar */}
-        <AdminNavbar />
-
-        <main className="flex-1 w-full pt-0">{children}</main>
+          <main className="flex-1 w-full pt-0">{children}</main>
+        </CartProvider>
 
         {/* Footer */}
         <footer className="bg-green-100 py-6 mt-auto">

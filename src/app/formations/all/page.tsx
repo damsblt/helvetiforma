@@ -23,9 +23,25 @@ export default function AllFormationsPage() {
 
   const fetchFormations = async () => {
     try {
-      const res = await fetch('http://localhost:1337/api/formations?populate=*');
+      // Use Tutor LMS API
+      const res = await fetch('/api/tutor-courses');
       const data = await res.json();
-      setFormations(data.data || []);
+      
+      if (data.success) {
+        // Transform Tutor LMS data to match expected format
+        const transformedFormations = data.data.courses.map((course: any) => ({
+          id: course.id,
+          Title: course.title,
+          Description: course.excerpt || course.content,
+          Type: 'En ligne',
+          Theme: course.meta.course_categories.join(', ') || '',
+          sessions: [],
+          docs: []
+        }));
+        setFormations(transformedFormations);
+      } else {
+        setFormations([]);
+      }
     } catch (error) {
       console.error('Error fetching formations:', error);
     } finally {

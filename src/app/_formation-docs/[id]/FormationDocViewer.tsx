@@ -109,14 +109,14 @@ export default function FormationDocViewer({
                   {hasImageData ? (
                     <div className={layout === 'text-image' ? 'order-2' : ''}>
                       <img
-                        src={`http://localhost:1337${component.image1.url}`}
+                        src={`https://api.helvetiforma.ch${component.image1.url}`}
                         alt={component.image1.alternativeText || component.image1.name}
                         className={`rounded-lg shadow-sm ${layout === 'full-width-image' ? 'w-full' : 'max-w-full'}`}
                       />
                     </div>
                   ) : (
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
-                      📷 <strong>Image disponible dans Strapi</strong> - L'image est configurée mais nécessite une population API spécifique
+                      📷 <strong>Image disponible dans WordPress</strong> - L'image est configurée mais nécessite une population API spécifique
                     </div>
                   )}
                   
@@ -172,14 +172,14 @@ export default function FormationDocViewer({
                   {hasImageData ? (
                     <div className={layout === 'image-text' ? 'order-1' : ''}>
                       <img
-                        src={`http://localhost:1337${component.image.url}`}
+                        src={`https://api.helvetiforma.ch${component.image.url}`}
                         alt={component.image.alternativeText || component.image.name}
                         className={`rounded-lg shadow-sm ${layout === 'full-width-text' ? 'max-w-md' : 'max-w-full'}`}
                       />
                     </div>
                   ) : (
                     <div className="p-4 bg-green-50 border border-green-200 rounded text-sm text-green-800">
-                      📷 <strong>Image disponible dans Strapi</strong> - L'image est configurée mais nécessite une population API spécifique
+                      📷 <strong>Image disponible dans WordPress</strong> - L'image est configurée mais nécessite une population API spécifique
                     </div>
                   )}
                   
@@ -275,7 +275,7 @@ export default function FormationDocViewer({
             <div className="mb-6">
               <h3 className="font-semibold text-gray-900 mb-3">Image principale</h3>
               <img
-                src={`http://localhost:1337${image.url}`}
+                src={`https://api.helvetiforma.ch${image.url}`}
                 alt={image.alternativeText || image.name}
                 className="w-full max-w-2xl h-auto rounded-lg shadow-sm"
               />

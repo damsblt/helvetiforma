@@ -78,7 +78,7 @@ const formations = [
     id: 1,
     attributes: {
       Title: "Formation Salaires",
-      Theme: "Salaire",
+      Theme: "salaires",
       Description: "Formation complète sur la gestion des salaires",
       Type: "Présentiel",
       difficulty: "Intermédiaire",
@@ -89,7 +89,7 @@ const formations = [
     id: 2,
     attributes: {
       Title: "Charges Sociales",
-      Theme: "Assurances sociales",
+      Theme: "charges-sociales",
       Description: "Formation sur les charges sociales et assurances",
       Type: "Présentiel",
       difficulty: "Avancé",
@@ -100,7 +100,7 @@ const formations = [
     id: 3,
     attributes: {
       Title: "Impôt à la Source",
-      Theme: "Impôt à la source",
+      Theme: "impot-a-la-source",
       Description: "Formation sur l'impôt à la source",
       Type: "En ligne",
       difficulty: "Débutant",

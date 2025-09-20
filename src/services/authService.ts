@@ -22,11 +22,6 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface RegisterData {
-  email: string;
-  firstName: string;
-  lastName: string;
-}
 
 export interface SetupPasswordData {
   token: string;
@@ -103,10 +98,57 @@ class AuthService {
     return user?.isAdmin || false;
   }
 
-  // Login using custom WordPress authentication endpoint
+  // Login using WordPress JWT authentication
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      // Simple credentials system for immediate access
+      // Try JWT authentication first
+      const jwtResponse = await fetch(`${this.baseUrl}/wp-json/jwt-auth/v1/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: credentials.identifier,
+          password: credentials.password
+        }),
+      });
+
+      if (jwtResponse.ok) {
+        const jwtData = await jwtResponse.json();
+        
+        if (jwtData.token) {
+          // Get user details using the JWT token
+          const userResponse = await fetch(`${this.baseUrl}/wp-json/wp/v2/users/me`, {
+            headers: {
+              'Authorization': `Bearer ${jwtData.token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            
+            const user: User = {
+              id: userData.id,
+              email: userData.email,
+              firstName: userData.first_name || '',
+              lastName: userData.last_name || '',
+              isAdmin: userData.roles?.includes('administrator') || false,
+              roles: userData.roles || ['subscriber']
+            };
+
+            this.setAuth(jwtData.token, user);
+
+            return {
+              success: true,
+              user: user,
+              token: jwtData.token
+            };
+          }
+        }
+      }
+
+      // Fallback to simple credentials for demo purposes
       const simpleCredentials = [
         { email: 'admin@helvetiforma.ch', password: 'admin123', isAdmin: true },
         { email: 'damien@helvetiforma.ch', password: 'damien123', isAdmin: true },
@@ -114,7 +156,6 @@ class AuthService {
         { email: 'demo@helvetiforma.ch', password: 'demo123', isAdmin: false }
       ];
 
-      // Check simple credentials first
       const simpleAuth = simpleCredentials.find(
         cred => cred.email === credentials.identifier && cred.password === credentials.password
       );
@@ -139,65 +180,11 @@ class AuthService {
         };
       }
 
-      // Fallback to WordPress authentication if simple credentials don't match
-      const response = await fetch(`${this.baseUrl}/wp-json/wcra/v1/helvetiforma/v1/auth/login/?secret_key=oV9gdjpkmCMV2NK0pd81SawWriGEtV0K`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          identifier: credentials.identifier, // email or username
-          password: credentials.password
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Debug logging to see what we're getting from custom endpoint
-        console.log('Custom endpoint response:', data);
-        
-        // Handle the actual response format from the custom endpoint
-        if (data.status === 'OK' && data.code === 200) {
-          // The endpoint returned success, now we need to get user data
-          // Since this is just a connection test, we need to fetch user details
-          console.log('Connection successful, fetching user details...');
-          
-          // For now, create a basic user object based on the identifier
-          // In a real implementation, you'd make another call to get user details
-          const user: User = {
-            id: 1, // Default admin ID
-            email: credentials.identifier,
-            firstName: 'Admin',
-            lastName: 'User',
-            isAdmin: true, // Assume admin since this is a protected endpoint
-            roles: ['administrator']
-          };
-
-          console.log('Final user object from custom endpoint:', user);
-          
-          // Create a token
-          const token = btoa(JSON.stringify({ id: user.id, email: user.email }));
-          
-          this.setAuth(token, user);
-          
-          return {
-            success: true,
-            user: user,
-            token: token
-          };
-        } else {
-          return {
-            success: false,
-            message: data.response || 'Identifiant ou mot de passe incorrect',
-          };
-        }
-      } else {
-        return {
-          success: false,
-          message: 'Identifiant ou mot de passe incorrect',
-        };
-      }
+      // If neither JWT nor simple credentials work
+      return {
+        success: false,
+        message: 'Identifiant ou mot de passe incorrect',
+      };
     } catch (error) {
       console.error('Login error:', error);
       return {
@@ -207,63 +194,6 @@ class AuthService {
     }
   }
 
-  // Register using our working Tutor LMS integration
-  async register(userData: RegisterData): Promise<AuthResponse> {
-    try {
-      // Use our working Tutor LMS registration endpoint
-      const response = await fetch('/api/tutor-register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          first_name: userData.firstName,
-          last_name: userData.lastName,
-          email: userData.email,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Tutor LMS user created and enrolled successfully
-        return {
-          success: true,
-          message: data.message || 'Compte créé avec succès ! Vous êtes maintenant inscrit à nos formations.',
-          redirectTo: '/login', // Redirect to login page
-          user: {
-            id: data.user_id,
-            email: userData.email,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            isAdmin: false,
-            roles: ['subscriber']
-          }
-        };
-      } else {
-        const errorData = await response.json();
-        
-        // Handle registration errors
-        if (errorData.error && errorData.error.includes('email')) {
-          return {
-            success: false,
-            message: 'Un compte avec cet email existe déjà.',
-          };
-        } else {
-          return {
-            success: false,
-            message: errorData.error || 'Erreur lors de la création du compte',
-          };
-        }
-      }
-    } catch (error) {
-      console.error('Register error:', error);
-      return {
-        success: false,
-        message: 'Erreur de connexion au serveur',
-      };
-    }
-  }
 
   // Generate a secure password for new users
   private generateSecurePassword(): string {

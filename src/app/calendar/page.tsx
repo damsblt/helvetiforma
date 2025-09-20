@@ -11,7 +11,7 @@ interface Formation {
     Title: string;
     Description: string;
     Type: 'Présentiel' | 'En ligne';
-    Theme: 'Salaire' | 'Assurances sociales' | 'Impôt à la source';
+    Theme: 'salaires' | 'charges-sociales' | 'impot-a-la-source';
     difficulty: string;
     estimatedDuration: number;
     sessions?: Session[];
@@ -108,9 +108,9 @@ export default function CalendarPage() {
   // Calculate statistics
   const stats = {
     total: filteredFormations.length,
-    'Salaire': filteredFormations.filter(f => f.attributes.Theme === 'Salaire').length,
-    'Assurances sociales': filteredFormations.filter(f => f.attributes.Theme === 'Assurances sociales').length,
-    'Impôt à la source': filteredFormations.filter(f => f.attributes.Theme === 'Impôt à la source').length,
+    'salaires': filteredFormations.filter(f => f.attributes.Theme === 'salaires').length,
+    'charges-sociales': filteredFormations.filter(f => f.attributes.Theme === 'charges-sociales').length,
+    'impot-a-la-source': filteredFormations.filter(f => f.attributes.Theme === 'impot-a-la-source').length,
   };
 
   if (loading) {
@@ -152,15 +152,15 @@ export default function CalendarPage() {
             <div className="text-sm md:text-base text-gray-600 font-medium">Total Sessions</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6 text-center hover:shadow-md transition-shadow">
-            <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-2">{stats['Salaire']}</div>
+            <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-2">{stats['salaires']}</div>
             <div className="text-sm md:text-base text-gray-600 font-medium">Salaires</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6 text-center hover:shadow-md transition-shadow">
-            <div className="text-2xl md:text-3xl font-bold text-green-600 mb-2">{stats['Assurances sociales']}</div>
+            <div className="text-2xl md:text-3xl font-bold text-green-600 mb-2">{stats['charges-sociales']}</div>
             <div className="text-sm md:text-base text-gray-600 font-medium">Charges Sociales</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6 text-center hover:shadow-md transition-shadow">
-            <div className="text-2xl md:text-3xl font-bold text-purple-600 mb-2">{stats['Impôt à la source']}</div>
+            <div className="text-2xl md:text-3xl font-bold text-purple-600 mb-2">{stats['impot-a-la-source']}</div>
             <div className="text-sm md:text-base text-gray-600 font-medium">Impôt à la Source</div>
           </div>
         </div>
@@ -181,34 +181,34 @@ export default function CalendarPage() {
                 Toutes ({stats.total})
               </button>
               <button
-                onClick={() => handleCategoryChange('Salaire')}
+                onClick={() => handleCategoryChange('salaires')}
                 className={`px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${
-                  selectedCategory === 'Salaire'
+                  selectedCategory === 'salaires'
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
                 }`}
               >
-                Salaires ({stats['Salaire']})
+                Salaires ({stats['salaires']})
               </button>
               <button
-                onClick={() => handleCategoryChange('Assurances sociales')}
+                onClick={() => handleCategoryChange('charges-sociales')}
                 className={`px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${
-                  selectedCategory === 'Assurances sociales'
+                  selectedCategory === 'charges-sociales'
                     ? 'bg-green-600 text-white shadow-lg shadow-green-200'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
                 }`}
               >
-                Charges Sociales ({stats['Assurances sociales']})
+                Charges Sociales ({stats['charges-sociales']})
               </button>
               <button
-                onClick={() => handleCategoryChange('Impôt à la source')}
+                onClick={() => handleCategoryChange('impot-a-la-source')}
                 className={`px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${
-                  selectedCategory === 'Impôt à la source'
+                  selectedCategory === 'impot-a-la-source'
                     ? 'bg-purple-600 text-white shadow-lg shadow-purple-200'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
                 }`}
               >
-                Impôt à la Source ({stats['Impôt à la source']})
+                Impôt à la Source ({stats['impot-a-la-source']})
               </button>
             </div>
             

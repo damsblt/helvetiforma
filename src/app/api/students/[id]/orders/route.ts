@@ -3,10 +3,11 @@ import tutorLmsService from '@/services/tutorLmsService';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const studentId = parseInt(params.id);
+    const resolvedParams = await params;
+    const studentId = parseInt(resolvedParams.id);
     
     if (isNaN(studentId)) {
       return NextResponse.json(

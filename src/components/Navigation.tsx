@@ -9,14 +9,17 @@ export default function Navigation() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check if user is admin using authService
-    const checkAdmin = () => {
-      const admin = authService.isAuthenticated() && authService.getUser()?.isAdmin;
+    // Check authentication status
+    const checkAuth = () => {
+      const auth = authService.isAuthenticated();
+      const admin = auth && authService.getUser()?.isAdmin;
+      setIsAuthenticated(auth);
       setIsAdmin(admin || false);
     };
-    checkAdmin();
+    checkAuth();
   }, []);
 
   useEffect(() => {
@@ -49,7 +52,7 @@ export default function Navigation() {
     };
   }, [isMobileMenuOpen]);
 
-  const navItems = [
+  const baseNavItems = [
     { href: '/', label: 'Accueil' },
     { href: '/concept', label: 'Concept' },
     { href: '/formations', label: 'Formations' },
@@ -57,11 +60,10 @@ export default function Navigation() {
     { href: '/contact', label: 'Contact' },
   ];
 
-  // Add dashboard link if user is authenticated
-  const isAuthenticated = authService.isAuthenticated();
-  if (isAuthenticated) {
-    navItems.push({ href: '/dashboard', label: 'Tableau de bord' });
-  }
+  // Create navItems array
+  const navItems = React.useMemo(() => {
+    return baseNavItems;
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -73,6 +75,7 @@ export default function Navigation() {
       <div className="hidden lg:flex gap-6 xl:gap-8 items-center">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
+          
           return (
             <Link
               key={item.href}
@@ -118,6 +121,7 @@ export default function Navigation() {
             <div className="px-4 py-3 space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
+                
                 return (
                   <Link
                     key={item.href}

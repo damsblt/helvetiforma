@@ -1,10 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
 
-// Function to fetch image data by ID
+// Function to fetch image data by ID (WordPress)
 async function getImageData(imageId: number) {
   try {
-    const res = await fetch(`http://localhost:1337/api/upload/files/${imageId}`, { cache: 'no-store' });
+    const res = await fetch(`https://api.helvetiforma.ch/wp-json/wp/v2/media/${imageId}`, { cache: 'no-store' });
     const data = await res.json();
     return data;
   } catch (error) {
@@ -30,8 +30,8 @@ export default function FormationDocList({ formationDocs }: { formationDocs: any
           if (component.__component === 'image-first.image-text') {
             console.log('Image-text component data:', component);
             
-            // Use the most likely URL pattern first
-            const imageUrl = `http://localhost:1337/uploads/DSC_04141_d71fa40de5.JPG`;
+            // Use WordPress media URL
+            const imageUrl = `https://api.helvetiforma.ch/wp-content/uploads/placeholder.jpg`;
             
             console.log('Using image URL:', imageUrl);
             
@@ -44,7 +44,7 @@ export default function FormationDocList({ formationDocs }: { formationDocs: any
                       <h5 className="text-sm font-medium text-gray-700 mb-2">Image</h5>
                       <img
                         src={imageUrl}
-                        alt="Image from Strapi"
+                        alt="Image from WordPress"
                         className="w-full h-auto rounded-lg shadow-sm"
                       />
                     </div>
@@ -56,7 +56,7 @@ export default function FormationDocList({ formationDocs }: { formationDocs: any
                     )}
                   </div>
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
-                    📷 <strong>Image affichée</strong> - Utilisation de l'URL directe de Strapi
+                    📷 <strong>Image affichée</strong> - Utilisation de l'URL directe
                   </div>
                 </div>
               </div>

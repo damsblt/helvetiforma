@@ -14,7 +14,7 @@ interface Formation {
     Title: string;
     Description: string;
     Type: 'Présentiel' | 'En ligne';
-    Theme: 'Salaire' | 'Assurances sociales' | 'Impôt à la source';
+    Theme: 'salaires' | 'charges-sociales' | 'impot-a-la-source';
     difficulty: string;
     estimatedDuration: number;
     sessions?: Session[];
@@ -63,11 +63,11 @@ const FormationCalendar: React.FC<FormationCalendarProps> = ({
               // Get category color
               const getCategoryColor = (theme: string) => {
                 switch (theme) {
-                  case 'Salaire':
+                  case 'salaires':
                     return { bg: '#2563EB', border: '#1D4ED8' }; // Blue
-                  case 'Assurances sociales':
+                  case 'charges-sociales':
                     return { bg: '#16A34A', border: '#15803D' }; // Green
-                  case 'Impôt à la source':
+                  case 'impot-a-la-source':
                     return { bg: '#9333EA', border: '#7C3AED' }; // Purple
                   default:
                     return { bg: '#6B7280', border: '#4B5563' }; // Gray

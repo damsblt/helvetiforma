@@ -14,7 +14,7 @@ interface Formation {
     Title: string;
     Description: string;
     Type: 'Présentiel' | 'En ligne';
-    Theme: 'Salaire' | 'Assurances sociales' | 'Impôt à la source';
+    Theme: 'salaires' | 'charges-sociales' | 'impot-a-la-source';
     difficulty: string;
     estimatedDuration: number;
     sessions?: Session[];
@@ -52,24 +52,31 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
 
   useEffect(() => {
     if (formations) {
+      console.log('AdminCalendar: Processing formations:', formations);
       const calendarEvents: EventInput[] = [];
       
       formations.forEach((formation) => {
+        console.log('AdminCalendar: Processing formation:', formation.attributes.Title, 'Sessions:', formation.attributes.sessions);
         if (formation.attributes.sessions) {
           formation.attributes.sessions.forEach((session) => {
+            console.log('AdminCalendar: Processing session:', session);
             if (session.attributes.date) {
               const sessionDate = new Date(session.attributes.date);
               const endDate = new Date(sessionDate);
               endDate.setHours(endDate.getHours() + (formation.attributes.estimatedDuration || 2));
               
+              console.log('AdminCalendar: Date parsing - Original:', session.attributes.date);
+              console.log('AdminCalendar: Date parsing - Parsed:', sessionDate);
+              console.log('AdminCalendar: Date parsing - End:', endDate);
+              
               // Get category color
               const getCategoryColor = (theme: string) => {
                 switch (theme) {
-                  case 'Salaire':
+                  case 'salaires':
                     return { bg: '#10B981', border: '#059669' }; // Green
-                  case 'Assurances sociales':
+                  case 'charges-sociales':
                     return { bg: '#8B5CF6', border: '#7C3AED' }; // Purple
-                  case 'Impôt à la source':
+                  case 'impot-a-la-source':
                     return { bg: '#F59E0B', border: '#D97706' }; // Orange
                   default:
                     return { bg: '#6B7280', border: '#4B5563' }; // Gray
@@ -78,7 +85,7 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
 
               const colors = getCategoryColor(formation.attributes.Theme);
               
-              calendarEvents.push({
+              const event = {
                 id: `session-${session.id}`,
                 title: `${formation.attributes.Title} (${formation.attributes.Theme})`,
                 start: sessionDate,
@@ -96,12 +103,16 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
                   duration: formation.attributes.estimatedDuration,
                   originalTitle: formation.attributes.Title,
                 },
-              });
+              };
+              
+              console.log('AdminCalendar: Created event:', event);
+              calendarEvents.push(event);
             }
           });
         }
       });
       
+      console.log('AdminCalendar: Total events created:', calendarEvents.length);
       setEvents(calendarEvents);
     }
   }, [formations]);
@@ -132,13 +143,6 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
 
   return (
     <div className="w-full">
-      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h3 className="text-lg font-semibold text-blue-900 mb-2">Calendrier Administrateur</h3>
-        <p className="text-blue-700 text-sm">
-          Glissez-déposez les sessions pour modifier leurs horaires. Cliquez sur une session pour la modifier.
-        </p>
-      </div>
-      
       {/* Custom CSS for FullCalendar styling */}
       <style jsx global>{`
         /* Custom FullCalendar styling to match website design */
@@ -455,7 +459,8 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
         }}
-        initialView="timeGridWeek"
+        initialView="dayGridMonth"
+        initialDate="2025-08-01"
         editable={true}
         selectable={true}
         selectMirror={true}
@@ -501,7 +506,7 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
           endTime: '20:00',
         }}
         /* Mobile optimizations */
-        aspectRatio={window.innerWidth < 768 ? 0.8 : 1.35}
+        aspectRatio={typeof window !== 'undefined' && window.innerWidth < 768 ? 0.8 : 1.35}
         handleWindowResize={true}
         windowResizeDelay={100}
 
@@ -513,7 +518,7 @@ const AdminCalendar: React.FC<AdminCalendarProps> = ({
           const difficulty = event.extendedProps.difficulty;
           
           // Add data-formation attribute for CSS styling
-          const formationId = event.extendedProps.formation;
+          const formationId = event.extendedProps.formationId;
           if (formationId) {
             info.el.setAttribute('data-formation', formationId.toString());
           }

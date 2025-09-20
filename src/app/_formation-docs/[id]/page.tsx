@@ -14,7 +14,8 @@ interface FormationDoc {
 
 async function getFormationDoc(id: string): Promise<FormationDoc | null> {
   try {
-    const res = await fetch(`http://localhost:1337/api/formation-docs/${id}?populate=*`, { 
+    // Use WordPress API
+    const res = await fetch(`https://api.helvetiforma.ch/wp-json/wp/v2/posts/${id}`, { 
       cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
@@ -27,7 +28,16 @@ async function getFormationDoc(id: string): Promise<FormationDoc | null> {
     }
     
     const data = await res.json();
-    return data.data;
+    // Transform WordPress data to match expected format
+    return {
+      id: data.id,
+      attributes: {
+        title: data.title.rendered,
+        description: data.excerpt.rendered,
+        image: null,
+        mosaic: []
+      }
+    };
   } catch (error) {
     console.error('Error fetching formation doc:', error);
     return null;

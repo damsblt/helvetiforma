@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { contentService, WebsiteContent } from '@/services/contentService';
 import { authService } from '@/services/authService';
 import EditableContent from '@/components/EditableContent';
@@ -10,8 +11,17 @@ import EditableContent from '@/components/EditableContent';
 export default function Home() {
   const [content, setContent] = useState<WebsiteContent | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
+    // Check if we're on the main domain and redirect to construction page
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname === 'helvetiforma.ch' || hostname === 'www.helvetiforma.ch') {
+        router.push('/construction');
+        return;
+      }
+    }
     // Load content from the content service
     const loadContent = async () => {
       // Wait for content to be loaded

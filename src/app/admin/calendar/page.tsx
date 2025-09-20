@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 // Force dynamic rendering for admin pages
@@ -14,7 +14,7 @@ interface Formation {
     Title: string;
     Description: string;
     Type: 'Présentiel' | 'En ligne';
-    Theme: 'Salaire' | 'Assurances sociales' | 'Impôt à la source';
+    Theme: 'salaires' | 'charges-sociales' | 'impot-a-la-source';
     difficulty: string;
     estimatedDuration: number;
     sessions?: Session[];
@@ -33,6 +33,7 @@ export default function AdminCalendarPage() {
   const [formations, setFormations] = useState<Formation[]>([]);
   const [filteredFormations, setFilteredFormations] = useState<Formation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [selectedEvent, setSelectedEvent] = useState<EventClickArg | null>(null);
   const [showCreateSession, setShowCreateSession] = useState(false);
@@ -56,29 +57,30 @@ export default function AdminCalendarPage() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchFormations();
-  }, []);
-
-  useEffect(() => {
-    filterFormations();
-  }, [formations, selectedCategory, searchTerm]);
-
   const fetchFormations = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await fetch('/api/formations?populate=*');
       if (response.ok) {
         const data = await response.json();
+        console.log('Admin Calendar Page: Fetched data:', data);
         setFormations(data.data || []);
+      } else {
+        console.error('Admin Calendar Page: API response not ok:', response.status);
+        setError(`Erreur API: ${response.status}`);
+        setFormations([]);
       }
     } catch (error) {
       console.error('Error fetching formations:', error);
+      setError('Erreur de connexion au serveur');
+      setFormations([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filterFormations = () => {
+  const filterFormations = useCallback(() => {
     let filtered = [...formations];
 
     // Filter by category
@@ -95,7 +97,15 @@ export default function AdminCalendarPage() {
     }
 
     setFilteredFormations(filtered);
-  };
+  }, [formations, selectedCategory, searchTerm]);
+
+  useEffect(() => {
+    fetchFormations();
+  }, []);
+
+  useEffect(() => {
+    filterFormations();
+  }, [filterFormations]);
 
   const handleEventClick = (eventInfo: EventClickArg) => {
     setSelectedEvent(eventInfo);
@@ -174,9 +184,9 @@ export default function AdminCalendarPage() {
 
   const getCategoryStats = () => {
     const stats = {
-      'Salaire': 0,
-      'Assurances sociales': 0,
-      'Impôt à la source': 0,
+      'salaires': 0,
+      'charges-sociales': 0,
+      'impot-a-la-source': 0,
       total: 0
     };
 
@@ -198,6 +208,28 @@ export default function AdminCalendarPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Chargement du calendrier...</p>
+          <p className="mt-2 text-sm text-gray-500">Chargement des formations...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Erreur de chargement</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => {
+              setError(null);
+              fetchFormations();
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Réessayer
+          </button>
         </div>
       </div>
     );
@@ -231,15 +263,15 @@ export default function AdminCalendarPage() {
             <div className="text-xs md:text-sm text-gray-600">Total Sessions</div>
           </div>
           <div className="bg-white p-3 md:p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-lg md:text-2xl font-bold text-blue-600">{stats['Salaire']}</div>
+            <div className="text-lg md:text-2xl font-bold text-blue-600">{stats['salaires']}</div>
             <div className="text-xs md:text-sm text-gray-600">Salaires</div>
           </div>
           <div className="bg-white p-3 md:p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-lg md:text-2xl font-bold text-green-600">{stats['Assurances sociales']}</div>
+            <div className="text-lg md:text-2xl font-bold text-green-600">{stats['charges-sociales']}</div>
             <div className="text-xs md:text-sm text-gray-600">Charges Sociales</div>
           </div>
           <div className="bg-white p-3 md:p-4 rounded-lg shadow border border-gray-200">
-            <div className="text-lg md:text-2xl font-bold text-purple-600">{stats['Impôt à la source']}</div>
+            <div className="text-lg md:text-2xl font-bold text-purple-600">{stats['impot-a-la-source']}</div>
             <div className="text-xs md:text-sm text-gray-600">Impôt à la Source</div>
           </div>
         </div>
@@ -259,34 +291,34 @@ export default function AdminCalendarPage() {
                 Toutes ({stats.total})
               </button>
               <button
-                onClick={() => handleCategoryChange('Salaire')}
+                onClick={() => handleCategoryChange('salaires')}
                 className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-colors text-sm md:text-base ${
-                  selectedCategory === 'Salaire'
+                  selectedCategory === 'salaires'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                Salaires ({stats['Salaire']})
+                Salaires ({stats['salaires']})
               </button>
               <button
-                onClick={() => handleCategoryChange('Assurances sociales')}
+                onClick={() => handleCategoryChange('charges-sociales')}
                 className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-colors text-sm md:text-base ${
-                  selectedCategory === 'Assurances sociales'
+                  selectedCategory === 'charges-sociales'
                     ? 'bg-green-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                Charges Sociales ({stats['Assurances sociales']})
+                Charges Sociales ({stats['charges-sociales']})
               </button>
               <button
-                onClick={() => handleCategoryChange('Impôt à la source')}
+                onClick={() => handleCategoryChange('impot-a-la-source')}
                 className={`px-3 md:px-4 py-2 rounded-lg font-medium transition-colors text-sm md:text-base ${
-                  selectedCategory === 'Impôt à la source'
+                  selectedCategory === 'impot-a-la-source'
                     ? 'bg-purple-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                Impôt à la Source ({stats['Impôt à la source']})
+                Impôt à la Source ({stats['impot-a-la-source']})
               </button>
             </div>
             
@@ -471,9 +503,9 @@ export default function AdminCalendarPage() {
                     <option value="">Sélectionnez une formation</option>
                     {formations.map((formation) => (
                       <option key={formation.id} value={formation.id}>
-                        {formation.attributes.Theme === 'Salaire' ? 'Salaires' : 
-                         formation.attributes.Theme === 'Assurances sociales' ? 'Charges sociales' :
-                         formation.attributes.Theme === 'Impôt à la source' ? 'Impôt à la source' :
+                        {formation.attributes.Theme === 'salaires' ? 'Salaires' : 
+                         formation.attributes.Theme === 'charges-sociales' ? 'Charges sociales' :
+                         formation.attributes.Theme === 'impot-a-la-source' ? 'Impôt à la source' :
                          formation.attributes.Title}
                       </option>
                     ))}

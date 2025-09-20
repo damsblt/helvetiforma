@@ -705,6 +705,91 @@ export default function ContentManagement() {
           ]
         }
       ]
+    },
+    {
+      id: 'formations',
+      title: 'Formations',
+      description: 'Gérer le contenu des cartes de formations',
+      icon: '📚',
+      color: 'blue',
+      sections: [
+        {
+          id: 'formation-cards',
+          title: 'Cartes de Formations',
+          fields: [
+            {
+              name: 'formationSalairesIcon',
+              label: 'Icône Formation Salaires',
+              type: 'text',
+              value: '',
+              placeholder: '💰'
+            },
+            {
+              name: 'formationSalairesCardTitle',
+              label: 'Titre Formation Salaires',
+              type: 'text',
+              value: '',
+              placeholder: 'Gestion des Salaires'
+            },
+            {
+              name: 'formationSalairesCardDescription',
+              label: 'Description Formation Salaires',
+              type: 'textarea',
+              value: '',
+              placeholder: 'Description de la formation...'
+            },
+            {
+              name: 'formationSalairesCardDuration',
+              label: 'Durée Formation Salaires',
+              type: 'text',
+              value: '',
+              placeholder: '3 jours'
+            },
+            {
+              name: 'formationSalairesCardLevel',
+              label: 'Niveau Formation Salaires',
+              type: 'text',
+              value: '',
+              placeholder: 'Intermédiaire'
+            },
+            {
+              name: 'formationSalairesCardPrice',
+              label: 'Prix Formation Salaires',
+              type: 'text',
+              value: '',
+              placeholder: 'CHF 1,200'
+            },
+            {
+              name: 'formationSalairesFeature1',
+              label: 'Fonctionnalité 1 Salaires',
+              type: 'text',
+              value: '',
+              placeholder: 'Calcul des salaires et avantages'
+            },
+            {
+              name: 'formationSalairesFeature2',
+              label: 'Fonctionnalité 2 Salaires',
+              type: 'text',
+              value: '',
+              placeholder: 'Conformité légale suisse'
+            },
+            {
+              name: 'formationSalairesFeature3',
+              label: 'Fonctionnalité 3 Salaires',
+              type: 'text',
+              value: '',
+              placeholder: 'Outils de gestion RH'
+            },
+            {
+              name: 'formationSalairesFeature4',
+              label: 'Fonctionnalité 4 Salaires',
+              type: 'text',
+              value: '',
+              placeholder: 'Gestion des congés et absences'
+            }
+          ]
+        }
+      ]
     }
   ];
 

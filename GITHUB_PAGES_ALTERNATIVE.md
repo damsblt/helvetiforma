@@ -48,7 +48,6 @@ npm run dev
 ```env
 NEXT_PUBLIC_WORDPRESS_URL=https://helvetiforma.ch
 NEXT_PUBLIC_USE_WORDPRESS=true
-NEXT_PUBLIC_FALLBACK_TO_STRAPI=false
 ```
 
 ---

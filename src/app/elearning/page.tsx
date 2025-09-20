@@ -259,7 +259,11 @@ export default function ELearningPage() {
                 
                 <div 
                   className="text-gray-600 text-sm mb-4 line-clamp-3"
-                  dangerouslySetInnerHTML={{ __html: course.excerpt }}
+                  dangerouslySetInnerHTML={{ 
+                    __html: (course.excerpt || '')
+                      .replace(/\[embed\][^[]*\[\/embed\]/g, '') // Remove embed tags
+                      .replace(/<p>\s*<\/p>/g, '') // Remove empty paragraphs
+                  }}
                 />
                 
                 <div className="flex items-center justify-between text-sm text-gray-500">
@@ -329,7 +333,15 @@ export default function ELearningPage() {
               </h3>
               <div
                 className="text-gray-700 mb-6"
-                dangerouslySetInnerHTML={{ __html: selectedCourse.content }}
+                dangerouslySetInnerHTML={{ 
+                  __html: (selectedCourse.content || '')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/\[embed\][^[]*\[\/embed\]/g, '') // Remove embed tags
+                    .replace(/<p[^>]*>/g, '') // Remove opening p tags
+                    .replace(/<\/p>/g, '') // Remove closing p tags
+                    .replace(/<p>\s*<\/p>/g, '') // Remove empty paragraphs
+                }}
               />
             </div>
 

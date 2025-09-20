@@ -5,7 +5,7 @@
 Ce guide vous explique comment déployer votre site Helvetiforma en ligne avec l'approche hybride :
 - **Frontend**: Next.js sur Vercel
 - **CMS**: WordPress sur Hostpoint (déjà en ligne)
-- **Backup**: Strapi local (développement)
+- **Backup**: Local development
 
 ---
 
@@ -14,13 +14,10 @@ Ce guide vous explique comment déployer votre site Helvetiforma en ligne avec l
 ```
 Production:
 ├── Frontend Next.js (Vercel) → helvetiforma.vercel.app
-├── WordPress CMS (Hostpoint) → helvetiforma.ch
-└── Strapi Backup (Local) → localhost:1337
+└── WordPress CMS (Hostpoint) → helvetiforma.ch
 
 Data Flow:
 Next.js Frontend → WordPress API → WooCommerce
-                ↓ (fallback)
-                Strapi API (si WordPress échoue)
 ```
 
 ---
@@ -58,8 +55,6 @@ git push origin main
 ```env
 NEXT_PUBLIC_WORDPRESS_URL=https://helvetiforma.ch
 NEXT_PUBLIC_USE_WORDPRESS=true
-NEXT_PUBLIC_FALLBACK_TO_STRAPI=false
-NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
 ```
 
 ### 3. Configuration Vercel
@@ -94,9 +89,28 @@ NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
 NEXT_PUBLIC_WORDPRESS_URL=https://helvetiforma.ch
 NEXT_PUBLIC_USE_WORDPRESS=true
 
-# Strapi (Backup - désactivé en production)
-NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
-NEXT_PUBLIC_FALLBACK_TO_STRAPI=false
+# Stripe API
+STRIPE_SECRET_KEY=sk_live_your_live_stripe_secret_key_here
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_your_live_stripe_publishable_key_here
+
+# Stripe Domain IDs (for payment method verification)
+STRIPE_MAIN_DOMAIN_ID=pmd_1S99tXLajjczdCNE7TnUhyRK
+STRIPE_API_DOMAIN_ID=pmd_1S99qFLajjczdCNEDSutOBaV
+
+# WooCommerce API
+WOOCOMMERCE_CONSUMER_KEY=ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+WOOCOMMERCE_CONSUMER_SECRET=cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Tutor LMS
+TUTOR_API_URL=https://helvetiforma.ch
+TUTOR_LICENSE_KEY=your_tutor_license_key_here
+TUTOR_CLIENT_ID=your_tutor_client_id_here
+TUTOR_SECRET_KEY=your_tutor_secret_key_here
+WORDPRESS_APP_PASSWORD=your_wordpress_app_password_here
+
+# Application
+DEFAULT_COURSE_ID=24
+NODE_ENV=production
 
 # Sécurité
 NEXT_PUBLIC_WORDPRESS_TOKEN=your_production_token
@@ -108,25 +122,22 @@ NEXT_PUBLIC_WORDPRESS_TOKEN=your_production_token
 NEXT_PUBLIC_WORDPRESS_URL=https://helvetiforma.ch
 NEXT_PUBLIC_USE_WORDPRESS=false
 
-# Strapi (Backup - actif en développement)
-NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
-NEXT_PUBLIC_FALLBACK_TO_STRAPI=true
 ```
 
 ---
 
 ## 🔄 Étape 5: Migration des Données
 
-### 1. Migration Strapi → WordPress
+### 1. Migration des Données
 ```typescript
 // Utilisez la fonction de migration
-const success = await apiService.migrateFormationToWordPress('strapi_id');
+const success = await apiService.migrateFormationToWordPress('formation_id');
 ```
 
 ### 2. Vérification des Données
 1. **Vérifiez WordPress admin**: `https://helvetiforma.ch/wp-admin`
 2. **Testez l'API**: `https://helvetiforma.ch/wp-json/helvetiforma/v1/formations`
-3. **Comparez** avec Strapi
+3. **Vérifiez** les formations
 
 ### 3. Basculement Progressif
 1. **Commencez** avec WordPress comme backup
@@ -270,7 +281,6 @@ add_action('rest_api_init', function() {
 
 ### Développement
 - **Frontend**: `http://localhost:3000`
-- **Strapi**: `http://localhost:1337`
 - **Contrôle API**: `http://localhost:3000/api-control`
 
 ---

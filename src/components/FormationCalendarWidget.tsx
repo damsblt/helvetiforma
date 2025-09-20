@@ -9,7 +9,7 @@ interface Formation {
     Title: string;
     Description: string;
     Type: 'Présentiel' | 'En ligne';
-    Theme: 'Salaire' | 'Assurances sociales' | 'Impôt à la source';
+    Theme: 'salaires' | 'charges-sociales' | 'impot-a-la-source';
     difficulty: string;
     estimatedDuration: number;
     sessions?: Session[];
@@ -53,11 +53,11 @@ const FormationCalendarWidget: React.FC<FormationCalendarWidgetProps> = ({
 
   const getThemeColor = (theme: string) => {
     switch (theme) {
-      case 'Salaire':
+      case 'salaires':
         return 'bg-green-100 text-green-800';
-      case 'Assurances sociales':
+      case 'charges-sociales':
         return 'bg-purple-100 text-purple-800';
-      case 'Impôt à la source':
+      case 'impot-a-la-source':
         return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-gray-100 text-gray-800';

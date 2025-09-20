@@ -68,16 +68,19 @@ Le système de calendrier FullCalendar.js a été intégré à Helvetiforma pour
 - **Couleur** : Vert (`#10B981`)
 - **Description** : Formations liées à la gestion des salaires
 - **Icône** : Symbole monétaire
+- **URL** : `/calendar?category=salaires`
 
-### 🟣 **Charges Sociales (Assurances sociales)**
+### 🟣 **Charges Sociales**
 - **Couleur** : Violet (`#8B5CF6`)
 - **Description** : Formations sur les assurances et charges sociales
 - **Icône** : Bouclier de protection
+- **URL** : `/calendar?category=charges-sociales`
 
 ### 🟠 **Impôt à la Source**
 - **Couleur** : Orange (`#F59E0B`)
 - **Description** : Formations sur la fiscalité et l'impôt à la source
 - **Icône** : Document fiscal
+- **URL** : `/calendar?category=impot-a-la-source`
 
 ## Utilisation
 
@@ -255,9 +258,9 @@ import FormationRegistrationForm from '@/components/FormationRegistrationForm';
 
 ### Structure des URLs
 - **Toutes les catégories** : `/calendar`
-- **Salaires uniquement** : `/calendar?category=Salaire`
-- **Charges sociales** : `/calendar?category=Assurances%20sociales`
-- **Impôt à la source** : `/calendar?category=Impôt%20à%20la%20source`
+- **Salaires uniquement** : `/calendar?category=salaires`
+- **Charges sociales** : `/calendar?category=charges-sociales`
+- **Impôt à la source** : `/calendar?category=impot-a-la-source`
 
 ### Persistance des Filtres
 - Les filtres sont conservés dans l'URL

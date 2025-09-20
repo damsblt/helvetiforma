@@ -18,14 +18,18 @@
     "@fullcalendar/list": "^6.1.19",
     "@fullcalendar/react": "^6.1.19",
     "@fullcalendar/timegrid": "^6.1.19",
+    "@stripe/react-stripe-js": "^4.0.2",
+    "@stripe/stripe-js": "^7.9.0",
     "@supabase/supabase-js": "^2.57.4",
     "@tailwindcss/typography": "^0.5.16",
     "@vercel/kv": "^3.0.0",
     "axios": "^1.11.0",
     "next": "15.3.4",
+    "node-fetch": "^3.3.2",
     "pdfjs-dist": "^5.4.54",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "stripe": "^18.5.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

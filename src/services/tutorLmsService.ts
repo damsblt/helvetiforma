@@ -73,14 +73,13 @@ class TutorLmsService {
 
   // Get authentication headers
   private getAuthHeaders(): Record<string, string> {
-    if (this.clientId && this.secretKey) {
-      const credentials = Buffer.from(`${this.clientId}:${this.secretKey}`).toString('base64');
-      return {
-        'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/json'
-      };
-    }
+    // Use Tutor LMS Pro API credentials for authentication (same as working API endpoints)
+    const tutorAuth = this.clientId && this.secretKey
+      ? `Basic ${Buffer.from(`${this.clientId}:${this.secretKey}`).toString('base64')}`
+      : `Basic ${Buffer.from(`gibivawa:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`;
+    
     return {
+      'Authorization': tutorAuth,
       'Content-Type': 'application/json'
     };
   }
@@ -132,27 +131,31 @@ class TutorLmsService {
   // Get course by ID
   async getCourse(courseId: number): Promise<TutorCourse | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/wp-json/tutor/v1/courses/${courseId}`, {
+      // First, get the course from the courses list (same approach as working API)
+      const coursesResponse = await fetch(`${this.baseUrl}/wp-json/tutor/v1/courses`, {
         headers: this.getAuthHeaders()
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch course: ${response.statusText}`);
+      if (!coursesResponse.ok) {
+        throw new Error(`Failed to fetch courses list: ${coursesResponse.statusText}`);
       }
 
-      const data = await response.json();
-      if (data.code !== 'success') {
-        throw new Error('Failed to fetch course');
+      const coursesData = await coursesResponse.json();
+      const courses = coursesData.data?.posts || [];
+      const course = courses.find((c: any) => c.ID == courseId);
+
+      if (!course) {
+        return null;
       }
-      
-      const course = data.data;
+
+      // Transform the course data to match our interface
       return {
         id: course.ID,
         title: course.post_title,
         content: course.post_content,
         excerpt: course.post_excerpt,
         status: course.post_status,
-        author: course.post_author.ID,
+        author: course.post_author?.ID || 0,
         featured_media: course.thumbnail_url ? 1 : 0,
         date: course.post_date,
         modified: course.post_modified,
@@ -191,7 +194,7 @@ class TutorLmsService {
       }
 
       const users = await usersResponse.json();
-      console.log('WordPress users fetched:', users.length, users.map(s => ({ id: s.id, name: s.name, slug: s.slug })));
+      console.log('WordPress users fetched:', users.length, users.map((s: any) => ({ id: s.id, name: s.name, slug: s.slug })));
       
       // For each user, get their course information using Tutor LMS Pro API
       const usersWithCourses = await Promise.all(
