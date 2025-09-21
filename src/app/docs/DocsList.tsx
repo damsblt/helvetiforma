@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useBlog } from '@/contexts/BlogContext';
 
 interface Article {
   id: number;
@@ -27,23 +28,12 @@ interface Article {
 }
 
 export default function DocsList({ articles, categories }: { articles: Article[]; categories: string[] }) {
+  const { getArticlesByCategory } = useBlog();
   const [selected, setSelected] = useState('Toutes');
   const [sortBy, setSortBy] = useState<'date' | 'title'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const filteredArticles = articles.filter((article) => {
-    if (selected === 'Toutes') return true;
-    
-    // Get category map from window (set in parent component)
-    const categoryMap = (window as any).categoryMap;
-    if (!categoryMap) return true;
-    
-    // Check if article has the selected category
-    return article.categories.some((catId: number) => {
-      const categoryName = categoryMap.get(catId);
-      return categoryName === selected;
-    });
-  });
+  const filteredArticles = getArticlesByCategory(selected);
 
   const sortedArticles = [...filteredArticles].sort((a, b) => {
     let comparison = 0;

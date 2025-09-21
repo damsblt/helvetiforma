@@ -1,0 +1,39 @@
+# Netlify Environment Variables
+# Copy these to your Netlify dashboard under Site settings > Environment variables
+
+# WordPress Configuration (Primary CMS)
+NEXT_PUBLIC_WORDPRESS_URL=https://api.helvetiforma.ch
+
+# Tutor LMS Pro Configuration
+TUTOR_API_URL=https://api.helvetiforma.ch
+TUTOR_LICENSE_KEY=your_tutor_license_key_here
+TUTOR_CLIENT_ID=your_tutor_client_id_here
+TUTOR_SECRET_KEY=your_tutor_secret_key_here
+
+# WordPress Application Password
+WORDPRESS_APP_PASSWORD=your_wordpress_app_password_here
+
+# WooCommerce API Credentials
+WOOCOMMERCE_CONSUMER_KEY=ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+WOOCOMMERCE_CONSUMER_SECRET=cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Stripe API Credentials
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key_here
+
+# Stripe Domain IDs (for payment method verification)
+STRIPE_MAIN_DOMAIN_ID=pmd_1S99tXLajjczdCNE7TnUhyRK
+STRIPE_API_DOMAIN_ID=pmd_1S99qFLajjczdCNEDSutOBaV
+
+# Default Course ID for enrollment
+DEFAULT_COURSE_ID=24
+
+# Production Settings
+NODE_ENV=production
+NEXT_PUBLIC_SITE_URL=https://your-netlify-app.netlify.app
+
+# Frontend Revalidation
+REVALIDATE_SECRET=your-revalidation-secret-key-here
+
+# Netlify-specific settings
+NEXT_PUBLIC_API_URL=https://api.informaniak.com

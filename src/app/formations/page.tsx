@@ -22,7 +22,7 @@ export default function FormationsPage() {
           {
             id: 'salaires',
             title: content.formationSalairesCardTitle || 'Gestion des Salaires',
-            description: content.formationSalairesCardDescription || 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Formation pratique avec cas concrets et outils modernes.',
+            description: content.formationSalairesCardDescription || 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Cette formation vous permet d\'acquérir une expertise approfondie dans le calcul des rémunérations, la gestion des avantages sociaux et la conformité légale.\n\nFormation pratique avec cas concrets et outils modernes pour optimiser vos processus RH et garantir une gestion efficace de la paie.',
             duration: content.formationSalairesCardDuration || '3 jours',
             level: content.formationSalairesCardLevel || 'Intermédiaire',
             price: content.formationSalairesCardPrice || 'CHF 1,200',
@@ -38,7 +38,7 @@ export default function FormationsPage() {
           {
             id: 'charges-sociales',
             title: content.formationChargesSocialesCardTitle || 'Charges Sociales & Cotisations',
-            description: content.formationChargesSocialesCardDescription || 'Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres assurances sociales en entreprise.',
+            description: content.formationChargesSocialesCardDescription || 'Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres assurances sociales en entreprise. Cette formation approfondie vous donne les clés pour maîtriser le système complexe des cotisations sociales suisses et optimiser la gestion financière de votre organisation.\n\nApprenez les bonnes pratiques et les stratégies d\'optimisation pour réduire vos coûts tout en respectant la législation en vigueur.',
             duration: content.formationChargesSocialesCardDuration || '2 jours',
             level: content.formationChargesSocialesCardLevel || 'Avancé',
             price: content.formationChargesSocialesCardPrice || 'CHF 980',
@@ -54,7 +54,7 @@ export default function FormationsPage() {
           {
             id: 'impot-a-la-source',
             title: content.formationImpotALaSourceCardTitle || 'Impôt à la Source',
-            description: content.formationImpotALaSourceCardDescription || 'Formation spécialisée sur l\'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. Procédures et bonnes pratiques.',
+            description: content.formationImpotALaSourceCardDescription || 'Formation spécialisée sur l\'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. Cette formation vous accompagne dans la compréhension des procédures fiscales complexes et des bonnes pratiques pour optimiser votre situation fiscale.\n\nMaîtrisez les calculs, les déclarations et les cas particuliers pour éviter les erreurs coûteuses et maximiser vos avantages fiscaux.',
             duration: content.formationImpotALaSourceCardDuration || '1.5 jours',
             level: content.formationImpotALaSourceCardLevel || 'Spécialisé',
             price: content.formationImpotALaSourceCardPrice || 'CHF 750',
@@ -77,7 +77,7 @@ export default function FormationsPage() {
           {
             id: 'salaires',
             title: 'Gestion des Salaires',
-            description: 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Formation pratique avec cas concrets et outils modernes.',
+            description: 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Cette formation vous permet d\'acquérir une expertise approfondie dans le calcul des rémunérations, la gestion des avantages sociaux et la conformité légale.\n\nFormation pratique avec cas concrets et outils modernes pour optimiser vos processus RH et garantir une gestion efficace de la paie.',
             duration: '3 jours',
             level: 'Intermédiaire',
             price: 'CHF 1,200',
@@ -167,25 +167,6 @@ export default function FormationsPage() {
           ))}
         </div>
 
-        {/* Additional Info */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Formation sur Mesure
-          </h2>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Nos formations peuvent être adaptées aux besoins spécifiques de votre entreprise. 
-            Contactez-nous pour discuter de vos besoins et obtenir un devis personnalisé.
-          </p>
-          <Link
-            href="/contact"
-            className="inline-flex items-center bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            Demander un devis personnalisé
-            <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-          </div>
       </div>
     </div>
   );

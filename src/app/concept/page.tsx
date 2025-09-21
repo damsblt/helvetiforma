@@ -262,7 +262,7 @@ export default function ConceptPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
-              href="/products" 
+              href="/formations" 
               className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors text-lg"
             >
               Consulter les formations

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
+import { useProducts } from '@/contexts/ProductsContext';
 import InPersonSubscription from '@/components/InPersonSubscription';
 
 interface Formation {
@@ -25,12 +26,12 @@ interface Product {
   description: string;
   short_description: string;
   images: any[];
-  tutor_course_id: number;
-  course_duration: string;
-  course_level: string;
-  course_slug: string;
-  virtual: boolean;
-  downloadable: boolean;
+  tutor_course_id?: string;
+  course_duration?: string;
+  course_level?: string;
+  course_slug?: string;
+  virtual?: boolean;
+  downloadable?: boolean;
 }
 
 const formations: Formation[] = [
@@ -87,8 +88,8 @@ const formations: Formation[] = [
 export default function FormationDetailsPage() {
   const params = useParams();
   const { addToCart } = useCart();
+  const { courseProducts, loading: productsLoading, isInitialized } = useProducts();
   const [formation, setFormation] = useState<Formation | null>(null);
-  const [eLearningProducts, setELearningProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterText, setFilterText] = useState('');
@@ -108,27 +109,10 @@ export default function FormationDetailsPage() {
   }, [params.slug]);
 
   useEffect(() => {
-    fetchELearningProducts();
-  }, []);
-
-  useEffect(() => {
-    if (formation) {
+    if (formation && isInitialized) {
       filterProducts();
     }
-  }, [formation, eLearningProducts, filterText]);
-
-  const fetchELearningProducts = async () => {
-    try {
-      const response = await fetch('/api/woocommerce/course-products');
-      const result = await response.json();
-      
-      if (result.success && result.data) {
-        setELearningProducts(result.data);
-      }
-    } catch (error) {
-      console.error('Error fetching eLearning products:', error);
-    }
-  };
+  }, [formation, courseProducts, filterText, isInitialized]);
 
   const filterProducts = () => {
     if (!formation) {
@@ -137,8 +121,8 @@ export default function FormationDetailsPage() {
     }
     
     console.log('Formation page - filterProducts: formation:', formation.title);
-    console.log('Formation page - filterProducts: eLearningProducts count:', eLearningProducts.length);
-    console.log('Formation page - filterProducts: eLearningProducts:', eLearningProducts.map(p => p.name));
+    console.log('Formation page - filterProducts: courseProducts count:', courseProducts.length);
+    console.log('Formation page - filterProducts: courseProducts:', courseProducts.map(p => p.name));
     
     // Normalize text for better matching (remove accents, convert to lowercase)
     const normalizeText = (text: string) => {
@@ -153,7 +137,7 @@ export default function FormationDetailsPage() {
     const normalizedFormationTitle = normalizeText(formation.title);
     const normalizedFormationId = normalizeText(formation.id);
     
-    let filtered = eLearningProducts.filter(product => {
+    let filtered = courseProducts.filter(product => {
       const normalizedProductName = normalizeText(product.name);
       const normalizedProductDescription = normalizeText(product.description || '');
       
@@ -190,7 +174,7 @@ export default function FormationDetailsPage() {
     return colorMap[color as keyof typeof colorMap] || 'from-gray-600 to-gray-700';
   };
 
-  if (isLoading) {
+  if (isLoading || !isInitialized || productsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

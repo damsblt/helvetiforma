@@ -6,9 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "build:static": "next build && next export",
+    "build:netlify": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy:gh-pages": "npm run build:static && touch out/.nojekyll"
+    "deploy:gh-pages": "npm run build:static && touch out/.nojekyll",
+    "deploy:netlify": "npm run build:netlify"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -24,6 +26,7 @@
     "@tailwindcss/typography": "^0.5.16",
     "@vercel/kv": "^3.0.0",
     "axios": "^1.11.0",
+    "http-proxy-middleware": "^2.0.6",
     "next": "15.3.4",
     "node-fetch": "^3.3.2",
     "pdfjs-dist": "^5.4.54",

@@ -63,7 +63,7 @@ export default function CGUPage() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">8. Contact</h2>
             <p className="text-gray-700 mb-6">
               Pour toute question concernant ces conditions, vous pouvez nous contacter à l'adresse suivante : 
-              <a href="mailto:info@helvetiforma.ch" className="text-blue-600 hover:text-blue-700">info@helvetiforma.ch</a>
+              <a href="mailto:contact@helvetiforma.ch" className="text-blue-600 hover:text-blue-700">contact@helvetiforma.ch</a>
             </p>
           </div>
         </div>

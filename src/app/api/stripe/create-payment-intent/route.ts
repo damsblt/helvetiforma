@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+let stripe: Stripe;
+
+try {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2024-06-20',
+  });
+  console.log('Stripe initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize Stripe:', error);
+  throw error;
+}
 
 export async function POST(request: NextRequest) {
   try {

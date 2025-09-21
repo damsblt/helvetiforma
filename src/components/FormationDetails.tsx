@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
+import { useProducts } from '@/contexts/ProductsContext';
 import InPersonSubscription from './InPersonSubscription';
 import EditableContent from './EditableContent';
 import { contentService } from '@/services/contentService';
@@ -26,19 +27,19 @@ interface Product {
   description: string;
   short_description: string;
   images: any[];
-  tutor_course_id: number;
-  course_duration: string;
-  course_level: string;
-  course_slug: string;
-  virtual: boolean;
-  downloadable: boolean;
+  tutor_course_id?: string;
+  course_duration?: string;
+  course_level?: string;
+  course_slug?: string;
+  virtual?: boolean;
+  downloadable?: boolean;
 }
 
 const formations: Formation[] = [
   {
     id: 'salaires',
     title: 'Gestion des Salaires',
-    description: 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Formation pratique avec cas concrets et outils modernes.',
+    description: 'Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Cette formation vous permet d\'acquérir une expertise approfondie dans le calcul des rémunérations, la gestion des avantages sociaux et la conformité légale.\n\nFormation pratique avec cas concrets et outils modernes pour optimiser vos processus RH et garantir une gestion efficace de la paie.',
     duration: '3 jours',
     level: 'Intermédiaire',
     price: 'CHF 1,200',
@@ -54,7 +55,7 @@ const formations: Formation[] = [
   {
     id: 'charges-sociales',
     title: 'Charges Sociales & Cotisations',
-    description: 'Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres assurances sociales en entreprise.',
+    description: 'Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres assurances sociales en entreprise. Cette formation approfondie vous donne les clés pour maîtriser le système complexe des cotisations sociales suisses et optimiser la gestion financière de votre organisation.\n\nApprenez les bonnes pratiques et les stratégies d\'optimisation pour réduire vos coûts tout en respectant la législation en vigueur.',
     duration: '2 jours',
     level: 'Avancé',
     price: 'CHF 980',
@@ -70,7 +71,7 @@ const formations: Formation[] = [
   {
     id: 'impot-a-la-source',
     title: 'Impôt à la Source',
-    description: 'Formation spécialisée sur l\'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. Procédures et bonnes pratiques.',
+    description: 'Formation spécialisée sur l\'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. Cette formation vous accompagne dans la compréhension des procédures fiscales complexes et des bonnes pratiques pour optimiser votre situation fiscale.\n\nMaîtrisez les calculs, les déclarations et les cas particuliers pour éviter les erreurs coûteuses et maximiser vos avantages fiscaux.',
     duration: '1.5 jours',
     level: 'Spécialisé',
     price: 'CHF 750',
@@ -91,11 +92,12 @@ interface FormationDetailsProps {
 
 export default function FormationDetails({ formationId }: FormationDetailsProps) {
   const { addToCart } = useCart();
+  const { courseProducts, loading: productsLoading, isInitialized, error } = useProducts();
   const [formation, setFormation] = useState<Formation | null>(null);
-  const [eLearningProducts, setELearningProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterText, setFilterText] = useState('');
+
 
   useEffect(() => {
     // Use hardcoded data for now to test
@@ -107,33 +109,10 @@ export default function FormationDetails({ formationId }: FormationDetailsProps)
   }, [formationId]);
 
   useEffect(() => {
-    fetchELearningProducts();
-  }, []);
-
-  useEffect(() => {
-    if (formation) {
+    if (formation && isInitialized) {
       filterProducts();
     }
-  }, [formation, eLearningProducts, filterText]);
-
-  const fetchELearningProducts = async () => {
-    try {
-      console.log('FormationDetails - fetchELearningProducts: starting fetch');
-      const response = await fetch('/api/woocommerce/course-products');
-      const result = await response.json();
-      
-      console.log('FormationDetails - fetchELearningProducts: response:', result);
-      
-      if (result.success && result.data) {
-        console.log('FormationDetails - fetchELearningProducts: setting products:', result.data.length);
-        setELearningProducts(result.data);
-      } else {
-        console.log('FormationDetails - fetchELearningProducts: no data or success false');
-      }
-    } catch (error) {
-      console.error('FormationDetails - fetchELearningProducts error:', error);
-    }
-  };
+  }, [formation, courseProducts, filterText, isInitialized]);
 
   const filterProducts = () => {
     if (!formation) {
@@ -142,8 +121,8 @@ export default function FormationDetails({ formationId }: FormationDetailsProps)
     }
     
     console.log('FormationDetails - filterProducts: formation:', formation.title);
-    console.log('FormationDetails - filterProducts: eLearningProducts count:', eLearningProducts.length);
-    console.log('FormationDetails - filterProducts: eLearningProducts:', eLearningProducts.map(p => p.name));
+    console.log('FormationDetails - filterProducts: courseProducts count:', courseProducts.length);
+    console.log('FormationDetails - filterProducts: courseProducts:', courseProducts.map(p => p.name));
     
     // Normalize text for better matching (remove accents, convert to lowercase)
     const normalizeText = (text: string) => {
@@ -170,7 +149,7 @@ export default function FormationDetails({ formationId }: FormationDetailsProps)
 
     console.log('FormationDetails - filterProducts: searchTerms:', searchTerms);
 
-    let filtered = eLearningProducts.filter(product => {
+    let filtered = courseProducts.filter(product => {
       const normalizedProductName = normalizeText(product.name);
       const normalizedProductDescription = normalizeText(product.description || '');
       
@@ -204,7 +183,7 @@ export default function FormationDetails({ formationId }: FormationDetailsProps)
     addToCart(product.id, 1);
   };
 
-  if (isLoading) {
+  if (isLoading || !isInitialized || productsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -263,67 +242,39 @@ export default function FormationDetails({ formationId }: FormationDetailsProps)
                 {formation.title}
               </EditableContent>
               
-              <EditableContent
-                fieldName={`formation${formationId.charAt(0).toUpperCase() + formationId.slice(1)}CardDescription`}
-                value={formation.description}
-                type="textarea"
-                className="text-gray-600 mb-6"
-                onSave={(value) => {
-                  setFormation(prev => prev ? { ...prev, description: value } : null);
-                }}
-              >
-                {formation.description}
-              </EditableContent>
-              
-              {/* Formation Info */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Durée</span>
-                  <EditableContent
-                    fieldName={`formation${formationId.charAt(0).toUpperCase() + formationId.slice(1)}CardDuration`}
-                    value={formation.duration}
-                    type="text"
-                    className="text-lg font-semibold text-gray-900"
-                    onSave={(value) => {
-                      setFormation(prev => prev ? { ...prev, duration: value } : null);
-                    }}
-                  >
-                    {formation.duration}
-                  </EditableContent>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Niveau</span>
-                  <EditableContent
-                    fieldName={`formation${formationId.charAt(0).toUpperCase() + formationId.slice(1)}CardLevel`}
-                    value={formation.level}
-                    type="text"
-                    className="text-lg font-semibold text-gray-900"
-                    onSave={(value) => {
-                      setFormation(prev => prev ? { ...prev, level: value } : null);
-                    }}
-                  >
-                    {formation.level}
-                  </EditableContent>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Prix</span>
-                  <EditableContent
-                    fieldName={`formation${formationId.charAt(0).toUpperCase() + formationId.slice(1)}CardPrice`}
-                    value={formation.price}
-                    type="text"
-                    className="text-lg font-semibold text-gray-900"
-                    onSave={(value) => {
-                      setFormation(prev => prev ? { ...prev, price: value } : null);
-                    }}
-                  >
-                    {formation.price}
-                  </EditableContent>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Type</span>
-                  <p className="text-lg font-semibold text-gray-900">Formation</p>
-                </div>
+              <div className="text-gray-600 mb-6">
+                {formation.id === 'salaires' && (
+                  <>
+                    <div className="mb-4">
+                      Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Cette formation vous permet d'acquérir une expertise approfondie dans le calcul des rémunérations, la gestion des avantages sociaux et la conformité légale.
+                    </div>
+                    <div>
+                      Formation pratique avec cas concrets et outils modernes pour optimiser vos processus RH et garantir une gestion efficace de la paie.
+                    </div>
+                  </>
+                )}
+                {formation.id === 'charges-sociales' && (
+                  <>
+                    <div className="mb-4">
+                      Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres assurances sociales en entreprise. Cette formation approfondie vous donne les clés pour maîtriser le système complexe des cotisations sociales suisses et optimiser la gestion financière de votre organisation.
+                    </div>
+                    <div>
+                      Apprenez les bonnes pratiques et les stratégies d'optimisation pour réduire vos coûts tout en respectant la législation en vigueur.
+                    </div>
+                  </>
+                )}
+                {formation.id === 'impot-a-la-source' && (
+                  <>
+                    <div className="mb-4">
+                      Formation spécialisée sur l'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. Cette formation vous accompagne dans la compréhension des procédures fiscales complexes et des bonnes pratiques pour optimiser votre situation fiscale.
+                    </div>
+                    <div>
+                      Maîtrisez les calculs, les déclarations et les cas particuliers pour éviter les erreurs coûteuses et maximiser vos avantages fiscaux.
+                    </div>
+                  </>
+                )}
               </div>
+              
 
               {/* Features */}
               <div>

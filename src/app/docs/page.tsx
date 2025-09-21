@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useBlog } from '@/contexts/BlogContext';
 import DocsList from './DocsList';
 
 interface Article {
@@ -28,60 +29,15 @@ interface Article {
 }
 
 export default function DocsPage() {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [categories, setCategories] = useState<string[]>(['Toutes']);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { 
+    articles, 
+    categoryNames, 
+    loading, 
+    error, 
+    isInitialized 
+  } = useBlog();
 
-  useEffect(() => {
-    const fetchArticles = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch WordPress posts
-        const postsResponse = await fetch('https://api.helvetiforma.ch/wp-json/wp/v2/posts?per_page=100');
-        if (!postsResponse.ok) {
-          throw new Error('Failed to fetch posts');
-        }
-        
-        const posts: Article[] = await postsResponse.json();
-        setArticles(posts);
-
-        // Get categories from WordPress
-        const categoriesResponse = await fetch('https://api.helvetiforma.ch/wp-json/wp/v2/categories');
-        if (categoriesResponse.ok) {
-          const wpCategories = await categoriesResponse.json();
-          const categoryMap = new Map<number, string>();
-          const categoryNames = ['Toutes'];
-          
-          wpCategories.forEach((cat: any) => {
-            // Filter out "Non classé" (Unclassified) category as it's redundant with "Toutes"
-            if (cat.name !== 'Non classé') {
-              categoryMap.set(cat.id, cat.name);
-              categoryNames.push(cat.name);
-            }
-          });
-          
-          // Store category mapping for filtering
-          setCategories(categoryNames);
-          // Store the full category data for filtering
-          (window as any).categoryMap = categoryMap;
-        } else {
-          setCategories(['Toutes']);
-        }
-        
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch articles');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchArticles();
-  }, []);
-
-  if (loading) {
+  if (loading || !isInitialized) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 px-2 md:px-0">
         <div className="container mx-auto max-w-3xl">
@@ -121,7 +77,7 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-2 md:px-0">
       <div className="container mx-auto max-w-3xl">
-        <DocsList articles={articles} categories={categories} />
+        <DocsList articles={articles} categories={categoryNames} />
       </div>
     </div>
   );

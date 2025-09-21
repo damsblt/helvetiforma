@@ -94,15 +94,23 @@ export default function EditableFormationCard({ formation, onUpdate }: EditableF
           {formation.title}
         </EditableContent>
         
-        <EditableContent
-          fieldName={`formation${formation.id.charAt(0).toUpperCase() + formation.id.slice(1)}Description`}
-          value={formation.description}
-          type="textarea"
-          className="text-gray-600 text-sm leading-relaxed"
-          onSave={(value) => handleFieldUpdate(`formation${formation.id.charAt(0).toUpperCase() + formation.id.slice(1)}Description`, value)}
-        >
-          {formation.description}
-        </EditableContent>
+        <div className="text-gray-600 text-sm leading-relaxed">
+          {formation.id === 'salaires' && (
+            <div>
+              Maîtrisez la gestion complète des salaires, des avantages sociaux et de la paie en Suisse. Cette formation vous permet d'acquérir une expertise approfondie dans le calcul des rémunérations, la gestion des avantages sociaux et la conformité légale.
+            </div>
+          )}
+          {formation.id === 'charges-sociales' && (
+            <div>
+              Comprenez et gérez efficacement les charges sociales, les cotisations AVS, LPP et autres assurances sociales en entreprise. Cette formation approfondie vous donne les clés pour maîtriser le système complexe des cotisations sociales suisses et optimiser la gestion financière de votre organisation.
+            </div>
+          )}
+          {formation.id === 'impot-a-la-source' && (
+            <div>
+              Formation spécialisée sur l'impôt à la source pour les travailleurs frontaliers et étrangers en Suisse. Cette formation vous accompagne dans la compréhension des procédures fiscales complexes et des bonnes pratiques pour optimiser votre situation fiscale.
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Features */}
@@ -129,38 +137,6 @@ export default function EditableFormationCard({ formation, onUpdate }: EditableF
           ))}
         </div>
 
-        {/* Info Bar */}
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
-          <EditableContent
-            fieldName={`formation${formation.id.charAt(0).toUpperCase() + formation.id.slice(1)}Duration`}
-            value={formation.duration}
-            type="text"
-            className="flex items-center"
-            onSave={(value) => handleFieldUpdate(`formation${formation.id.charAt(0).toUpperCase() + formation.id.slice(1)}Duration`, value)}
-          >
-            <span>⏱️ {formation.duration}</span>
-          </EditableContent>
-          
-          <EditableContent
-            fieldName={`formation${formation.id.charAt(0).toUpperCase() + formation.id.slice(1)}Level`}
-            value={formation.level}
-            type="text"
-            className="flex items-center"
-            onSave={(value) => handleFieldUpdate(`formation${formation.id.charAt(0).toUpperCase() + formation.id.slice(1)}Level`, value)}
-          >
-            <span>📊 {formation.level}</span>
-          </EditableContent>
-          
-          <EditableContent
-            fieldName={`formation${formation.id.charAt(0).toUpperCase() + formation.id.slice(1)}Price`}
-            value={formation.price}
-            type="text"
-            className="font-semibold text-gray-700"
-            onSave={(value) => handleFieldUpdate(`formation${formation.id.charAt(0).toUpperCase() + formation.id.slice(1)}Price`, value)}
-          >
-            {formation.price}
-          </EditableContent>
-        </div>
 
         {/* CTA Button */}
         <div className="flex gap-2">
