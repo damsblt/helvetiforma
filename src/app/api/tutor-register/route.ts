@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { emailService } from '@/services/emailService';
 
 // Tutor LMS Pro API configuration
+const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
 const TUTOR_API_URL = process.env.TUTOR_API_URL || 'https://api.helvetiforma.ch';
 const TUTOR_LICENSE_KEY = process.env.TUTOR_LICENSE_KEY || 'EC00F-9DF58-E44EC-E68BC-1757919356';
 const TUTOR_CLIENT_ID = process.env.TUTOR_CLIENT_ID || '';
@@ -40,9 +41,9 @@ export async function POST(request: NextRequest) {
     ).toString('base64');
 
     console.log('🔑 WooCommerce auth configured');
-    console.log('📡 Making request to:', `${TUTOR_API_URL}/wp-json/wc/v3/customers`);
+    console.log('📡 Making request to:', `${WORDPRESS_URL}/wp-json/wc/v3/customers`);
 
-    const userResponse = await fetch(`${TUTOR_API_URL}/wp-json/wc/v3/customers`, {
+    const userResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
     const courseNames = [];
     for (const courseId of coursesToEnroll) {
       try {
-        const courseResponse = await fetch(`${TUTOR_API_URL}/wp-json/wp/v2/courses/${courseId}`, {
+        const courseResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/courses/${courseId}`, {
           headers: {
             'Authorization': tutorAuth,
           },
