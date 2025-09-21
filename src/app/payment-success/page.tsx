@@ -20,9 +20,67 @@ function PaymentSuccessContent() {
         status: redirectStatus,
         timestamp: new Date().toISOString()
       });
+      
+      // Process account creation and course enrollment
+      processAccountCreation(paymentIntent);
     }
     setIsLoading(false);
   }, [searchParams]);
+
+  const processAccountCreation = async (paymentIntent: string) => {
+    try {
+      // Get cart data from localStorage (if available)
+      const cartData = localStorage.getItem('cart');
+      if (!cartData) {
+        console.log('No cart data found, skipping account creation');
+        return;
+      }
+
+      const cart = JSON.parse(cartData);
+      if (!cart.items || cart.items.length === 0) {
+        console.log('No cart items found, skipping account creation');
+        return;
+      }
+
+      // Get user data from localStorage (if available)
+      const userData = localStorage.getItem('checkoutFormData');
+      if (!userData) {
+        console.log('No user data found, skipping account creation');
+        return;
+      }
+
+      const formData = JSON.parse(userData);
+      
+      console.log('Processing account creation for payment:', paymentIntent);
+      
+      // Create WordPress user and enroll in courses
+      const enrollmentResponse = await fetch('/api/tutor-register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          course_ids: cart.items.map((item: any) => item.course_id).filter(Boolean)
+        }),
+      });
+
+      const enrollmentResult = await enrollmentResponse.json();
+      
+      if (enrollmentResult.success) {
+        console.log('Account created and enrolled successfully:', enrollmentResult);
+        // Clear cart and form data after successful account creation
+        localStorage.removeItem('cart');
+        localStorage.removeItem('checkoutFormData');
+      } else {
+        console.error('Account creation failed:', enrollmentResult.error);
+      }
+    } catch (error) {
+      console.error('Error processing account creation:', error);
+    }
+  };
 
   if (isLoading) {
     return (

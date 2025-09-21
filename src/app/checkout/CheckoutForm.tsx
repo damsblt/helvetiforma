@@ -100,7 +100,10 @@ export default function CheckoutForm() {
       let paymentSuccess = false;
       const paymentIntentId = null;
 
-      // Step 1: Process payment first
+      // Step 1: Save form data to localStorage before payment
+      localStorage.setItem('checkoutFormData', JSON.stringify(formData));
+
+      // Step 2: Process payment first
       if (formData.paymentMethod === 'stripe') {
         if (!stripe || !elements) {
           throw new Error("Stripe n'est pas initialisé.");
@@ -130,52 +133,9 @@ export default function CheckoutForm() {
         throw new Error('Le paiement a échoué.');
       }
 
-      // Step 2: Create WordPress user and enroll in courses (only after successful payment)
-      console.log('Creating WordPress user and enrolling in courses...');
-      const enrollmentResponse = await fetch('/api/tutor-register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          course_ids: cart.items.map(item => item.course_id).filter(Boolean)
-        }),
-      });
-
-      const enrollmentResult = await enrollmentResponse.json();
-      
-      if (!enrollmentResult.success) {
-        throw new Error(enrollmentResult.error || 'Erreur lors de la création du compte utilisateur');
-      }
-
-      console.log('User created and enrolled:', enrollmentResult);
-
-      // Step 3: Create WooCommerce order (only after successful payment)
-      console.log('Creating WooCommerce order...');
-      const orderData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        payment_method: formData.paymentMethod,
-        transaction_id: paymentIntentId,
-        // Default values for required WooCommerce fields
-        address: 'Non spécifié',
-        city: 'Non spécifié',
-        state: 'Non spécifié',
-        postcode: '0000',
-        country: 'CH',
-        phone: '',
-        company: ''
-      };
-      const order = await wooCommerceCartService.createOrder(cart, orderData);
-      
-      if (order) {
-        setOrderSuccess(true);
-        await wooCommerceCartService.clearCart();
-      }
+      // Payment successful - account creation will happen on success page
+      console.log('Payment successful, redirecting to success page...');
+      setOrderSuccess(true);
     } catch (error) {
       console.error('Checkout error:', error);
       setOrderError(error instanceof Error ? error.message : 'Erreur lors du processus de commande. Veuillez réessayer.');
