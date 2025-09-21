@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircleIcon, EnvelopeIcon, UserIcon } from '@heroicons/react/24/outline';
+// Using simple SVG icons instead of heroicons
 
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams();
@@ -58,7 +58,11 @@ export default function PaymentSuccessPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Success Header */}
         <div className="text-center mb-8">
-          <CheckCircleIcon className="mx-auto h-16 w-16 text-green-500 mb-4" />
+          <div className="mx-auto h-16 w-16 text-green-500 mb-4 flex items-center justify-center">
+            <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Paiement réussi ! 🎉
           </h1>
@@ -101,7 +105,12 @@ export default function PaymentSuccessPage() {
           </h2>
           <div className="space-y-4">
             <div className="flex items-start">
-              <EnvelopeIcon className="h-6 w-6 text-blue-600 mt-1 mr-3 flex-shrink-0" />
+              <div className="h-6 w-6 text-blue-600 mt-1 mr-3 flex-shrink-0">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+              </div>
               <div>
                 <h3 className="font-medium text-blue-900">Email de confirmation</h3>
                 <p className="text-blue-700 text-sm">
@@ -110,7 +119,11 @@ export default function PaymentSuccessPage() {
               </div>
             </div>
             <div className="flex items-start">
-              <UserIcon className="h-6 w-6 text-blue-600 mt-1 mr-3 flex-shrink-0" />
+              <div className="h-6 w-6 text-blue-600 mt-1 mr-3 flex-shrink-0">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
               <div>
                 <h3 className="font-medium text-blue-900">Accès aux formations</h3>
                 <p className="text-blue-700 text-sm">
