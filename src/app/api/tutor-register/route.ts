@@ -9,17 +9,21 @@ const TUTOR_SECRET_KEY = process.env.TUTOR_SECRET_KEY || '';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== TUTOR REGISTER API CALLED ===');
+    
     const { first_name, last_name, email, course_ids } = await request.json();
+    console.log('Received data:', { first_name, last_name, email, course_ids });
 
     // Validate input
     if (!first_name || !last_name || !email) {
+      console.log('❌ Missing required fields');
       return NextResponse.json(
         { success: false, error: 'Tous les champs sont requis' },
         { status: 400 }
       );
     }
 
-    console.log('Creating student with Tutor LMS Pro API...');
+    console.log('✅ Creating student with Tutor LMS Pro API...');
 
     // Step 1: Try to create WordPress user via WooCommerce API (more reliable)
     const userData = {
@@ -35,6 +39,9 @@ export async function POST(request: NextRequest) {
       `${process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b'}:${process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076'}`
     ).toString('base64');
 
+    console.log('🔑 WooCommerce auth configured');
+    console.log('📡 Making request to:', `${TUTOR_API_URL}/wp-json/wc/v3/customers`);
+
     const userResponse = await fetch(`${TUTOR_API_URL}/wp-json/wc/v3/customers`, {
       method: 'POST',
       headers: {
@@ -44,9 +51,18 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(userData),
     });
 
+    console.log('📊 WooCommerce response status:', userResponse.status);
+
     if (!userResponse.ok) {
-      const errorData = await userResponse.json();
-      console.error('WooCommerce customer creation failed:', errorData);
+      let errorData;
+      try {
+        errorData = await userResponse.json();
+      } catch (parseError) {
+        console.error('❌ Failed to parse error response:', parseError);
+        errorData = { message: 'Unknown error - could not parse response' };
+      }
+      
+      console.error('❌ WooCommerce customer creation failed:', errorData);
       
       return NextResponse.json(
         { success: false, error: `Erreur lors de la création du compte utilisateur: ${errorData.message || 'Erreur inconnue'}` },
@@ -55,7 +71,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userResponseData = await userResponse.json();
-    console.log('WooCommerce customer created:', userResponseData.id);
+    console.log('✅ WooCommerce customer created:', userResponseData.id);
 
     // Step 2: Enroll user in courses using native Tutor LMS Pro API
     const coursesToEnroll = course_ids && course_ids.length > 0 
@@ -155,7 +171,13 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('❌ Registration error:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
+    
     return NextResponse.json(
       { success: false, error: `Erreur interne du serveur: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
