@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { emailService } from '@/services/emailService';
+import { tutorLmsService } from '@/services/tutorLmsService';
 
 // Tutor LMS Pro API configuration
 const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
@@ -74,48 +75,36 @@ export async function POST(request: NextRequest) {
     const userResponseData = await userResponse.json();
     console.log('✅ WooCommerce customer created:', userResponseData.id);
 
-    // Step 2: Enroll user in courses using native Tutor LMS Pro API
+    // Step 2: Enroll user in courses using TutorLMS service
     const coursesToEnroll = course_ids && course_ids.length > 0 
       ? course_ids 
       : [process.env.DEFAULT_COURSE_ID || 24]; // Default course if none specified
 
-    // Use Tutor LMS Pro API credentials for authentication
-    const tutorAuth = TUTOR_CLIENT_ID && TUTOR_SECRET_KEY 
-      ? `Basic ${Buffer.from(`${TUTOR_CLIENT_ID}:${TUTOR_SECRET_KEY}`).toString('base64')}`
-      : `Basic ${Buffer.from(`gibivawa:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`;
+    console.log('🎓 Enrolling user in courses:', coursesToEnroll);
 
-    // Enroll user in all courses
+    // Enroll user in all courses using the working tutorLmsService
     const enrollments = [];
     const enrollmentErrors = [];
 
     for (const courseId of coursesToEnroll) {
       try {
-        const enrollmentData = {
-          user_id: userResponseData.id,
-          course_id: parseInt(courseId.toString())
-        };
+        console.log(`📚 Enrolling user ${userResponseData.id} in course ${courseId}...`);
+        
+        const enrollmentSuccess = await tutorLmsService.enrollStudent(
+          userResponseData.id, 
+          parseInt(courseId.toString())
+        );
 
-        const enrollmentResponse = await fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': tutorAuth,
-          },
-          body: JSON.stringify(enrollmentData),
-        });
-
-        if (enrollmentResponse.ok) {
-          const enrollment = await enrollmentResponse.json();
-          enrollments.push({ course_id: courseId, enrollment });
-          console.log(`User enrolled in course ${courseId}:`, enrollment);
+        if (enrollmentSuccess) {
+          enrollments.push({ course_id: courseId, success: true });
+          console.log(`✅ User successfully enrolled in course ${courseId}`);
         } else {
-          const errorData = await enrollmentResponse.json();
-          enrollmentErrors.push({ course_id: courseId, error: errorData });
-          console.error(`Course ${courseId} enrollment failed:`, errorData);
+          enrollmentErrors.push({ course_id: courseId, error: 'Enrollment failed' });
+          console.error(`❌ Course ${courseId} enrollment failed`);
         }
       } catch (error) {
         enrollmentErrors.push({ course_id: courseId, error: error instanceof Error ? error.message : 'Unknown error' });
-        console.error(`Course ${courseId} enrollment error:`, error);
+        console.error(`❌ Course ${courseId} enrollment error:`, error);
       }
     }
 
@@ -123,17 +112,17 @@ export async function POST(request: NextRequest) {
     const courseNames = [];
     for (const courseId of coursesToEnroll) {
       try {
-        const courseResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/courses/${courseId}`, {
-          headers: {
-            'Authorization': tutorAuth,
-          },
-        });
-        if (courseResponse.ok) {
-          const course = await courseResponse.json();
-          courseNames.push(course.title?.rendered || `Formation ${courseId}`);
+        console.log(`📖 Fetching course name for course ${courseId}...`);
+        const course = await tutorLmsService.getCourse(parseInt(courseId.toString()));
+        if (course) {
+          courseNames.push(course.title || `Formation ${courseId}`);
+          console.log(`✅ Course name found: ${course.title}`);
+        } else {
+          courseNames.push(`Formation ${courseId}`);
+          console.log(`⚠️ Course ${courseId} not found, using default name`);
         }
       } catch (error) {
-        console.error(`Error fetching course ${courseId}:`, error);
+        console.error(`❌ Error fetching course ${courseId}:`, error);
         courseNames.push(`Formation ${courseId}`);
       }
     }
