@@ -64,11 +64,23 @@ function PaymentSuccessContent() {
       console.log('✅ Processing account creation for payment:', paymentIntent);
       
       // Create WordPress user and enroll in courses
+      const courseIds = cart.items.map((item: any) => {
+        // Use course_id if available, otherwise fallback to product_id
+        return item.course_id || item.product_id;
+      }).filter(Boolean);
+      
+      console.log('📋 Cart items course_ids:', cart.items.map((item: any) => ({ 
+        product_id: item.product_id, 
+        course_id: item.course_id,
+        name: item.name 
+      })));
+      console.log('🎯 Filtered course_ids for enrollment:', courseIds);
+      
       const enrollmentData = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
-        course_ids: cart.items.map((item: any) => item.course_id).filter(Boolean)
+        course_ids: courseIds
       };
       
       console.log('Sending enrollment data:', enrollmentData);
