@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { emailService } from '@/services/emailService';
 
 // Tutor LMS Pro API configuration
 const TUTOR_API_URL = process.env.TUTOR_API_URL || 'https://api.helvetiforma.ch';
@@ -101,8 +102,37 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 3: Send welcome email (optional)
-    await sendWelcomeEmail(email, userResponseData.username, userResponseData.password, first_name);
+    // Step 3: Get course names for email
+    const courseNames = [];
+    for (const courseId of coursesToEnroll) {
+      try {
+        const courseResponse = await fetch(`${TUTOR_API_URL}/wp-json/wp/v2/courses/${courseId}`, {
+          headers: {
+            'Authorization': tutorAuth,
+          },
+        });
+        if (courseResponse.ok) {
+          const course = await courseResponse.json();
+          courseNames.push(course.title?.rendered || `Formation ${courseId}`);
+        }
+      } catch (error) {
+        console.error(`Error fetching course ${courseId}:`, error);
+        courseNames.push(`Formation ${courseId}`);
+      }
+    }
+
+    // Step 4: Send welcome email with course information
+    const loginUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/login`;
+    const resetPasswordUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/wp-login.php?action=lostpassword`;
+    
+    await emailService.sendWordPressAccountCreated({
+      email: userResponseData.email,
+      firstName: userResponseData.first_name,
+      lastName: userResponseData.last_name,
+      loginUrl,
+      resetPasswordUrl,
+      courseNames: courseNames.length > 0 ? courseNames : ['Formation par défaut']
+    });
 
     // Prepare response based on enrollment results
     const successMessage = enrollments.length > 0 
@@ -143,22 +173,3 @@ function generatePassword(): string {
   return password;
 }
 
-// Send welcome email
-async function sendWelcomeEmail(email: string, username: string, password: string, firstName: string) {
-  const subject = 'Bienvenue sur HelvetiForma - Vos identifiants de connexion';
-  const message = `Bonjour ${firstName},
-
-Votre compte HelvetiForma a été créé avec succès !
-
-Voici vos identifiants de connexion :
-Nom d'utilisateur : ${username}
-Mot de passe : ${password}
-
-Vous pouvez vous connecter sur : ${TUTOR_API_URL}/login
-
-Cordialement,
-L'équipe HelvetiForma`;
-
-  // TODO: Implement real email sending (Resend, SendGrid, etc.)
-  console.log('Welcome email would be sent:', { email, subject, message });
-}
