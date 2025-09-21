@@ -54,15 +54,20 @@ const initialState: CartState = {
 };
 
 function cartReducer(state: CartState, action: CartAction): CartState {
+  let newState: CartState;
+  
   switch (action.type) {
     case 'SET_LOADING':
-      return { ...state, loading: action.payload };
+      newState = { ...state, loading: action.payload };
+      break;
     
     case 'SET_ERROR':
-      return { ...state, error: action.payload, loading: false };
+      newState = { ...state, error: action.payload, loading: false };
+      break;
     
     case 'SET_CART':
-      return { ...state, cart: action.payload, loading: false, error: null };
+      newState = { ...state, cart: action.payload, loading: false, error: null };
+      break;
     
     case 'ADD_ITEM': {
       const existingItem = state.cart.items.find(item => item.product_id === action.payload.product_id);
@@ -77,7 +82,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         const total = updatedItems.reduce((sum, item) => sum + item.total, 0);
         const item_count = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
         
-        return {
+        newState = {
           ...state,
           cart: { ...state.cart, items: updatedItems, total, item_count }
         };
@@ -86,11 +91,12 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         const total = newItems.reduce((sum, item) => sum + item.total, 0);
         const item_count = newItems.reduce((sum, item) => sum + item.quantity, 0);
         
-        return {
+        newState = {
           ...state,
           cart: { ...state.cart, items: newItems, total, item_count }
         };
       }
+      break;
     }
     
     case 'UPDATE_ITEM': {
@@ -103,10 +109,11 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       const total = updatedItems.reduce((sum, item) => sum + item.total, 0);
       const item_count = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
       
-      return {
+      newState = {
         ...state,
         cart: { ...state.cart, items: updatedItems, total, item_count }
       };
+      break;
     }
     
     case 'REMOVE_ITEM': {
@@ -114,39 +121,56 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       const total = updatedItems.reduce((sum, item) => sum + item.total, 0);
       const item_count = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
       
-      return {
+      newState = {
         ...state,
         cart: { ...state.cart, items: updatedItems, total, item_count }
       };
+      break;
     }
     
     case 'CLEAR_CART':
-      return {
+      newState = {
         ...state,
         cart: { items: [], total: 0, currency: 'CHF', item_count: 0 }
       };
+      break;
     
     case 'TOGGLE_CART':
-      return {
+      newState = {
         ...state,
         isOpen: !state.isOpen
       };
+      break;
     
     case 'OPEN_CART':
-      return {
+      newState = {
         ...state,
         isOpen: true
       };
+      break;
     
     case 'CLOSE_CART':
-      return {
+      newState = {
         ...state,
         isOpen: false
       };
+      break;
     
     default:
-      return state;
+      newState = state;
+      break;
   }
+  
+  // Save to localStorage after any cart changes
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('cart', JSON.stringify(newState.cart));
+    } catch (error) {
+      console.error('Error saving cart to localStorage:', error);
+    }
+  }
+  
+  return newState;
 }
 
 interface CartContextType {
@@ -173,6 +197,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadCart = async () => {
       try {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        
+        // First try to load from localStorage
+        if (typeof window !== 'undefined') {
+          try {
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+              const cart = JSON.parse(savedCart);
+              console.log('Loading cart from localStorage:', cart);
+              dispatch({ type: 'SET_CART', payload: cart });
+              return;
+            }
+          } catch (error) {
+            console.error('Error loading cart from localStorage:', error);
+          }
+        }
+        
+        // Fallback to WooCommerce service
         const cart = await wooCommerceCartService.getCart();
         dispatch({ type: 'SET_CART', payload: cart });
       } catch (error) {

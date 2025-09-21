@@ -29,56 +29,72 @@ function PaymentSuccessContent() {
 
   const processAccountCreation = async (paymentIntent: string) => {
     try {
+      console.log('=== ACCOUNT CREATION DEBUG ===');
+      console.log('Payment Intent:', paymentIntent);
+      
       // Get cart data from localStorage (if available)
       const cartData = localStorage.getItem('cart');
+      console.log('Cart data from localStorage:', cartData);
+      
       if (!cartData) {
-        console.log('No cart data found, skipping account creation');
+        console.log('❌ No cart data found, skipping account creation');
         return;
       }
 
       const cart = JSON.parse(cartData);
+      console.log('Parsed cart:', cart);
+      
       if (!cart.items || cart.items.length === 0) {
-        console.log('No cart items found, skipping account creation');
+        console.log('❌ No cart items found, skipping account creation');
         return;
       }
 
       // Get user data from localStorage (if available)
       const userData = localStorage.getItem('checkoutFormData');
+      console.log('User data from localStorage:', userData);
+      
       if (!userData) {
-        console.log('No user data found, skipping account creation');
+        console.log('❌ No user data found, skipping account creation');
         return;
       }
 
       const formData = JSON.parse(userData);
+      console.log('Parsed form data:', formData);
       
-      console.log('Processing account creation for payment:', paymentIntent);
+      console.log('✅ Processing account creation for payment:', paymentIntent);
       
       // Create WordPress user and enroll in courses
+      const enrollmentData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        course_ids: cart.items.map((item: any) => item.course_id).filter(Boolean)
+      };
+      
+      console.log('Sending enrollment data:', enrollmentData);
+      
       const enrollmentResponse = await fetch('/api/tutor-register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          course_ids: cart.items.map((item: any) => item.course_id).filter(Boolean)
-        }),
+        body: JSON.stringify(enrollmentData),
       });
 
+      console.log('Enrollment response status:', enrollmentResponse.status);
       const enrollmentResult = await enrollmentResponse.json();
+      console.log('Enrollment result:', enrollmentResult);
       
       if (enrollmentResult.success) {
-        console.log('Account created and enrolled successfully:', enrollmentResult);
+        console.log('✅ Account created and enrolled successfully:', enrollmentResult);
         // Clear cart and form data after successful account creation
         localStorage.removeItem('cart');
         localStorage.removeItem('checkoutFormData');
       } else {
-        console.error('Account creation failed:', enrollmentResult.error);
+        console.error('❌ Account creation failed:', enrollmentResult.error);
       }
     } catch (error) {
-      console.error('Error processing account creation:', error);
+      console.error('❌ Error processing account creation:', error);
     }
   };
 
