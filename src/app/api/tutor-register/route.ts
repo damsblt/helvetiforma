@@ -8,6 +8,7 @@ const TUTOR_API_URL = process.env.TUTOR_API_URL || 'https://api.helvetiforma.ch'
 const TUTOR_LICENSE_KEY = process.env.TUTOR_LICENSE_KEY || 'EC00F-9DF58-E44EC-E68BC-1757919356';
 const TUTOR_CLIENT_ID = process.env.TUTOR_CLIENT_ID || '';
 const TUTOR_SECRET_KEY = process.env.TUTOR_SECRET_KEY || '';
+const WORDPRESS_APP_USER = process.env.WORDPRESS_APP_USER || 'gibivawa';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,80 +28,104 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Creating student with Tutor LMS Pro API...');
 
-    // Step 1: Try to create WordPress user via WooCommerce API (more reliable)
-    const userData = {
-      email: email,
-      first_name: first_name,
-      last_name: last_name,
-      username: email.split('@')[0] + '_' + Date.now(),
-      password: generatePassword()
-    };
+    // Step 1: Create WordPress user via core WP REST (simplest + ensures subscriber role)
+    const username = email.split('@')[0] + '_' + Date.now();
+    const password = generatePassword();
+    const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
+    const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
 
-    // Use WooCommerce API for customer creation (more reliable than WordPress API)
-    const wooAuth = Buffer.from(
-      `${process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b'}:${process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076'}`
-    ).toString('base64');
-
-    console.log('🔑 WooCommerce auth configured');
-    console.log('📡 Making request to:', `${WORDPRESS_URL}/wp-json/wc/v3/customers`);
-
-    const userResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${wooAuth}`,
-      },
-      body: JSON.stringify(userData),
-    });
-
-    console.log('📊 WooCommerce response status:', userResponse.status);
-
-    if (!userResponse.ok) {
-      let errorData;
-      try {
-        errorData = await userResponse.json();
-      } catch (parseError) {
-        console.error('❌ Failed to parse error response:', parseError);
-        errorData = { message: 'Unknown error - could not parse response' };
+    let userResponseData: any | null = null;
+    try {
+      console.log('📡 Creating WP user via wp/v2/users...');
+      const wpCreate = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users`, {
+        method: 'POST',
+        headers: { 'Authorization': wpAuth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          name: `${first_name} ${last_name}`,
+          role: 'subscriber'
+        })
+      });
+      if (wpCreate.ok) {
+        userResponseData = await wpCreate.json();
+        console.log('✅ WP user created:', userResponseData.id);
+      } else {
+        const err = await wpCreate.json().catch(() => ({}));
+        console.warn('⚠️ WP user create failed, falling back to WooCommerce customer:', err);
       }
-      
-      console.error('❌ WooCommerce customer creation failed:', errorData);
-      
-      return NextResponse.json(
-        { success: false, error: `Erreur lors de la création du compte utilisateur: ${errorData.message || 'Erreur inconnue'}` },
-        { status: userResponse.status }
-      );
+    } catch (e) {
+      console.warn('⚠️ WP user API error, will fallback to WooCommerce:', e instanceof Error ? e.message : 'Unknown');
     }
 
-    const userResponseData = await userResponse.json();
-    console.log('✅ WooCommerce customer created:', userResponseData.id);
+    // Fallback: create WooCommerce customer
+    if (!userResponseData) {
+      const wooAuth = Buffer.from(
+        `${process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b'}:${process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076'}`
+      ).toString('base64');
 
-    // Step 2: Enroll user in courses using TutorLMS service
+      const userData = {
+        email,
+        first_name,
+        last_name,
+        username,
+        password
+      };
+
+      console.log('📡 Creating WooCommerce customer...');
+      const wcResp = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers`, {
+        method: 'POST',
+        headers: { 'Authorization': `Basic ${wooAuth}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      if (!wcResp.ok) {
+        const errorData = await wcResp.json().catch(() => ({}));
+        return NextResponse.json(
+          { success: false, error: `Erreur lors de la création du compte utilisateur: ${errorData.message || 'Erreur inconnue'}` },
+          { status: wcResp.status }
+        );
+      }
+      userResponseData = await wcResp.json();
+      console.log('✅ WooCommerce customer created:', userResponseData.id);
+    }
+
+    // Step 2: Enroll user in courses directly via TutorLMS REST (simplest)
     const coursesToEnroll = course_ids && course_ids.length > 0 
       ? course_ids 
       : [process.env.DEFAULT_COURSE_ID || 24]; // Default course if none specified
 
     console.log('🎓 Enrolling user in courses:', coursesToEnroll);
 
-    // Enroll user in all courses using the working tutorLmsService
+    // Enroll user in all courses via direct REST
     const enrollments = [];
     const enrollmentErrors = [];
 
     for (const courseId of coursesToEnroll) {
       try {
-        console.log(`📚 Enrolling user ${userResponseData.id} in course ${courseId}...`);
-        
-        const enrollmentSuccess = await tutorLmsService.enrollStudent(
-          userResponseData.id, 
-          parseInt(courseId.toString())
-        );
+        console.log(`📚 Enrolling user ${userResponseData.id} in course ${courseId} via Tutor REST...`);
+        // Prefer Tutor LMS API credentials when available; fall back to WP App Password auth
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (TUTOR_CLIENT_ID && TUTOR_SECRET_KEY) {
+          headers['Authorization'] = `Basic ${Buffer.from(`${TUTOR_CLIENT_ID}:${TUTOR_SECRET_KEY}`).toString('base64')}`;
+        } else if (process.env.WORDPRESS_APP_PASSWORD) {
+          headers['Authorization'] = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${process.env.WORDPRESS_APP_PASSWORD}`).toString('base64')}`;
+        }
 
-        if (enrollmentSuccess) {
-          enrollments.push({ course_id: courseId, success: true });
-          console.log(`✅ User successfully enrolled in course ${courseId}`);
+        const resp = await fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ user_id: userResponseData.id, course_id: parseInt(courseId.toString()) })
+        });
+
+        if (resp.ok) {
+          const data = await resp.json().catch(() => ({}));
+          enrollments.push({ course_id: courseId, success: true, tutor: data?.data?.enrollment_id });
+          console.log(`✅ Tutor enrollment OK for course ${courseId}`);
         } else {
-          enrollmentErrors.push({ course_id: courseId, error: 'Enrollment failed' });
-          console.error(`❌ Course ${courseId} enrollment failed`);
+          const err = await resp.json().catch(() => ({}));
+          enrollmentErrors.push({ course_id: courseId, error: err?.message || `HTTP ${resp.status}` });
+          console.error(`❌ Tutor enrollment failed for ${courseId}:`, err);
         }
       } catch (error) {
         enrollmentErrors.push({ course_id: courseId, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -183,5 +208,72 @@ function generatePassword(): string {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return password;
+}
+
+// Helper function to create simple enrollment record
+async function createSimpleEnrollment(userId: number, courseId: number): Promise<boolean> {
+  try {
+    console.log(`🔧 Creating simple enrollment for user ${userId} in course ${courseId}...`);
+    
+    // Create a simple enrollment record using WooCommerce orders
+    const wooAuth = Buffer.from(
+      `${process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b'}:${process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076'}`
+    ).toString('base64');
+
+    const enrollmentData = {
+      payment_method: 'helvetiforma_enrollment',
+      payment_method_title: 'HelvetiForma Enrollment',
+      set_paid: true,
+      status: 'completed',
+      customer_id: userId,
+      line_items: [
+        {
+          product_id: courseId,
+          quantity: 1,
+          name: `Course Enrollment - ${courseId}`
+        }
+      ],
+      meta_data: [
+        {
+          key: '_helvetiforma_enrollment',
+          value: 'yes'
+        },
+        {
+          key: '_enrollment_course_id',
+          value: courseId.toString()
+        },
+        {
+          key: '_enrollment_user_id',
+          value: userId.toString()
+        },
+        {
+          key: '_enrollment_date',
+          value: new Date().toISOString()
+        }
+      ]
+    };
+
+    const orderResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/orders`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${wooAuth}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(enrollmentData)
+    });
+
+    if (orderResponse.ok) {
+      const orderData = await orderResponse.json();
+      console.log(`✅ Simple enrollment successful! Order created: ${orderData.id}`);
+      return true;
+    } else {
+      const errorData = await orderResponse.json().catch(() => ({}));
+      console.error(`❌ Simple enrollment failed:`, errorData);
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Error in simple enrollment:', error);
+    return false;
+  }
 }
 

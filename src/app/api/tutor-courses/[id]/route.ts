@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const WORDPRESS_URL = process.env.WORDPRESS_URL || 'https://helvetiforma.ch';
+const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
 const WORDPRESS_APP_PASSWORD = process.env.WORDPRESS_APP_PASSWORD;
 
 // Helper function to make authenticated requests to WordPress

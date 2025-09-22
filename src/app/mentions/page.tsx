@@ -22,7 +22,7 @@ export default function MentionsPage() {
             <div className="bg-gray-50 rounded-lg p-6 mb-6">
               <p className="text-gray-700 mb-2"><strong>Raison sociale :</strong> HelvetiForma</p>
               <p className="text-gray-700 mb-2"><strong>Adresse :</strong> Suisse</p>
-              <p className="text-gray-700 mb-2"><strong>Email :</strong> info@helvetiforma.ch</p>
+              <p className="text-gray-700 mb-2"><strong>Email :</strong> contact@helvetiforma.ch</p>
               <p className="text-gray-700 mb-2"><strong>Site web :</strong> https://www.helvetiforma.ch</p>
             </div>
 

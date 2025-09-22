@@ -1,4 +1,4 @@
-// Tutor LMS Pro API Service
+///–………………………………………………………ﬁ m// Tutor LMS Pro API Service
 // Handles all Tutor LMS API calls for dashboards and course management
 
 export interface TutorCourse {
@@ -73,10 +73,8 @@ class TutorLmsService {
 
   // Get authentication headers
   private getAuthHeaders(): Record<string, string> {
-    // Use Tutor LMS Pro API credentials for authentication (same as working API endpoints)
-    const tutorAuth = this.clientId && this.secretKey
-      ? `Basic ${Buffer.from(`${this.clientId}:${this.secretKey}`).toString('base64')}`
-      : `Basic ${Buffer.from(`gibivawa:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`;
+    // Use WordPress App Password with admin user as primary method
+    const tutorAuth = `Basic ${Buffer.from(`admin:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`;
     
     return {
       'Authorization': tutorAuth,
@@ -177,75 +175,80 @@ class TutorLmsService {
     }
   }
 
-  // Get all students (admin only) - only users enrolled in Tutor LMS courses
+  // Get all students (admin only) - students enrolled via WooCommerce orders
   async getStudents(): Promise<TutorStudent[]> {
     try {
-      console.log('Fetching students from WordPress users API...');
-      // First get all WordPress users
-      const usersResponse = await fetch(`${this.baseUrl}/wp-json/wp/v2/users`, {
+      console.log('Fetching students from WooCommerce enrollment orders...');
+      
+      // Get WooCommerce enrollment orders
+      const wooAuth = Buffer.from(
+        `${process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b'}:${process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076'}`
+      ).toString('base64');
+
+      const ordersUrl = new URL(`${this.baseUrl}/wp-json/wc/v3/orders`);
+      ordersUrl.searchParams.set('per_page', '100');
+      ordersUrl.searchParams.set('orderby', 'date');
+      ordersUrl.searchParams.set('order', 'desc');
+
+      const ordersResponse = await fetch(ordersUrl.toString(), {
         headers: {
-          'Authorization': `Basic ${Buffer.from(`gibivawa:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`,
+          'Authorization': `Basic ${wooAuth}`,
           'Content-Type': 'application/json'
         }
       });
 
-      if (!usersResponse.ok) {
-        throw new Error(`Failed to fetch users: ${usersResponse.statusText}`);
+      if (!ordersResponse.ok) {
+        throw new Error(`Failed to fetch orders: ${ordersResponse.statusText}`);
       }
 
-      const users = await usersResponse.json();
-      console.log('WordPress users fetched:', users.length, users.map((s: any) => ({ id: s.id, name: s.name, slug: s.slug })));
+      const orders = await ordersResponse.json();
+      console.log('WooCommerce orders fetched:', orders.length);
       
-      // For each user, get their course information using Tutor LMS Pro API
-      const usersWithCourses = await Promise.all(
-        users.map(async (user: any) => {
-          try {
-            // Get courses for this specific student using Tutor LMS Pro API
-            const coursesResponse = await fetch(`${this.baseUrl}/wp-json/tutor/v1/students/${user.id}/courses`, {
-              headers: this.getAuthHeaders()
-            });
-            
-            let coursesCount = 0;
-            let completedCourses = 0;
-            
-            if (coursesResponse.ok) {
-              const coursesData = await coursesResponse.json();
-              if (coursesData.code === 'tutor_read_student' && coursesData.data && coursesData.data.enrolled_courses) {
-                coursesCount = coursesData.data.enrolled_courses.length;
-                completedCourses = coursesData.data.completed_courses ? coursesData.data.completed_courses.length : 0;
-              }
-            }
-            
-            return {
-              id: user.id,
-              name: user.name,
-              email: user.slug, // Using slug as email placeholder
-              avatar_url: user.avatar_urls?.['96'] || '',
-              registered_date: 'N/A',
-              last_activity: 'N/A',
-              courses_count: coursesCount,
-              completed_courses: completedCourses
-            };
-          } catch (error) {
-            console.error(`Error fetching courses for user ${user.id}:`, error);
-            return {
-              id: user.id,
-              name: user.name,
-              email: user.slug,
-              avatar_url: user.avatar_urls?.['96'] || '',
-              registered_date: 'N/A',
-              last_activity: 'N/A',
-              courses_count: 0,
-              completed_courses: 0
-            };
-          }
-        })
+      // Filter for enrollment orders
+      const enrollmentOrders = orders.filter((order: any) => 
+        order.payment_method === 'helvetiforma_enrollment' ||
+        order.meta_data?.some((meta: any) => meta.key === '_helvetiforma_enrollment')
       );
       
-      // Filter to only include users who are actually enrolled in courses (Tutor LMS students)
-      const students = usersWithCourses.filter(user => user.courses_count > 0);
+      console.log('Enrollment orders found:', enrollmentOrders.length);
       
-      console.log('Tutor LMS students (enrolled in courses):', students.length, students.map(s => ({ id: s.id, name: s.name, courses_count: s.courses_count })));
+      // Get unique students from enrollment orders
+      const studentMap = new Map();
+      
+      for (const order of enrollmentOrders) {
+        const userId = order.customer_id;
+        const enrollmentMeta = order.meta_data?.find((meta: any) => meta.key === '_enrollment_course_id');
+        const courseId = enrollmentMeta?.value;
+        
+        if (userId && courseId) {
+          if (!studentMap.has(userId)) {
+            studentMap.set(userId, {
+              id: userId,
+              name: order.billing?.first_name && order.billing?.last_name 
+                ? `${order.billing.first_name} ${order.billing.last_name}` 
+                : order.billing?.first_name || 'Unknown',
+              email: order.billing?.email || 'Unknown',
+              avatar_url: '',
+              registered_date: order.date_created,
+              last_activity: order.date_modified,
+              courses_count: 0,
+              completed_courses: 0,
+              courses: new Set()
+            });
+          }
+          
+          const student = studentMap.get(userId);
+          student.courses.add(courseId);
+          student.courses_count = student.courses.size;
+        }
+      }
+      
+      const students = Array.from(studentMap.values()).map(student => ({
+        ...student,
+        courses: undefined // Remove the Set from the final object
+      }));
+      
+      console.log('Students from enrollment orders:', students.length, students.map(s => ({ id: s.id, name: s.name, courses_count: s.courses_count })));
       return students;
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -615,18 +618,91 @@ class TutorLmsService {
   // Enroll student in course
   async enrollStudent(userId: number, courseId: number): Promise<boolean> {
     try {
+      console.log(`🔐 Attempting to enroll user ${userId} in course ${courseId}...`);
+      // Direct TutorLMS enrollment via REST (primary path)
+      console.log(`📡 Enrolling via TutorLMS REST...`);
       const response = await fetch(`${this.baseUrl}/wp-json/tutor/v1/enrollments`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
-        body: JSON.stringify({
-          user_id: userId,
-          course_id: courseId
-        })
+        body: JSON.stringify({ user_id: userId, course_id: courseId })
       });
 
-      return response.ok;
+      if (!response.ok) {
+        console.error(`❌ TutorLMS enrollment failed with status ${response.status}`);
+        return false;
+      }
+
+      const responseData = await response.json();
+      console.log(`✅ TutorLMS enrollment success:`, responseData);
+      return true;
+      
     } catch (error) {
-      console.error('Error enrolling student:', error);
+      console.error('❌ Error enrolling student:', error);
+      return false;
+    }
+  }
+
+  // Fallback method: Enroll student directly using WordPress database
+  private async enrollStudentDirectly(userId: number, courseId: number): Promise<boolean> {
+    try {
+      console.log(`🔧 Attempting direct database enrollment for user ${userId} in course ${courseId}...`);
+      
+      // Use WooCommerce API to create a simple enrollment record
+      // This is a workaround since we can't access the TutorLMS database directly
+      const wooAuth = Buffer.from(
+        `${process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b'}:${process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076'}`
+      ).toString('base64');
+
+      // Create a simple order item that represents the enrollment
+      const enrollmentData = {
+        payment_method: 'helvetiforma_enrollment',
+        payment_method_title: 'HelvetiForma Enrollment',
+        set_paid: true,
+        status: 'completed',
+        customer_id: userId,
+        line_items: [
+          {
+            product_id: courseId, // Use course ID as product ID for tracking
+            quantity: 1,
+            name: `Course Enrollment - ${courseId}`
+          }
+        ],
+        meta_data: [
+          {
+            key: '_helvetiforma_enrollment',
+            value: 'yes'
+          },
+          {
+            key: '_enrollment_course_id',
+            value: courseId.toString()
+          },
+          {
+            key: '_enrollment_user_id',
+            value: userId.toString()
+          }
+        ]
+      };
+
+      const orderResponse = await fetch(`${this.baseUrl}/wp-json/wc/v3/orders`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${wooAuth}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(enrollmentData)
+      });
+
+      if (orderResponse.ok) {
+        const orderData = await orderResponse.json();
+        console.log(`✅ Direct enrollment successful! Order created: ${orderData.id}`);
+        return true;
+      } else {
+        const errorData = await orderResponse.json().catch(() => ({}));
+        console.error(`❌ Direct enrollment failed:`, errorData);
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Error in direct enrollment:', error);
       return false;
     }
   }

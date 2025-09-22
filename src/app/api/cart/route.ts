@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       image: product.images?.[0]?.src || '',
       course_id: product.meta_data?.find((meta: any) => 
         meta.key === '_tutor_course_id'
-      )?.value,
+      )?.value || product.id,
       course_duration: product.meta_data?.find((meta: any) => 
         meta.key === '_course_duration'
       )?.value || '3 jours',

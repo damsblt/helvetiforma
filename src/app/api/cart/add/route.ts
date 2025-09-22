@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       price: parseFloat(product.regular_price || '0'),
       total: parseFloat(product.regular_price || '0') * quantity,
       image: product.images?.[0]?.src || '',
-      course_id: product.meta_data?.find((meta: any) => meta.key === '_tutor_course_id')?.value,
+      course_id: product.meta_data?.find((meta: any) => meta.key === '_tutor_course_id')?.value || product.id,
       course_duration: product.meta_data?.find((meta: any) => meta.key === '_course_duration')?.value,
       course_level: product.meta_data?.find((meta: any) => meta.key === '_course_level')?.value,
     };

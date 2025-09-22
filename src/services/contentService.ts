@@ -286,7 +286,7 @@ const defaultContent: WebsiteContent = {
   contactDescription: 'N\'hésitez pas à nous contacter pour plus d\'informations sur nos formations.',
   
   // Contact Information
-  contactEmail: 'info@helvetiforma.ch',
+  contactEmail: 'contact@helvetiforma.ch',
   contactLocation: 'Suisse',
   contactResponseTime: 'Sous 24-48 heures',
   

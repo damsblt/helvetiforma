@@ -4,14 +4,18 @@ import { wooCommerceService } from '@/services/woocommerceService';
 const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const webhookId = `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
   try {
     const body = await request.json();
     const { course_id, action } = body;
 
     // WEBHOOK ENABLED - Course to product sync is active
-    console.log('TutorLMS course webhook received:', { course_id, action });
+    console.log(`[${webhookId}] TutorLMS course webhook received:`, { course_id, action, timestamp: new Date().toISOString() });
 
     if (!course_id) {
+      console.error(`[${webhookId}] Missing course_id in webhook payload`);
       return NextResponse.json(
         {
           success: false,
@@ -22,40 +26,58 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Add delay to ensure course is fully processed
+    console.log(`[${webhookId}] Adding delay to ensure course is fully processed...`);
+    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+
     // Use the same authentication method as working API endpoints
     const tutorAuth = process.env.TUTOR_CLIENT_ID && process.env.TUTOR_SECRET_KEY
       ? `Basic ${Buffer.from(`${process.env.TUTOR_CLIENT_ID}:${process.env.TUTOR_SECRET_KEY}`).toString('base64')}`
       : `Basic ${Buffer.from(`gibivawa:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`;
 
-    // Get course details from Tutor LMS using the working approach
-    const tutorResponse = await fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/courses`, {
-      headers: {
-        'Authorization': tutorAuth,
-        'Content-Type': 'application/json'
-      }
-    });
+    // Get course details from WordPress API with retry logic
+    console.log(`[${webhookId}] Fetching course details with retry logic...`);
+    let tutorCourse = null;
+    let retryCount = 0;
+    const maxRetries = 3;
     
-    if (!tutorResponse.ok) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Course not found in Tutor LMS',
-          message: 'Cours non trouvé dans Tutor LMS'
-        },
-        { status: 404 }
-      );
+    while (retryCount < maxRetries && !tutorCourse) {
+      try {
+        console.log(`[${webhookId}] Attempt ${retryCount + 1}/${maxRetries} to fetch course ${course_id}...`);
+        const tutorResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/courses/${course_id}`);
+        
+        if (tutorResponse.ok) {
+          const courseData = await tutorResponse.json();
+          if (courseData && courseData.id === parseInt(course_id)) {
+            tutorCourse = courseData;
+            console.log(`[${webhookId}] Course fetched successfully:`, { id: courseData.id, title: courseData.title?.rendered });
+          } else {
+            console.warn(`[${webhookId}] Course data invalid, retrying...`);
+          }
+        } else {
+          console.warn(`[${webhookId}] Course fetch failed with status ${tutorResponse.status}, retrying...`);
+        }
+      } catch (error) {
+        console.warn(`[${webhookId}] Course fetch error on attempt ${retryCount + 1}:`, error instanceof Error ? error.message : 'Unknown error');
+      }
+      
+      if (!tutorCourse && retryCount < maxRetries - 1) {
+        retryCount++;
+        const delay = retryCount * 1000; // Increasing delay: 1s, 2s, 3s
+        console.log(`[${webhookId}] Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        retryCount++;
+      }
     }
-
-    const coursesData = await tutorResponse.json();
-    const courses = coursesData.data?.posts || [];
-    const tutorCourse = courses.find((c: any) => c.ID == course_id);
-
+    
     if (!tutorCourse) {
+      console.error(`[${webhookId}] Failed to fetch course ${course_id} after ${maxRetries} attempts`);
       return NextResponse.json(
         {
           success: false,
-          error: 'Course not found in Tutor LMS',
-          message: 'Cours non trouvé dans Tutor LMS'
+          error: 'Course not found in WordPress after retries',
+          message: 'Cours non trouvé dans WordPress après plusieurs tentatives'
         },
         { status: 404 }
       );
@@ -136,10 +158,10 @@ export async function POST(request: NextRequest) {
 
     // Create WooCommerce product data
     const productData: any = {
-      name: tutorCourse.post_title,
-      description: tutorCourse.post_content,
-      short_description: tutorCourse.post_excerpt || tutorCourse.post_content?.substring(0, 160) || '',
-      status: tutorCourse.post_status === 'publish' ? 'publish' : 'draft',
+      name: tutorCourse.title?.rendered || tutorCourse.name,
+      description: tutorCourse.content?.rendered || tutorCourse.description,
+      short_description: tutorCourse.excerpt?.rendered || tutorCourse.short_description || '',
+      status: tutorCourse.status === 'publish' ? 'publish' : 'draft',
       virtual: true,
       downloadable: false,
       meta_data: [
@@ -254,15 +276,113 @@ export async function POST(request: NextRequest) {
 
     let wooCommerceProduct;
     let action_taken;
+    let productCreationSuccess = false;
+    let productRetryCount = 0;
+    const maxProductRetries = 3;
 
-    if (existingProduct) {
-      // Update existing product
-      wooCommerceProduct = await wooCommerceService.updateProduct(existingProduct.id, productData);
-      action_taken = 'updated';
-    } else {
-      // Create new product
-      wooCommerceProduct = await wooCommerceService.createProduct(productData);
-      action_taken = 'created';
+    console.log(`[${webhookId}] Creating/updating WooCommerce product...`);
+
+    while (productRetryCount < maxProductRetries && !productCreationSuccess) {
+      try {
+        console.log(`[${webhookId}] Product attempt ${productRetryCount + 1}/${maxProductRetries}...`);
+        
+        if (existingProduct) {
+          // Update existing product
+          wooCommerceProduct = await wooCommerceService.updateProduct(existingProduct.id, productData);
+          action_taken = 'updated';
+        } else {
+          // Create new product
+          wooCommerceProduct = await wooCommerceService.createProduct(productData);
+          action_taken = 'created';
+        }
+        
+        if (wooCommerceProduct && wooCommerceProduct.id) {
+          productCreationSuccess = true;
+          console.log(`[${webhookId}] Product ${action_taken} successfully:`, { 
+            id: wooCommerceProduct.id, 
+            name: wooCommerceProduct.name 
+          });
+        } else {
+          throw new Error('Product creation returned invalid data');
+        }
+        
+      } catch (error) {
+        console.warn(`[${webhookId}] Product ${action_taken} failed on attempt ${productRetryCount + 1}:`, error instanceof Error ? error.message : 'Unknown error');
+        productRetryCount++;
+        
+        if (productRetryCount < maxProductRetries) {
+          const delay = productRetryCount * 2000; // 2s, 4s delays
+          console.log(`[${webhookId}] Waiting ${delay}ms before product retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    if (!productCreationSuccess) {
+      console.error(`[${webhookId}] Failed to create/update product after ${maxProductRetries} attempts`);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Failed to create/update WooCommerce product after retries',
+          message: 'Échec de la création/mise à jour du produit WooCommerce après plusieurs tentatives'
+        },
+        { status: 500 }
+      );
+    }
+
+    // Validate that the course-product link was created successfully
+    console.log(`[${webhookId}] Validating course-product link...`);
+    let linkValidationSuccess = false;
+    let validationRetryCount = 0;
+    const maxValidationRetries = 3;
+
+    while (validationRetryCount < maxValidationRetries && !linkValidationSuccess) {
+      try {
+        console.log(`[${webhookId}] Link validation attempt ${validationRetryCount + 1}/${maxValidationRetries}...`);
+        
+        // Wait a bit for the product to be fully saved
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Fetch the created/updated product to verify the link
+        const verifyResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/products/${wooCommerceProduct.id}`, {
+          headers: {
+            'Authorization': `Basic ${Buffer.from(`${process.env.WOOCOMMERCE_CONSUMER_KEY}:${process.env.WOOCOMMERCE_CONSUMER_SECRET}`).toString('base64')}`,
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (verifyResponse.ok) {
+          const verifyProduct = await verifyResponse.json();
+          const courseIdMeta = verifyProduct.meta_data?.find((meta: any) => meta.key === '_tutor_course_id');
+          
+          if (courseIdMeta && courseIdMeta.value === course_id.toString()) {
+            linkValidationSuccess = true;
+            console.log(`[${webhookId}] ✅ Course-product link validated successfully!`);
+          } else {
+            console.warn(`[${webhookId}] Course link not found, retrying...`);
+            console.log(`[${webhookId}] Expected course_id: ${course_id}, Found: ${courseIdMeta?.value || 'MISSING'}`);
+          }
+        } else {
+          console.warn(`[${webhookId}] Product verification failed with status ${verifyResponse.status}`);
+        }
+        
+      } catch (error) {
+        console.warn(`[${webhookId}] Link validation error on attempt ${validationRetryCount + 1}:`, error instanceof Error ? error.message : 'Unknown error');
+      }
+      
+      if (!linkValidationSuccess && validationRetryCount < maxValidationRetries - 1) {
+        validationRetryCount++;
+        const delay = validationRetryCount * 1500; // 1.5s, 3s delays
+        console.log(`[${webhookId}] Waiting ${delay}ms before validation retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        validationRetryCount++;
+      }
+    }
+
+    if (!linkValidationSuccess) {
+      console.error(`[${webhookId}] ⚠️  WARNING: Course-product link validation failed after ${maxValidationRetries} attempts`);
+      console.error(`[${webhookId}] Product ${wooCommerceProduct.id} may not be properly linked to course ${course_id}`);
     }
 
     // Trigger frontend revalidation
@@ -299,13 +419,19 @@ export async function POST(request: NextRequest) {
       // Don't fail the webhook if revalidation fails
     }
 
+    const executionTime = Date.now() - startTime;
+    console.log(`[${webhookId}] Webhook completed successfully in ${executionTime}ms`);
+
     return NextResponse.json({
       success: true,
       data: {
+        webhook_id: webhookId,
         tutor_course_id: course_id,
         woo_commerce_product_id: wooCommerceProduct.id,
         product_name: wooCommerceProduct.name,
         action_taken,
+        link_validated: linkValidationSuccess,
+        execution_time_ms: executionTime,
         message: `Product ${action_taken} successfully`,
         frontend_revalidated: true
       },
@@ -313,11 +439,14 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Tutor course webhook error:', error);
+    const executionTime = Date.now() - startTime;
+    console.error(`[${webhookId}] Tutor course webhook error after ${executionTime}ms:`, error);
     return NextResponse.json(
       {
         success: false,
+        webhook_id: webhookId,
         error: error instanceof Error ? error.message : 'Failed to process course webhook',
+        execution_time_ms: executionTime,
         message: 'Erreur lors du traitement du webhook de cours'
       },
       { status: 500 }

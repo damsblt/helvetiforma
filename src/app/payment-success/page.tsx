@@ -61,49 +61,36 @@ function PaymentSuccessContent() {
       const formData = JSON.parse(userData);
       console.log('Parsed form data:', formData);
       
-      console.log('✅ Processing account creation for payment:', paymentIntent);
+      console.log('✅ Processing complete payment flow for payment:', paymentIntent);
       
-      // Create WordPress user and enroll in courses
-      const courseIds = cart.items.map((item: any) => {
-        // Use course_id if available, otherwise fallback to product_id
-        return item.course_id || item.product_id;
-      }).filter(Boolean);
-      
-      console.log('📋 Cart items course_ids:', cart.items.map((item: any) => ({ 
-        product_id: item.product_id, 
-        course_id: item.course_id,
-        name: item.name 
-      })));
-      console.log('🎯 Filtered course_ids for enrollment:', courseIds);
-      
-      const enrollmentData = {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        email: formData.email,
-        course_ids: courseIds
+      // Use the new comprehensive payment success API
+      const paymentSuccessData = {
+        paymentIntentId: paymentIntent,
+        cartData: cart,
+        userData: formData
       };
       
-      console.log('Sending enrollment data:', enrollmentData);
+      console.log('Sending payment success data:', paymentSuccessData);
       
-      const enrollmentResponse = await fetch('/api/tutor-register', {
+      const paymentResponse = await fetch('/api/payment-success', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(enrollmentData),
+        body: JSON.stringify(paymentSuccessData),
       });
 
-      console.log('Enrollment response status:', enrollmentResponse.status);
-      const enrollmentResult = await enrollmentResponse.json();
-      console.log('Enrollment result:', enrollmentResult);
+      console.log('Payment success response status:', paymentResponse.status);
+      const paymentResult = await paymentResponse.json();
+      console.log('Payment success result:', paymentResult);
       
-      if (enrollmentResult.success) {
-        console.log('✅ Account created and enrolled successfully:', enrollmentResult);
-        // Clear cart and form data after successful account creation
+      if (paymentResult.success) {
+        console.log('✅ Complete payment flow successful:', paymentResult);
+        // Clear cart and form data after successful processing
         localStorage.removeItem('cart');
         localStorage.removeItem('checkoutFormData');
       } else {
-        console.error('❌ Account creation failed:', enrollmentResult.error);
+        console.error('❌ Payment processing failed:', paymentResult.error);
       }
     } catch (error) {
       console.error('❌ Error processing account creation:', error);

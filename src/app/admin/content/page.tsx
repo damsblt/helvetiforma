@@ -583,7 +583,7 @@ export default function ContentManagement() {
               label: 'Adresse email',
               type: 'text',
               value: '',
-              placeholder: 'info@helvetiforma.ch'
+              placeholder: 'contact@helvetiforma.ch'
             },
             {
               name: 'contactLocation',
