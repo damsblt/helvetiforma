@@ -10,7 +10,7 @@ const getCachedCourseProducts = unstable_cache(
     // Get all products that are courses (have tutor product flag)
     const products = await wooCommerceService.getProducts({
       status: 'publish',
-      per_page: 50
+      per_page: 100
     });
 
     // Filter products that are courses (have tutor product flag)

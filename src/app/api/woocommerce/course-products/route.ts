@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     // Use the enhanced WooCommerce service with retry logic and better error handling
     const products = await wooCommerceService.getProducts({
       status: 'publish',
-      per_page: 50
+      per_page: 100
     });
     
     console.log('WooCommerce course products API - Successfully fetched products:', products.length);
