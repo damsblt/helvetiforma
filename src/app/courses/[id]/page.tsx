@@ -55,6 +55,9 @@ export default function CourseDetailsPage() {
         setIsLoading(true);
         setError(null);
 
+        // Find the specific course by ID
+        const courseId = parseInt(params.id as string);
+        
         // Fetch course data from WooCommerce
         console.log('Fetching course data for ID:', courseId);
         const response = await fetch('/api/woocommerce/courses-with-content');
@@ -66,9 +69,6 @@ export default function CourseDetailsPage() {
           setIsLoading(false);
           return;
         }
-
-        // Find the specific course by ID
-        const courseId = parseInt(params.id as string);
         console.log('Looking for course ID:', courseId);
         console.log('Available courses:', result.data.map((p: any) => ({ id: p.id, tutor_course_id: p.tutor_course_id, name: p.name })));
         const wooCommerceProduct = result.data.find((p: any) => 
