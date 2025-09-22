@@ -21,6 +21,9 @@ const WORDPRESS_APP_USER = process.env.WORDPRESS_APP_USER || 'gibivawa';
 const WOOCOMMERCE_CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b';
 const WOOCOMMERCE_CONSUMER_SECRET = process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076';
 
+// Create WooCommerce auth string
+const wooAuth = Buffer.from(`${WOOCOMMERCE_CONSUMER_KEY}:${WOOCOMMERCE_CONSUMER_SECRET}`).toString('base64');
+
 export async function POST(request: NextRequest) {
   try {
     console.log('=== PAYMENT SUCCESS API CALLED ===');
