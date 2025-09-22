@@ -56,7 +56,7 @@ const getCachedCourseProducts = unstable_cache(
   ['course-products'],
   {
     tags: ['courses', 'woocommerce-products'],
-    revalidate: 3600 // Revalidate every hour
+    revalidate: 60 // Revalidate every minute for debugging
   }
 );
 
