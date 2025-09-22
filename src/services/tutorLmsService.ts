@@ -628,7 +628,8 @@ class TutorLmsService {
       });
 
       if (!response.ok) {
-        console.error(`❌ TutorLMS enrollment failed with status ${response.status}`);
+        const body = await response.json().catch(() => ({} as any));
+        console.error(`❌ TutorLMS enrollment failed with status ${response.status}`, body);
         return false;
       }
 

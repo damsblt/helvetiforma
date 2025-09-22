@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { emailService } from '@/services/emailService';
+import { tutorLmsService } from '@/services/tutorLmsService';
 
 // Initialize Stripe
 let stripe: Stripe;
@@ -134,55 +135,14 @@ export async function POST(request: NextRequest) {
       console.log('✅ WooCommerce customer created:', wpUser.id);
     }
 
-    // Step 4: Enroll user in courses via WordPress REST API (Tutor LMS)
-    console.log('🎓 Enrolling user in courses via WP REST...');
+    // Step 4: Enroll user in courses with resilient strategy
+    console.log('🎓 Enrolling user in courses (resilient)...');
     const courseIds = cartData.items.map((item: any) => item.course_id || item.product_id).filter(Boolean);
     const enrollmentResults = [];
 
     for (const courseId of courseIds) {
-      try {
-        console.log(`📚 Enrolling user ${wpUser.id} in course ${courseId} via WP REST...`);
-        
-        // Use WP App Password for Tutor enrollment via WP REST
-        const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${process.env.WORDPRESS_APP_PASSWORD}`).toString('base64')}`;
-
-        const enrollmentResponse = await fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/enrollments`, {
-          method: 'POST',
-          headers: {
-            'Authorization': wpAuth,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ 
-            user_id: wpUser.id, 
-            course_id: parseInt(courseId.toString()) 
-          })
-        });
-
-        if (enrollmentResponse.ok) {
-          const enrollmentData = await enrollmentResponse.json().catch(() => ({}));
-          enrollmentResults.push({ 
-            course_id: courseId, 
-            success: true, 
-            enrollment_id: enrollmentData?.data?.enrollment_id 
-          });
-          console.log(`✅ Enrolled in course ${courseId} via WP REST`);
-        } else {
-          const errorData = await enrollmentResponse.json().catch(() => ({}));
-          enrollmentResults.push({ 
-            course_id: courseId, 
-            success: false, 
-            error: errorData?.message || `HTTP ${enrollmentResponse.status}` 
-          });
-          console.error(`❌ Enrollment failed for course ${courseId}:`, errorData);
-        }
-      } catch (error) {
-        enrollmentResults.push({ 
-          course_id: courseId, 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Unknown error' 
-        });
-        console.error(`❌ Course ${courseId} enrollment error:`, error);
-      }
+      const result = await resilientEnroll(wpUser.id, parseInt(courseId.toString()));
+      enrollmentResults.push({ course_id: courseId, success: result.success, error: result.error, enrollment_id: result.enrollmentId });
     }
 
     // Step 5: Send welcome email
@@ -243,4 +203,71 @@ function generatePassword(): string {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return password;
+}
+
+// Resilient enrollment with multiple strategies and retries
+async function resilientEnroll(userId: number, courseId: number): Promise<{ success: boolean; enrollmentId?: number | string; error?: string }> {
+  const attempts: Array<() => Promise<Response>> = [];
+
+  // Strategy A: Tutor REST using Tutor client/secret
+  if (TUTOR_CLIENT_ID && TUTOR_SECRET_KEY) {
+    attempts.push(() => {
+      const auth = `Basic ${Buffer.from(`${TUTOR_CLIENT_ID}:${TUTOR_SECRET_KEY}`).toString('base64')}`;
+      return fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments`, {
+        method: 'POST',
+        headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, course_id: courseId })
+      });
+    });
+  }
+
+  // Strategy B: Tutor REST via WP App Password
+  if (process.env.WORDPRESS_APP_PASSWORD) {
+    attempts.push(() => {
+      const auth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${process.env.WORDPRESS_APP_PASSWORD}`).toString('base64')}`;
+      return fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/enrollments`, {
+        method: 'POST',
+        headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, course_id: courseId })
+      });
+    });
+  }
+
+  // Strategy C: Use service helper (same REST under the hood, but centralized)
+  attempts.push(async () => {
+    const ok = await tutorLmsService.enrollStudent(userId, courseId);
+    return new Response(ok ? JSON.stringify({ ok: true }) : 'failed', { status: ok ? 200 : 500, headers: { 'content-type': 'application/json' } });
+  });
+
+  // Try each strategy with basic retries
+  const maxRetries = 2;
+  for (let i = 0; i < attempts.length; i++) {
+    const attempt = attempts[i];
+    for (let r = 0; r <= maxRetries; r++) {
+      try {
+        const res = await attempt();
+        if (res.ok) {
+          let data: any = null;
+          try { data = await res.json(); } catch {}
+          const enrollmentId = data?.data?.enrollment_id || data?.enrollment_id || undefined;
+          console.log(`✅ Enrollment success (strategy ${i + 1}, retry ${r}): user=${userId} course=${courseId} id=${enrollmentId ?? 'n/a'}`);
+          return { success: true, enrollmentId };
+        }
+        const errBody = await safeJson(res);
+        console.warn(`⚠️ Enrollment attempt failed (strategy ${i + 1}, retry ${r}) status=${res.status} body=`, errBody);
+      } catch (e) {
+        console.error(`❌ Enrollment attempt threw (strategy ${i + 1}, retry ${r})`, e);
+      }
+      await wait(500 * (r + 1));
+    }
+  }
+  return { success: false, error: 'All enrollment strategies failed' };
+}
+
+async function safeJson(res: Response): Promise<any> {
+  try { return await res.json(); } catch { return undefined; }
+}
+
+function wait(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
