@@ -133,8 +133,8 @@ export async function POST(request: NextRequest) {
         product_id: item.course_id || item.product_id,
         quantity: item.quantity || 1,
         name: item.name || `Formation ${item.course_id || item.product_id}`,
-        price: item.price || item.total || 0, // Set the line item price
-        total: (item.price || item.total || 0) * (item.quantity || 1) // Calculate line total
+        price: (item.price || item.total || 0).toString(), // Convert to string
+        total: ((item.price || item.total || 0) * (item.quantity || 1)).toString() // Convert to string
       })),
       meta_data: [
         {
