@@ -101,12 +101,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Create WooCommerce order
+    console.log('📊 Cart data for order creation:', {
+      total: cartData.total,
+      currency: cartData.currency,
+      items: cartData.items.map((item: any) => ({
+        product_id: item.course_id || item.product_id,
+        price: item.price,
+        total: item.total,
+        quantity: item.quantity
+      }))
+    });
+    
     const orderData = {
       payment_method: 'stripe',
       payment_method_title: 'Stripe',
       set_paid: true,
       status: 'completed',
       customer_id: customerId,
+      total: cartData.total.toString(), // Set the order total
+      currency: cartData.currency || 'CHF',
       billing: {
         first_name: userData.firstName,
         last_name: userData.lastName,
@@ -119,7 +132,9 @@ export async function POST(request: NextRequest) {
       line_items: cartData.items.map((item: any) => ({
         product_id: item.course_id || item.product_id,
         quantity: item.quantity || 1,
-        name: item.name || `Formation ${item.course_id || item.product_id}`
+        name: item.name || `Formation ${item.course_id || item.product_id}`,
+        price: item.price || item.total || 0, // Set the line item price
+        total: (item.price || item.total || 0) * (item.quantity || 1) // Calculate line total
       })),
       meta_data: [
         {
@@ -129,10 +144,16 @@ export async function POST(request: NextRequest) {
         {
           key: '_helvetiforma_payment',
           value: 'yes'
+        },
+        {
+          key: '_order_total',
+          value: cartData.total.toString()
         }
       ]
     };
 
+    console.log('📦 WooCommerce order data being sent:', JSON.stringify(orderData, null, 2));
+    
     let wooOrder;
     try {
       const orderResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/orders`, {
