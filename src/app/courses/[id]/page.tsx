@@ -314,32 +314,7 @@ export default function CourseDetailsPage() {
                 Ajouter au panier
               </button>
 
-              {/* Checkout Button */}
-              <Link
-                href="/checkout"
-                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors text-center block"
-              >
-                Commander maintenant
-              </Link>
-
-              {/* Course Stats */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Statistiques</h3>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex justify-between">
-                    <span>Étudiants inscrits:</span>
-                    <span className="font-medium">{course.meta.course_students_count}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Note moyenne:</span>
-                    <span className="font-medium">{course.meta.course_rating}/5</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Nombre d'avis:</span>
-                    <span className="font-medium">{course.meta.course_rating_count}</span>
-                  </div>
-                </div>
-              </div>
+              
             </div>
           </div>
         </div>
