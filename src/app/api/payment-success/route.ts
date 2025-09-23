@@ -287,7 +287,11 @@ async function resilientEnroll(userId: number, courseId: number): Promise<{ succ
       return fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments`, {
         method: 'POST',
         headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, course_id: courseId })
+        body: JSON.stringify({ 
+          user_id: userId, 
+          course_id: courseId,
+          status: 'completed' // Ensure enrollment is automatically approved
+        })
       });
     });
   }
@@ -299,7 +303,11 @@ async function resilientEnroll(userId: number, courseId: number): Promise<{ succ
       return fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/enrollments`, {
         method: 'POST',
         headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, course_id: courseId })
+        body: JSON.stringify({ 
+          user_id: userId, 
+          course_id: courseId,
+          status: 'completed' // Ensure enrollment is automatically approved
+        })
       });
     });
   }
@@ -322,6 +330,12 @@ async function resilientEnroll(userId: number, courseId: number): Promise<{ succ
           try { data = await res.json(); } catch {}
           const enrollmentId = data?.data?.enrollment_id || data?.enrollment_id || undefined;
           console.log(`✅ Enrollment success (strategy ${i + 1}, retry ${r}): user=${userId} course=${courseId} id=${enrollmentId ?? 'n/a'}`);
+          
+          // Post-enrollment: Ensure the enrollment is approved
+          if (enrollmentId) {
+            await approveEnrollment(enrollmentId, userId, courseId);
+          }
+          
           return { success: true, enrollmentId };
         }
         const errBody = await safeJson(res);
@@ -404,5 +418,60 @@ async function approveStudentInTutorLMS(userId: number): Promise<void> {
     console.log('✅ Student approval process completed');
   } catch (error) {
     console.error('❌ Error in student approval process:', error);
+  }
+}
+
+// Function to approve a specific enrollment
+async function approveEnrollment(enrollmentId: number | string, userId: number, courseId: number): Promise<void> {
+  try {
+    console.log(`🎓 Approving enrollment ${enrollmentId} for user ${userId} in course ${courseId}...`);
+    
+    // Try to update enrollment status to completed/approved
+    const updateData = {
+      status: 'completed',
+      enrolled_date: new Date().toISOString()
+    };
+
+    // Try with Tutor API first
+    if (TUTOR_CLIENT_ID && TUTOR_SECRET_KEY) {
+      try {
+        const auth = `Basic ${Buffer.from(`${TUTOR_CLIENT_ID}:${TUTOR_SECRET_KEY}`).toString('base64')}`;
+        const response = await fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments/${enrollmentId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
+          body: JSON.stringify(updateData)
+        });
+
+        if (response.ok) {
+          console.log(`✅ Enrollment ${enrollmentId} approved via Tutor API`);
+          return;
+        }
+      } catch (error) {
+        console.log(`⚠️ Tutor API enrollment approval failed:`, error);
+      }
+    }
+
+    // Fallback: Try with WordPress App Password
+    if (process.env.WORDPRESS_APP_PASSWORD) {
+      try {
+        const auth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${process.env.WORDPRESS_APP_PASSWORD}`).toString('base64')}`;
+        const response = await fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/enrollments/${enrollmentId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
+          body: JSON.stringify(updateData)
+        });
+
+        if (response.ok) {
+          console.log(`✅ Enrollment ${enrollmentId} approved via WP App Password`);
+          return;
+        }
+      } catch (error) {
+        console.log(`⚠️ WP App Password enrollment approval failed:`, error);
+      }
+    }
+
+    console.log(`⚠️ Could not approve enrollment ${enrollmentId} via API, but enrollment was created successfully`);
+  } catch (error) {
+    console.error(`❌ Error approving enrollment ${enrollmentId}:`, error);
   }
 }
