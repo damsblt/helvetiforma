@@ -135,14 +135,27 @@ export async function POST(request: NextRequest) {
       console.log('✅ WooCommerce customer created:', wpUser.id);
     }
 
-    // Step 4: Enroll user in courses with resilient strategy
-    console.log('🎓 Enrolling user in courses (resilient)...');
-    const courseIds = cartData.items.map((item: any) => item.course_id || item.product_id).filter(Boolean);
+    // Step 4: Enroll user in courses with enhanced resilient strategy
+    console.log('🎓 Enrolling user in courses (enhanced resilient)...');
+    const courseItems = cartData.items.map((item: any) => ({
+      courseId: item.course_id || item.product_id,
+      productName: item.name || `Formation ${item.course_id || item.product_id}`,
+      quantity: item.quantity || 1
+    })).filter((item: { courseId: any }) => item.courseId);
+    
     const enrollmentResults = [];
 
-    for (const courseId of courseIds) {
-      const result = await resilientEnroll(wpUser.id, parseInt(courseId.toString()));
-      enrollmentResults.push({ course_id: courseId, success: result.success, error: result.error, enrollment_id: result.enrollmentId });
+    for (const courseItem of courseItems) {
+      console.log(`📚 Processing enrollment for course ${courseItem.courseId} (${courseItem.productName})`);
+      const result = await enhancedResilientEnroll(wpUser.id, parseInt(courseItem.courseId.toString()), courseItem.productName);
+      enrollmentResults.push({ 
+        course_id: courseItem.courseId, 
+        product_name: courseItem.productName,
+        success: result.success, 
+        error: result.error, 
+        enrollment_id: result.enrollmentId,
+        strategy_used: result.strategyUsed
+      });
     }
 
     // Step 5: Send welcome email
@@ -165,6 +178,23 @@ export async function POST(request: NextRequest) {
       console.error('❌ Email sending failed:', error);
     }
 
+    // Step 6: Trigger frontend revalidation for student dashboard and courses
+    console.log('🔄 Triggering frontend revalidation...');
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/api/revalidate?path=/student-dashboard&secret=${process.env.REVALIDATE_SECRET || 'your-secret-key'}`, {
+        method: 'POST'
+      });
+      
+      await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/api/revalidate?tag=courses&secret=${process.env.REVALIDATE_SECRET || 'your-secret-key'}`, {
+        method: 'POST'
+      });
+      
+      console.log('✅ Frontend revalidation triggered for student dashboard and courses');
+    } catch (revalidationError) {
+      console.error('❌ Error triggering frontend revalidation:', revalidationError);
+      // Don't fail the payment if revalidation fails
+    }
+
     // Prepare response
     const successfulEnrollments = enrollmentResults.filter(r => r.success).length;
     const totalEnrollments = enrollmentResults.length;
@@ -178,7 +208,8 @@ export async function POST(request: NextRequest) {
         username: wpUser.username || username,
         email: wpUser.email,
         enrollments: enrollmentResults,
-        payment_intent_id: paymentIntentId
+        payment_intent_id: paymentIntentId,
+        frontend_revalidated: true
       }
     });
 
@@ -205,63 +236,120 @@ function generatePassword(): string {
   return password;
 }
 
-// Resilient enrollment with multiple strategies and retries
-async function resilientEnroll(userId: number, courseId: number): Promise<{ success: boolean; enrollmentId?: number | string; error?: string }> {
-  const attempts: Array<() => Promise<Response>> = [];
-
-  // Strategy A: Tutor REST using Tutor client/secret
-  if (TUTOR_CLIENT_ID && TUTOR_SECRET_KEY) {
-    attempts.push(() => {
-      const auth = `Basic ${Buffer.from(`${TUTOR_CLIENT_ID}:${TUTOR_SECRET_KEY}`).toString('base64')}`;
-      return fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments`, {
-        method: 'POST',
-        headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, course_id: courseId })
-      });
-    });
-  }
-
-  // Strategy B: Tutor REST via WP App Password
-  if (process.env.WORDPRESS_APP_PASSWORD) {
-    attempts.push(() => {
-      const auth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${process.env.WORDPRESS_APP_PASSWORD}`).toString('base64')}`;
-      return fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/enrollments`, {
-        method: 'POST',
-        headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, course_id: courseId })
-      });
-    });
-  }
-
-  // Strategy C: Use service helper (same REST under the hood, but centralized)
-  attempts.push(async () => {
-    const ok = await tutorLmsService.enrollStudent(userId, courseId);
-    return new Response(ok ? JSON.stringify({ ok: true }) : 'failed', { status: ok ? 200 : 500, headers: { 'content-type': 'application/json' } });
-  });
-
-  // Try each strategy with basic retries
-  const maxRetries = 2;
-  for (let i = 0; i < attempts.length; i++) {
-    const attempt = attempts[i];
-    for (let r = 0; r <= maxRetries; r++) {
-      try {
-        const res = await attempt();
-        if (res.ok) {
-          let data: any = null;
-          try { data = await res.json(); } catch {}
-          const enrollmentId = data?.data?.enrollment_id || data?.enrollment_id || undefined;
-          console.log(`✅ Enrollment success (strategy ${i + 1}, retry ${r}): user=${userId} course=${courseId} id=${enrollmentId ?? 'n/a'}`);
-          return { success: true, enrollmentId };
-        }
-        const errBody = await safeJson(res);
-        console.warn(`⚠️ Enrollment attempt failed (strategy ${i + 1}, retry ${r}) status=${res.status} body=`, errBody);
-      } catch (e) {
-        console.error(`❌ Enrollment attempt threw (strategy ${i + 1}, retry ${r})`, e);
+// Enhanced resilient enrollment with multiple strategies, retries, and better error handling
+async function enhancedResilientEnroll(userId: number, courseId: number, productName: string): Promise<{ success: boolean; enrollmentId?: number | string; error?: string; strategyUsed?: string }> {
+  const strategies = [
+    {
+      name: 'Tutor REST API (Client/Secret)',
+      attempt: async () => {
+        if (!TUTOR_CLIENT_ID || !TUTOR_SECRET_KEY) return null;
+        const auth = `Basic ${Buffer.from(`${TUTOR_CLIENT_ID}:${TUTOR_SECRET_KEY}`).toString('base64')}`;
+        return fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments`, {
+          method: 'POST',
+          headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, course_id: courseId })
+        });
       }
-      await wait(500 * (r + 1));
+    },
+    {
+      name: 'Tutor REST API (WP App Password)',
+      attempt: async () => {
+        if (!process.env.WORDPRESS_APP_PASSWORD) return null;
+        const auth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${process.env.WORDPRESS_APP_PASSWORD}`).toString('base64')}`;
+        return fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/enrollments`, {
+          method: 'POST',
+          headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, course_id: courseId })
+        });
+      }
+    },
+    {
+      name: 'TutorLMS Service Helper',
+      attempt: async () => {
+        const ok = await tutorLmsService.enrollStudent(userId, courseId);
+        return new Response(ok ? JSON.stringify({ ok: true }) : 'failed', { 
+          status: ok ? 200 : 500, 
+          headers: { 'content-type': 'application/json' } 
+        });
+      }
+    }
+  ];
+
+  const maxRetries = 3;
+  const retryDelay = 1000; // Start with 1 second
+
+  for (let strategyIndex = 0; strategyIndex < strategies.length; strategyIndex++) {
+    const strategy = strategies[strategyIndex];
+    
+    for (let retry = 0; retry <= maxRetries; retry++) {
+      try {
+        console.log(`🔄 Attempting enrollment (${strategy.name}, retry ${retry + 1}/${maxRetries + 1}): user=${userId} course=${courseId} product="${productName}"`);
+        
+        const response = await strategy.attempt();
+        if (!response) {
+          console.log(`⏭️ Strategy ${strategy.name} skipped (missing credentials)`);
+          break; // Skip to next strategy
+        }
+
+        if (response.ok) {
+          let data: any = null;
+          try { 
+            data = await response.json(); 
+          } catch (jsonError) {
+            console.warn(`⚠️ Could not parse response JSON for ${strategy.name}:`, jsonError);
+          }
+          
+          const enrollmentId = data?.data?.enrollment_id || data?.enrollment_id || data?.id || undefined;
+          console.log(`✅ Enrollment SUCCESS (${strategy.name}, retry ${retry + 1}): user=${userId} course=${courseId} product="${productName}" enrollment_id=${enrollmentId ?? 'n/a'}`);
+          
+          return { 
+            success: true, 
+            enrollmentId, 
+            strategyUsed: strategy.name 
+          };
+        }
+
+        // Handle specific error responses
+        const errorData = await safeJson(response);
+        const errorMessage = errorData?.message || errorData?.error || `HTTP ${response.status}`;
+        
+        console.warn(`⚠️ Enrollment attempt failed (${strategy.name}, retry ${retry + 1}): status=${response.status} error="${errorMessage}"`);
+        
+        // If it's a client error (4xx), don't retry this strategy
+        if (response.status >= 400 && response.status < 500) {
+          console.log(`🚫 Client error detected, skipping remaining retries for ${strategy.name}`);
+          break;
+        }
+
+      } catch (error) {
+        console.error(`❌ Enrollment attempt threw (${strategy.name}, retry ${retry + 1}):`, error);
+      }
+
+      // Wait before retry (exponential backoff)
+      if (retry < maxRetries) {
+        const delay = retryDelay * Math.pow(2, retry);
+        console.log(`⏳ Waiting ${delay}ms before retry...`);
+        await wait(delay);
+      }
     }
   }
-  return { success: false, error: 'All enrollment strategies failed' };
+
+  console.error(`❌ All enrollment strategies FAILED for user=${userId} course=${courseId} product="${productName}"`);
+  return { 
+    success: false, 
+    error: 'All enrollment strategies failed after multiple retries',
+    strategyUsed: 'None - All Failed'
+  };
+}
+
+// Legacy function for backward compatibility
+async function resilientEnroll(userId: number, courseId: number): Promise<{ success: boolean; enrollmentId?: number | string; error?: string }> {
+  const result = await enhancedResilientEnroll(userId, courseId, `Course ${courseId}`);
+  return {
+    success: result.success,
+    enrollmentId: result.enrollmentId,
+    error: result.error
+  };
 }
 
 async function safeJson(res: Response): Promise<any> {
