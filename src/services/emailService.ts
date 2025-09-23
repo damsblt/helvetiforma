@@ -9,6 +9,8 @@ interface WordPressAccountData {
   email: string;
   firstName: string;
   lastName: string;
+  username?: string;
+  password?: string;
   loginUrl: string;
   resetPasswordUrl: string;
   courseNames: string[];
@@ -57,7 +59,7 @@ export class EmailService {
    * Create email template for WordPress account creation
    */
   private createWordPressAccountEmail(data: WordPressAccountData): EmailTemplate {
-    const { email, firstName, lastName, loginUrl, resetPasswordUrl, courseNames } = data;
+    const { email, firstName, lastName, username, password, loginUrl, resetPasswordUrl, courseNames } = data;
     
     const subject = `Bienvenue sur HelvetiForma - Votre compte a été créé !`;
     
@@ -96,7 +98,18 @@ export class EmailService {
               ${courseNames.map(course => `<p>• ${course}</p>`).join('')}
             </div>
             
-            <h3>🔐 Première connexion :</h3>
+            <h3>🔐 Vos identifiants de connexion :</h3>
+            ${username && password ? `
+            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e40af;">
+              <p><strong>Nom d'utilisateur :</strong> ${username}</p>
+              <p><strong>Mot de passe :</strong> ${password}</p>
+            </div>
+            
+            <p><strong>Vous pouvez maintenant vous connecter directement :</strong></p>
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${loginUrl}" class="button">Se connecter maintenant</a>
+            </div>
+            ` : `
             <p>Pour votre première connexion, vous devrez définir votre mot de passe :</p>
             
             <div style="text-align: center; margin: 25px 0;">
@@ -107,11 +120,13 @@ export class EmailService {
             <div style="text-align: center;">
               <a href="${loginUrl}" class="button">Se connecter</a>
             </div>
+            `}
             
-            <h3>📧 Vos identifiants :</h3>
+            <h3>📧 Informations importantes :</h3>
             <ul>
               <li><strong>Email :</strong> ${email}</li>
               <li><strong>URL de connexion :</strong> <a href="${loginUrl}">${loginUrl}</a></li>
+              <li><strong>Support :</strong> <a href="mailto:support@helvetiforma.ch">support@helvetiforma.ch</a></li>
             </ul>
             
             <div class="footer">
@@ -134,16 +149,26 @@ Félicitations ! Votre compte HelvetiForma a été créé avec succès.
 Vos formations :
 ${courseNames.map(course => `• ${course}`).join('\n')}
 
+${username && password ? `
+Vos identifiants de connexion :
+- Nom d'utilisateur : ${username}
+- Mot de passe : ${password}
+
+Vous pouvez maintenant vous connecter directement :
+${loginUrl}
+` : `
 Première connexion :
 Pour votre première connexion, vous devrez définir votre mot de passe en cliquant sur ce lien :
 ${resetPasswordUrl}
 
 Ou connectez-vous directement :
 ${loginUrl}
+`}
 
-Vos identifiants :
+Informations importantes :
 - Email : ${email}
 - URL de connexion : ${loginUrl}
+- Support : support@helvetiforma.ch
 
 Si vous avez des questions, contactez-nous à support@helvetiforma.ch
 

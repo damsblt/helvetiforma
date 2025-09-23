@@ -178,26 +178,43 @@ export async function POST(request: NextRequest) {
       throw new Error('WooCommerce order creation failed');
     }
 
-    // Step 3: Use WooCommerce customer as WordPress user and approve as student
-    console.log('👤 Using WooCommerce customer as WordPress user...');
-    
-    // Get the customer details to use as wpUser
+    // Step 3: Create WordPress user account with login credentials
+    console.log('👤 Creating WordPress user account...');
+    const username = userData.email.split('@')[0] + '_' + Date.now();
+    const password = generatePassword();
+    const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
+    const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
+
     let wpUser;
     try {
-      const customerResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers/${customerId}`, {
-        method: 'GET',
-        headers: { 'Authorization': `Basic ${wooAuth}`, 'Content-Type': 'application/json' }
+      const wpUserResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users`, {
+        method: 'POST',
+        headers: { 'Authorization': wpAuth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          email: userData.email,
+          password,
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          name: `${userData.firstName} ${userData.lastName}`,
+          role: 'subscriber'
+        })
       });
 
-      if (customerResponse.ok) {
-        wpUser = await customerResponse.json();
-        console.log('✅ Using WooCommerce customer as WP user:', wpUser.id);
+      if (wpUserResponse.ok) {
+        wpUser = await wpUserResponse.json();
+        console.log('✅ WordPress user created:', wpUser.id);
+        
+        // Link WooCommerce customer to WordPress user
+        await linkWooCommerceCustomerToWordPressUser(customerId, wpUser.id, wooAuth);
       } else {
-        throw new Error('Failed to retrieve customer details');
+        const errorData = await wpUserResponse.json().catch(() => ({}));
+        console.error('❌ WordPress user creation failed:', errorData);
+        throw new Error('Failed to create WordPress user account');
       }
     } catch (error) {
-      console.error('❌ Error retrieving customer details:', error);
-      throw new Error('Failed to retrieve customer details for enrollment');
+      console.error('❌ Error creating WordPress user:', error);
+      throw new Error('WordPress user creation failed');
     }
 
     // Step 4: Approve user as Tutor LMS student
@@ -243,11 +260,13 @@ export async function POST(request: NextRequest) {
         email: wpUser.email,
         firstName: wpUser.first_name || userData.firstName,
         lastName: wpUser.last_name || userData.lastName,
+        username: username,
+        password: password,
         loginUrl,
         resetPasswordUrl,
         courseNames
       });
-      console.log('✅ Welcome email sent');
+      console.log('✅ Welcome email sent with login credentials');
     } catch (error) {
       console.error('❌ Email sending failed:', error);
     }
@@ -376,6 +395,34 @@ async function safeJson(res: Response): Promise<any> {
 
 function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Function to link WooCommerce customer to WordPress user
+async function linkWooCommerceCustomerToWordPressUser(customerId: number, wpUserId: number, wooAuth: string): Promise<void> {
+  try {
+    console.log(`🔗 Linking WooCommerce customer ${customerId} to WordPress user ${wpUserId}...`);
+    
+    const updateData = {
+      user_id: wpUserId
+    };
+
+    const response = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers/${customerId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Basic ${wooAuth}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateData)
+    });
+
+    if (response.ok) {
+      console.log('✅ WooCommerce customer linked to WordPress user');
+    } else {
+      console.log('⚠️ Could not link WooCommerce customer to WordPress user, but continuing...');
+    }
+  } catch (error) {
+    console.error('❌ Error linking WooCommerce customer to WordPress user:', error);
+  }
 }
 
 // Function to approve user as Tutor LMS student
