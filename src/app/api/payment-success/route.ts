@@ -156,6 +156,11 @@ export async function POST(request: NextRequest) {
         enrollment_id: result.enrollmentId,
         strategy_used: result.strategyUsed
       });
+      
+      // Add delay between course enrollments to prevent security triggers
+      if (courseItems.length > 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
 
     // Step 5: Send welcome email
@@ -261,8 +266,8 @@ async function enhancedResilientEnroll(userId: number, courseId: number, product
     }
   ];
 
-  const maxRetries = 3;
-  const retryDelay = 1000; // Start with 1 second
+  const maxRetries = 1; // Reduced from 3 to 1 to prevent security triggers
+  const retryDelay = 500; // Reduced delay
 
   for (let strategyIndex = 0; strategyIndex < strategies.length; strategyIndex++) {
     const strategy = strategies[strategyIndex];
