@@ -1,0 +1,17 @@
+# Add these lines to your wp-config.php file to disable 2FA
+
+# Disable 2FA completely
+define('DISABLE_2FA', true);
+define('DISABLE_WORDFENCE_2FA', true);
+define('DISABLE_TWO_FACTOR', true);
+
+# Disable security plugins that might cause 2FA
+define('DISABLE_WORDFENCE', true);
+define('DISABLE_ITHEMES_SECURITY', true);
+
+# Allow admin access without 2FA
+define('WP_ALLOW_MULTISITE', false);
+define('FORCE_SSL_ADMIN', false);
+
+# Add these lines BEFORE the "/* That's all, stop editing! */" line
+

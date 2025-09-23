@@ -56,8 +56,9 @@ export default function HeaderButtons() {
         <div className="hidden sm:inline-block px-3 py-2 text-gray-400">
           Chargement...
         </div>
-        <div className="px-3 py-2 text-gray-400 text-sm">
-          Connexion requise
+        <div className="relative">
+          <CartIcon onClick={toggleCart} />
+          <CartDropdown />
         </div>
       </div>
     );

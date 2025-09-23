@@ -66,21 +66,117 @@ export async function POST(request: NextRequest) {
     
     console.log('✅ Payment verified:', paymentIntent.id);
 
-    // Step 2: Skip WooCommerce order creation (Tutor LMS conflict)
-    // Create a simple order record for tracking purposes
-    console.log('📦 Skipping WooCommerce order creation due to Tutor LMS conflict...');
-    const mockOrder = {
-      id: `order_${Date.now()}`,
-      status: 'completed',
-      total: cartData.total,
+    // Step 2: Create WooCommerce order and customer
+    console.log('📦 Creating WooCommerce order and customer...');
+    
+    // First, create or get customer
+    let customerId;
+    try {
+      const customerResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${wooAuth}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: userData.email,
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          username: userData.email.split('@')[0] + '_' + Date.now()
+        })
+      });
+
+      if (customerResponse.ok) {
+        const customerData = await customerResponse.json();
+        customerId = customerData.id;
+        console.log('✅ WooCommerce customer created:', customerId);
+      } else {
+        console.log('⚠️ Customer creation failed, will create order without customer ID');
+      }
+    } catch (error) {
+      console.error('❌ Error creating customer:', error);
+    }
+
+    // Create WooCommerce order
+    const orderData = {
       payment_method: 'stripe',
+      payment_method_title: 'Stripe',
+      set_paid: true,
+      status: 'completed',
+      customer_id: customerId,
       billing: {
         first_name: userData.firstName,
         last_name: userData.lastName,
-        email: userData.email
-      }
+        email: userData.email,
+        address_1: userData.address || '',
+        city: userData.city || '',
+        postcode: userData.postalCode || '',
+        country: userData.country || 'CH'
+      },
+      line_items: cartData.items.map((item: any) => ({
+        product_id: item.course_id || item.product_id,
+        quantity: item.quantity || 1,
+        name: item.name || `Formation ${item.course_id || item.product_id}`
+      })),
+      meta_data: [
+        {
+          key: '_stripe_payment_intent_id',
+          value: paymentIntentId
+        },
+        {
+          key: '_helvetiforma_payment',
+          value: 'yes'
+        }
+      ]
     };
-    console.log('✅ Mock order created for tracking:', mockOrder.id);
+
+    let wooOrder;
+    try {
+      const orderResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/orders`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${wooAuth}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      if (orderResponse.ok) {
+        wooOrder = await orderResponse.json();
+        console.log('✅ WooCommerce order created:', wooOrder.id);
+      } else {
+        const errorData = await orderResponse.json().catch(() => ({}));
+        console.error('❌ WooCommerce order creation failed:', errorData);
+        // Fallback to mock order
+        wooOrder = {
+          id: `order_${Date.now()}`,
+          status: 'completed',
+          total: cartData.total,
+          payment_method: 'stripe',
+          billing: {
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            email: userData.email
+          }
+        };
+        console.log('✅ Fallback mock order created:', wooOrder.id);
+      }
+    } catch (error) {
+      console.error('❌ Error creating WooCommerce order:', error);
+      // Fallback to mock order
+      wooOrder = {
+        id: `order_${Date.now()}`,
+        status: 'completed',
+        total: cartData.total,
+        payment_method: 'stripe',
+        billing: {
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          email: userData.email
+        }
+      };
+      console.log('✅ Fallback mock order created:', wooOrder.id);
+    }
 
     // Step 3: Create WordPress user with subscriber role
     console.log('👤 Creating WordPress user...');
@@ -147,6 +243,10 @@ export async function POST(request: NextRequest) {
 
     for (const courseItem of courseItems) {
       console.log(`📚 Processing enrollment for course ${courseItem.courseId} (${courseItem.productName})`);
+      
+      // First, ensure user is approved as a student in Tutor LMS
+      await ensureStudentApproval(wpUser.id);
+      
       const result = await enhancedResilientEnroll(wpUser.id, parseInt(courseItem.courseId.toString()), courseItem.productName);
       enrollmentResults.push({ 
         course_id: courseItem.courseId, 
@@ -194,7 +294,9 @@ export async function POST(request: NextRequest) {
       success: true,
       message: `Paiement réussi ! Compte créé et ${successfulEnrollments}/${totalEnrollments} formation(s) suivie(s).`,
       data: {
-        order_id: mockOrder.id,
+        order_id: wooOrder.id,
+        woo_order_id: wooOrder.id,
+        customer_id: customerId,
         user_id: wpUser.id,
         username: wpUser.username || username,
         email: wpUser.email,
@@ -225,6 +327,70 @@ function generatePassword(): string {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return password;
+}
+
+// Helper function to ensure user is approved as a student in Tutor LMS
+async function ensureStudentApproval(userId: number): Promise<void> {
+  try {
+    console.log(`🎓 Ensuring student approval for user ${userId}...`);
+    
+    // Set user meta to mark as Tutor student
+    const metaData = [
+      { key: '_is_tutor_student', value: 'yes' },
+      { key: 'tutor_student_status', value: 'active' },
+      { key: 'tutor_profile_public', value: 'yes' },
+      { key: 'tutor_register_time', value: new Date().toISOString() }
+    ];
+
+    for (const meta of metaData) {
+      try {
+        const response = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/${userId}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${process.env.WORDPRESS_APP_PASSWORD}`).toString('base64')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            meta: {
+              [meta.key]: meta.value
+            }
+          })
+        });
+
+        if (response.ok) {
+          console.log(`✅ Set ${meta.key} = ${meta.value}`);
+        } else {
+          console.log(`⚠️ Failed to set ${meta.key}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error setting ${meta.key}:`, error);
+      }
+    }
+
+    // Try to trigger Tutor LMS student registration hooks via API
+    try {
+      const hookResponse = await fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/student-approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${Buffer.from(`${TUTOR_CLIENT_ID}:${TUTOR_SECRET_KEY}`).toString('base64')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ user_id: userId })
+      });
+
+      if (hookResponse.ok) {
+        console.log('✅ Tutor student approval triggered via API');
+      } else {
+        console.log('⚠️ Tutor student approval API call failed, but continuing...');
+      }
+    } catch (error) {
+      console.log('⚠️ Tutor student approval API error (non-critical):', error);
+    }
+
+    console.log('✅ Student approval process completed');
+  } catch (error) {
+    console.error('❌ Error in student approval process:', error);
+  }
 }
 
 // Enhanced resilient enrollment with multiple strategies, retries, and better error handling
