@@ -178,57 +178,31 @@ export async function POST(request: NextRequest) {
       console.log('✅ Fallback mock order created:', wooOrder.id);
     }
 
-    // Step 3: Create WordPress user with subscriber role
-    console.log('👤 Creating WordPress user...');
-    const username = userData.email.split('@')[0] + '_' + Date.now();
-    const password = generatePassword();
-    const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
-    const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
-
+    // Step 3: Use the already created WooCommerce customer as WordPress user
+    console.log('👤 Using WooCommerce customer as WordPress user...');
+    
+    // The customer was already created in Step 2, so we'll use that
     let wpUser;
-    try {
-      const wpUserResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users`, {
-        method: 'POST',
-        headers: { 'Authorization': wpAuth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username,
-          email: userData.email,
-          password,
-          name: `${userData.firstName} ${userData.lastName}`,
-          role: 'subscriber'
-        })
-      });
+    if (customerId) {
+      // Get the customer details to use as wpUser
+      try {
+        const customerResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers/${customerId}`, {
+          method: 'GET',
+          headers: { 'Authorization': `Basic ${wooAuth}`, 'Content-Type': 'application/json' }
+        });
 
-      if (wpUserResponse.ok) {
-        wpUser = await wpUserResponse.json();
-        console.log('✅ WP user created via REST:', wpUser.id);
-      } else {
-        throw new Error('WP user creation failed');
+        if (customerResponse.ok) {
+          wpUser = await customerResponse.json();
+          console.log('✅ Using existing WooCommerce customer as WP user:', wpUser.id);
+        } else {
+          throw new Error('Failed to retrieve customer details');
+        }
+      } catch (error) {
+        console.error('❌ Error retrieving customer details:', error);
+        throw new Error('Failed to retrieve customer details for enrollment');
       }
-    } catch (error) {
-      console.warn('⚠️ WP user creation failed, falling back to WooCommerce customer...');
-      
-      // Fallback: Create WooCommerce customer
-      const customerData = {
-        email: userData.email,
-        first_name: userData.firstName,
-        last_name: userData.lastName,
-        username,
-        password
-      };
-
-      const customerResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers`, {
-        method: 'POST',
-        headers: { 'Authorization': `Basic ${wooAuth}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(customerData)
-      });
-
-      if (!customerResponse.ok) {
-        throw new Error('Both WP user and WooCommerce customer creation failed');
-      }
-
-      wpUser = await customerResponse.json();
-      console.log('✅ WooCommerce customer created:', wpUser.id);
+    } else {
+      throw new Error('No customer ID available for enrollment');
     }
 
     // Step 4: Enroll user in courses with enhanced resilient strategy
@@ -298,7 +272,7 @@ export async function POST(request: NextRequest) {
         woo_order_id: wooOrder.id,
         customer_id: customerId,
         user_id: wpUser.id,
-        username: wpUser.username || username,
+        username: wpUser.username || wpUser.email?.split('@')[0] || 'user',
         email: wpUser.email,
         enrollments: enrollmentResults,
         payment_intent_id: paymentIntentId,
