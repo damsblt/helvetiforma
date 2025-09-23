@@ -10,7 +10,7 @@ interface WordPressAccountData {
   firstName: string;
   lastName: string;
   username?: string;
-  password?: string;
+  passwordResetLink?: string;
   loginUrl: string;
   resetPasswordUrl: string;
   courseNames: string[];
@@ -59,7 +59,7 @@ export class EmailService {
    * Create email template for WordPress account creation
    */
   private createWordPressAccountEmail(data: WordPressAccountData): EmailTemplate {
-    const { email, firstName, lastName, username, password, loginUrl, resetPasswordUrl, courseNames } = data;
+    const { email, firstName, lastName, username, passwordResetLink, loginUrl, resetPasswordUrl, courseNames } = data;
     
     const subject = `Bienvenue sur HelvetiForma - Votre compte a été créé !`;
     
@@ -98,22 +98,27 @@ export class EmailService {
               ${courseNames.map(course => `<p>• ${course}</p>`).join('')}
             </div>
             
-            <h3>🔐 Vos identifiants de connexion :</h3>
-            ${username && password ? `
+            <h3>🔐 Première connexion :</h3>
+            ${username ? `
             <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e40af;">
               <p><strong>Nom d'utilisateur :</strong> ${username}</p>
-              <p><strong>Mot de passe :</strong> ${password}</p>
+              <p><strong>Email :</strong> ${email}</p>
             </div>
             
-            <p><strong>Vous pouvez maintenant vous connecter directement :</strong></p>
+            <p><strong>Pour votre première connexion, définissez votre mot de passe :</strong></p>
             <div style="text-align: center; margin: 25px 0;">
-              <a href="${loginUrl}" class="button">Se connecter maintenant</a>
+              <a href="${passwordResetLink || resetPasswordUrl}" class="button">Définir mon mot de passe</a>
+            </div>
+            
+            <p><strong>Une fois votre mot de passe défini, vous pourrez vous connecter :</strong></p>
+            <div style="text-align: center;">
+              <a href="${loginUrl}" class="button">Se connecter</a>
             </div>
             ` : `
             <p>Pour votre première connexion, vous devrez définir votre mot de passe :</p>
             
             <div style="text-align: center; margin: 25px 0;">
-              <a href="${resetPasswordUrl}" class="button">Définir mon mot de passe</a>
+              <a href="${passwordResetLink || resetPasswordUrl}" class="button">Définir mon mot de passe</a>
             </div>
             
             <p><strong>Ou connectez-vous directement :</strong></p>
@@ -149,17 +154,20 @@ Félicitations ! Votre compte HelvetiForma a été créé avec succès.
 Vos formations :
 ${courseNames.map(course => `• ${course}`).join('\n')}
 
-${username && password ? `
+${username ? `
 Vos identifiants de connexion :
 - Nom d'utilisateur : ${username}
-- Mot de passe : ${password}
+- Email : ${email}
 
-Vous pouvez maintenant vous connecter directement :
+Pour votre première connexion, définissez votre mot de passe :
+${passwordResetLink || resetPasswordUrl}
+
+Une fois votre mot de passe défini, vous pourrez vous connecter :
 ${loginUrl}
 ` : `
 Première connexion :
 Pour votre première connexion, vous devrez définir votre mot de passe en cliquant sur ce lien :
-${resetPasswordUrl}
+${passwordResetLink || resetPasswordUrl}
 
 Ou connectez-vous directement :
 ${loginUrl}

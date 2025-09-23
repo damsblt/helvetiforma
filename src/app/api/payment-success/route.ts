@@ -178,43 +178,43 @@ export async function POST(request: NextRequest) {
       throw new Error('WooCommerce order creation failed');
     }
 
-    // Step 3: Create WordPress user account with login credentials
-    console.log('👤 Creating WordPress user account...');
+    // Step 3: Create WordPress subscriber (separate from WooCommerce customer)
+    console.log('👤 Creating WordPress subscriber...');
     const username = userData.email.split('@')[0] + '_' + Date.now();
-    const password = generatePassword();
     const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
     const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
 
     let wpUser;
     try {
+      // Create WordPress user without password (will use password reset)
       const wpUserResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users`, {
         method: 'POST',
         headers: { 'Authorization': wpAuth, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username,
           email: userData.email,
-          password,
           first_name: userData.firstName,
           last_name: userData.lastName,
           name: `${userData.firstName} ${userData.lastName}`,
-          role: 'subscriber'
+          role: 'subscriber',
+          send_user_notification: false // Don't send default WordPress email
         })
       });
 
       if (wpUserResponse.ok) {
         wpUser = await wpUserResponse.json();
-        console.log('✅ WordPress user created:', wpUser.id);
+        console.log('✅ WordPress subscriber created:', wpUser.id);
         
         // Link WooCommerce customer to WordPress user
         await linkWooCommerceCustomerToWordPressUser(customerId, wpUser.id, wooAuth);
       } else {
         const errorData = await wpUserResponse.json().catch(() => ({}));
-        console.error('❌ WordPress user creation failed:', errorData);
-        throw new Error('Failed to create WordPress user account');
+        console.error('❌ WordPress subscriber creation failed:', errorData);
+        throw new Error('Failed to create WordPress subscriber');
       }
     } catch (error) {
-      console.error('❌ Error creating WordPress user:', error);
-      throw new Error('WordPress user creation failed');
+      console.error('❌ Error creating WordPress subscriber:', error);
+      throw new Error('WordPress subscriber creation failed');
     }
 
     // Step 4: Approve user as Tutor LMS student
@@ -249,11 +249,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 6: Send welcome email
-    console.log('📧 Sending welcome email...');
+    // Step 6: Generate password reset link and send welcome email
+    console.log('📧 Generating password reset link and sending welcome email...');
     const courseNames = cartData.items.map((item: any) => item.name || `Formation ${item.course_id || item.product_id}`);
     const loginUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/login`;
     const resetPasswordUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/wp-login.php?action=lostpassword`;
+    
+    // Generate password reset link
+    const passwordResetLink = await generatePasswordResetLink(wpUser.email, wpAuth);
     
     try {
       await emailService.sendWordPressAccountCreated({
@@ -261,12 +264,12 @@ export async function POST(request: NextRequest) {
         firstName: wpUser.first_name || userData.firstName,
         lastName: wpUser.last_name || userData.lastName,
         username: username,
-        password: password,
+        passwordResetLink: passwordResetLink,
         loginUrl,
         resetPasswordUrl,
         courseNames
       });
-      console.log('✅ Welcome email sent with login credentials');
+      console.log('✅ Welcome email sent with password reset link');
     } catch (error) {
       console.error('❌ Email sending failed:', error);
     }
@@ -422,6 +425,38 @@ async function linkWooCommerceCustomerToWordPressUser(customerId: number, wpUser
     }
   } catch (error) {
     console.error('❌ Error linking WooCommerce customer to WordPress user:', error);
+  }
+}
+
+// Function to generate password reset link
+async function generatePasswordResetLink(email: string, wpAuth: string): Promise<string> {
+  try {
+    console.log(`🔑 Generating password reset link for ${email}...`);
+    
+    // Use WordPress REST API to trigger password reset
+    const response = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/lost-password`, {
+      method: 'POST',
+      headers: {
+        'Authorization': wpAuth,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user_login: email
+      })
+    });
+
+    if (response.ok) {
+      console.log('✅ Password reset link generated');
+      // Return the standard WordPress password reset URL
+      return `${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/wp-login.php?action=lostpassword`;
+    } else {
+      console.log('⚠️ Could not generate password reset link, using fallback URL');
+      return `${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/wp-login.php?action=lostpassword`;
+    }
+  } catch (error) {
+    console.error('❌ Error generating password reset link:', error);
+    // Return fallback URL
+    return `${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/wp-login.php?action=lostpassword`;
   }
 }
 
