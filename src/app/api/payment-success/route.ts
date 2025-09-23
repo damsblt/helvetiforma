@@ -178,22 +178,8 @@ export async function POST(request: NextRequest) {
       console.error('❌ Email sending failed:', error);
     }
 
-    // Step 6: Trigger frontend revalidation for student dashboard and courses
-    console.log('🔄 Triggering frontend revalidation...');
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/api/revalidate?path=/student-dashboard&secret=${process.env.REVALIDATE_SECRET || 'your-secret-key'}`, {
-        method: 'POST'
-      });
-      
-      await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/api/revalidate?tag=courses&secret=${process.env.REVALIDATE_SECRET || 'your-secret-key'}`, {
-        method: 'POST'
-      });
-      
-      console.log('✅ Frontend revalidation triggered for student dashboard and courses');
-    } catch (revalidationError) {
-      console.error('❌ Error triggering frontend revalidation:', revalidationError);
-      // Don't fail the payment if revalidation fails
-    }
+    // Step 6: Frontend revalidation removed to prevent 2FA security triggers
+    console.log('🔄 Skipping frontend revalidation to prevent security issues');
 
     // Prepare response
     const successfulEnrollments = enrollmentResults.filter(r => r.success).length;
@@ -209,7 +195,7 @@ export async function POST(request: NextRequest) {
         email: wpUser.email,
         enrollments: enrollmentResults,
         payment_intent_id: paymentIntentId,
-        frontend_revalidated: true
+        frontend_revalidated: false
       }
     });
 
