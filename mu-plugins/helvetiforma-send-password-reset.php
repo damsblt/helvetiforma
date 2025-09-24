@@ -32,22 +32,30 @@ add_action('user_register', function ($user_id) {
 
     $reset_url = network_site_url('wp-login.php?action=rp&key=' . $key . '&login=' . rawurlencode($user->user_login), 'login');
     $site_name = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+    $home_url  = home_url('/');
 
-    // Email content (plain text)
-    $subject = sprintf('[%s] Définissez votre mot de passe', $site_name);
-    $lines   = [];
-    $lines[] = sprintf('Bonjour %s,', $user->display_name ?: $user->user_login);
-    $lines[] = '';
-    $lines[] = sprintf('Votre compte a été créé sur %s.', $site_name);
-    $lines[] = '';
-    $lines[] = 'Pour définir votre mot de passe, cliquez sur le lien ci-dessous :';
-    $lines[] = $reset_url;
-    $lines[] = '';
-    $lines[] = "Si vous n’êtes pas à l’origine de cette action, ignorez cet email.";
-    $message = implode("\n", $lines);
+    // Email content (HTML)
+    $subject = sprintf('Bienvenue chez %s – Active ton compte', $site_name);
 
-    // Send email
-    wp_mail($user->user_email, $subject, $message);
+    $first_name = get_user_meta($user_id, 'first_name', true);
+    $display = $first_name ?: ($user->display_name ?: $user->user_login);
+
+    $message = '';
+    $message .= '<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#ffffff;color:#111">';
+    $message .= '<h2 style="margin:0 0 16px;font-size:22px;">Bienvenue chez ' . esc_html($site_name) . ' 👋</h2>';
+    $message .= '<p style="margin:0 0 12px;">Bonjour ' . esc_html($display) . ',</p>';
+    $message .= '<p style="margin:0 0 12px;">Nous avons le plaisir de te compter parmi les étudiant·e·s de <strong>' . esc_html($site_name) . '</strong>.</p>';
+    $message .= '<p style="margin:0 0 16px;">Pour définir ton mot de passe et te connecter, clique sur le bouton ci-dessous&nbsp;:</p>';
+    $message .= '<p style="margin:24px 0;"><a href="' . esc_url($reset_url) . '" style="background:#111;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;display:inline-block">Définir mon mot de passe</a></p>';
+    $message .= '<p style="margin:0 0 8px;font-size:14px;color:#555;">Si le bouton ne fonctionne pas, copie/colle ce lien dans ton navigateur&nbsp;:<br>' . esc_html($reset_url) . '</p>';
+    $message .= '<hr style="border:0;border-top:1px solid #eee;margin:20px 0" />';
+    $message .= '<p style="margin:0 0 8px;font-size:14px;color:#555;">Tu pourras ensuite te connecter depuis&nbsp;: <a href="' . esc_url($home_url) . 'login" style="color:#111">' . esc_html($home_url) . 'login</a></p>';
+    $message .= '<p style="margin:0;font-size:12px;color:#777;">Si tu n’es pas à l’origine de cette action, ignore simplement cet email.</p>';
+    $message .= '</div>';
+
+    // Send email as HTML
+    $headers = [ 'Content-Type: text/html; charset=UTF-8' ];
+    wp_mail($user->user_email, $subject, $message, $headers);
 
     // Mark as sent to prevent duplicates
     update_user_meta($user_id, '_hvf_pw_mail_sent', current_time('mysql'));
