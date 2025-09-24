@@ -13,14 +13,14 @@ try {
   console.error('Failed to initialize Stripe:', error);
 }
 
-// Configuration
-const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
-const TUTOR_API_URL = process.env.TUTOR_API_URL || 'https://api.helvetiforma.ch';
-const TUTOR_CLIENT_ID = process.env.TUTOR_CLIENT_ID || '';
-const TUTOR_SECRET_KEY = process.env.TUTOR_SECRET_KEY || '';
-const WORDPRESS_APP_USER = process.env.WORDPRESS_APP_USER || 'gibivawa';
-const WOOCOMMERCE_CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b';
-const WOOCOMMERCE_CONSUMER_SECRET = process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076';
+// Configuration (trim to avoid stray newlines from env)
+const WORDPRESS_URL = (process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch').trim();
+const TUTOR_API_URL = (process.env.TUTOR_API_URL || 'https://api.helvetiforma.ch').trim();
+const TUTOR_CLIENT_ID = (process.env.TUTOR_CLIENT_ID || '').trim();
+const TUTOR_SECRET_KEY = (process.env.TUTOR_SECRET_KEY || '').trim();
+const WORDPRESS_APP_USER = (process.env.WORDPRESS_APP_USER || 'gibivawa').trim();
+const WOOCOMMERCE_CONSUMER_KEY = (process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_51c0c5e556a92972be092dda07cda8bc4975557b').trim();
+const WOOCOMMERCE_CONSUMER_SECRET = (process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_1082d09580773bcad56caf213542171abbd8d076').trim();
 
 // Create WooCommerce auth string
 const wooAuth = Buffer.from(`${WOOCOMMERCE_CONSUMER_KEY}:${WOOCOMMERCE_CONSUMER_SECRET}`).toString('base64');
@@ -181,6 +181,7 @@ export async function POST(request: NextRequest) {
     // Step 3: Create WordPress subscriber (separate from WooCommerce customer)
     console.log('👤 Creating WordPress subscriber...');
     const username = userData.email.split('@')[0] + '_' + Date.now();
+    const tempPassword = generatePassword();
     const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
     const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
 
@@ -193,6 +194,7 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           username,
           email: userData.email,
+          password: tempPassword,
           first_name: userData.firstName,
           last_name: userData.lastName,
           name: `${userData.firstName} ${userData.lastName}`,
@@ -411,7 +413,7 @@ async function ensureSubscriberRole(userId: number): Promise<void> {
     const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
 
     // First fetch current roles
-    const getRes = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/${userId}`, {
+    const getRes = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/${userId}?context=edit`, {
       method: 'GET',
       headers: { 'Authorization': wpAuth }
     });
