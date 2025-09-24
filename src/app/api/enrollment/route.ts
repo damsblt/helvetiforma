@@ -9,6 +9,7 @@ const WORDPRESS_APP_USER = (process.env.WORDPRESS_APP_USER || '').trim();
 export async function POST(request: NextRequest) {
   try {
     const { user_id, course_ids } = await request.json();
+    console.log('[ENROLL] API called with:', { user_id, course_ids });
     if (!user_id || !Array.isArray(course_ids) || course_ids.length === 0) {
       return NextResponse.json({ success: false, error: 'Missing user_id or course_ids' }, { status: 400 });
     }
@@ -17,14 +18,17 @@ export async function POST(request: NextRequest) {
 
     for (const cid of course_ids) {
       const res = await enrollAndComplete(user_id, Number(cid));
+      console.log('[ENROLL] result for course', cid, res);
       results.push({ course_id: Number(cid), ...res });
       // brief delay
       await new Promise(r => setTimeout(r, 250));
     }
 
     const ok = results.every(r => r.success);
+    console.log('[ENROLL] Completed with success =', ok);
     return NextResponse.json({ success: ok, results });
   } catch (error) {
+    console.error('[ENROLL] Fatal error:', error);
     return NextResponse.json({ success: false, error: 'Enrollment error', details: String(error) }, { status: 500 });
   }
 }
@@ -57,9 +61,14 @@ async function enrollAndComplete(userId: number, courseId: number): Promise<{ su
   for (let i = 0; i < attempts.length; i++) {
     try {
       const res = await attempts[i]();
+      console.log('[ENROLL] attempt', i + 1, 'status', res.status);
       const body: any = await res.json().catch(() => undefined);
+      if (!res.ok) {
+        console.warn('[ENROLL] attempt body (failure):', body);
+      }
       if (res.ok) {
         const enrollmentId = body?.data?.enrollment_id || body?.enrollment_id || undefined;
+        console.log('[ENROLL] success body:', body);
         // Try to mark completed using official endpoint
         await completeEnrollment(enrollmentId);
         return { success: true, enrollment_id: enrollmentId };
@@ -79,15 +88,17 @@ async function completeEnrollment(enrollmentId?: number|string) {
       const res = await fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments/completed`, {
         method: 'PUT', headers: { 'Authorization': auth, 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
       });
+      console.log('[ENROLL] complete via Tutor creds status', res.status);
       if (res.ok) return;
     } catch {}
   }
   if (process.env.WORDPRESS_APP_PASSWORD) {
     try {
       const auth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${process.env.WORDPRESS_APP_PASSWORD}`).toString('base64')}`;
-      await fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/enrollments/completed`, {
+      const r = await fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/enrollments/completed`, {
         method: 'PUT', headers: { 'Authorization': auth, 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
       });
+      console.log('[ENROLL] complete via WP creds status', r.status);
     } catch {}
   }
 }
