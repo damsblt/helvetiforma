@@ -66,8 +66,135 @@ export async function POST(request: NextRequest) {
     
     console.log('✅ Payment verified:', paymentIntent.id);
 
-    // Simplified: only verify Stripe and echo payload, with no side effects
-    return NextResponse.json({ success: true, payment_intent_id: paymentIntentId });
+    // Step 2: Ensure WordPress subscriber exists (find-or-create)
+    console.log('👤 Ensuring WordPress subscriber exists...');
+    const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
+    const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
+
+    const email = String(userData.email).trim();
+    const firstName = String(userData.firstName || '').trim();
+    const lastName = String(userData.lastName || '').trim();
+
+    let wpUser: any = null;
+    try {
+      const findRes = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users?search=${encodeURIComponent(email)}&context=edit`, {
+        headers: { 'Authorization': wpAuth }
+      });
+      if (findRes.ok) {
+        const list = await findRes.json();
+        wpUser = Array.isArray(list) ? list.find((u: any) => u.email === email) : null;
+      }
+    } catch (e) {
+      console.warn('⚠️ WP find by email failed:', e);
+    }
+
+    if (!wpUser) {
+      console.log('➡️ Creating WP user (subscriber)...');
+      const username = `${email.split('@')[0]}_${Date.now()}`;
+      const tempPassword = generatePassword();
+      const createRes = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users`, {
+        method: 'POST',
+        headers: { 'Authorization': wpAuth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          email,
+          password: tempPassword,
+          first_name: firstName,
+          last_name: lastName,
+          name: `${firstName} ${lastName}`.trim(),
+          roles: ['subscriber'],
+          send_user_notification: false
+        })
+      });
+      if (!createRes.ok) {
+        const err = await createRes.json().catch(() => ({}));
+        console.error('❌ WP user creation failed:', err);
+        return NextResponse.json({ success: false, error: 'WordPress subscriber creation failed', details: err }, { status: 500 });
+      }
+      wpUser = await createRes.json();
+      console.log('✅ WP user created:', wpUser.id);
+    } else {
+      console.log('✅ WP user found:', wpUser.id);
+    }
+
+    // Guard: ensure subscriber role
+    await ensureSubscriberRole(wpUser.id);
+
+    // Step 3: Create WooCommerce order tied to this WP user
+    console.log('📦 Creating WooCommerce order (customer_id = WP user)...');
+    const orderData = {
+      payment_method: 'stripe',
+      payment_method_title: 'Stripe',
+      set_paid: true,
+      status: 'completed',
+      customer_id: wpUser.id,
+      total: String(cartData.total),
+      currency: cartData.currency || 'CHF',
+      billing: {
+        first_name: firstName,
+        last_name: lastName,
+        email,
+      },
+      line_items: cartData.items.map((item: any) => ({
+        product_id: item.course_id || item.product_id,
+        quantity: item.quantity || 1,
+        name: item.name || `Formation ${item.course_id || item.product_id}`,
+        price: String(item.price || item.total || 0),
+        total: String((item.price || item.total || 0) * (item.quantity || 1))
+      })),
+      meta_data: [
+        { key: '_stripe_payment_intent_id', value: paymentIntentId },
+        { key: '_helvetiforma_payment', value: 'yes' }
+      ]
+    };
+
+    let wooOrder: any = null;
+    try {
+      const orderRes = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/orders`, {
+        method: 'POST',
+        headers: { 'Authorization': `Basic ${wooAuth}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      const body = await orderRes.json().catch(() => undefined);
+      if (!orderRes.ok) {
+        console.error('❌ Woo order creation failed:', body);
+        return NextResponse.json({ success: false, error: 'WooCommerce order creation failed', details: body }, { status: 500 });
+      }
+      wooOrder = body;
+      console.log('✅ Woo order created:', wooOrder?.id);
+    } catch (e) {
+      console.error('❌ Error creating Woo order:', e);
+      return NextResponse.json({ success: false, error: 'WooCommerce order creation error' }, { status: 500 });
+    }
+
+    // Step 4: Enroll user into each course in cart (completed)
+    console.log('🎓 Enrolling in Tutor LMS...');
+    const courseItems = (cartData.items || [])
+      .map((it: any) => it.course_id || it.product_id)
+      .filter((id: any) => !!id)
+      .map((id: any) => parseInt(String(id)));
+
+    const enrollmentResults: Array<{ course_id: number; success: boolean; enrollment_id?: number|string; error?: string }> = [];
+    for (const courseId of courseItems) {
+      const res = await resilientEnroll(Number(wpUser.id), Number(courseId));
+      enrollmentResults.push({ course_id: Number(courseId), success: res.success, enrollment_id: res.enrollmentId, error: res.error });
+      if (courseItems.length > 1) await new Promise(r => setTimeout(r, 300));
+    }
+
+    const successfulEnrollments = enrollmentResults.filter(r => r.success).length;
+    const totalEnrollments = enrollmentResults.length;
+
+    return NextResponse.json({
+      success: true,
+      message: `Paiement réussi. Commande Woo #${wooOrder?.id}. Inscriptions ${successfulEnrollments}/${totalEnrollments}.`,
+      data: {
+        user_id: wpUser.id,
+        email,
+        woo_order_id: wooOrder?.id,
+        payment_intent_id: paymentIntentId,
+        enrollments: enrollmentResults
+      }
+    });
 
   } catch (error) {
     console.error('❌ Payment success processing error:', error);
