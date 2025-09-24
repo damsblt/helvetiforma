@@ -66,39 +66,103 @@ export async function POST(request: NextRequest) {
     
     console.log('✅ Payment verified:', paymentIntent.id);
 
-    // Step 2: Create WooCommerce customer and order
-    console.log('📦 Creating WooCommerce customer and order...');
-    
-    // First, create WooCommerce customer
-    let customerId;
+    // Step 2: Ensure WordPress subscriber exists (before Woo)
+    console.log('👤 Ensuring WordPress subscriber exists...');
+    const usernameBase = (userData.email as string).split('@')[0];
+    const username = `${usernameBase}_${Date.now()}`;
+    const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
+    const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
+
+    // Try find WP user by email
+    let wpUser: any = null;
     try {
-      const customerResponse = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers`, {
+      const findRes = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users?search=${encodeURIComponent(userData.email)}&context=edit`, {
+        headers: { 'Authorization': wpAuth }
+      });
+      if (findRes.ok) {
+        const list = await findRes.json();
+        wpUser = Array.isArray(list) ? list.find((u: any) => u.email === userData.email) : null;
+      }
+    } catch {}
+
+    if (!wpUser) {
+      console.log('➡️ Creating WP user (subscriber)...');
+      const tempPassword = generatePassword();
+      const createRes = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Basic ${wooAuth}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': wpAuth, 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          username,
           email: userData.email,
+          password: tempPassword,
           first_name: userData.firstName,
           last_name: userData.lastName,
-          username: userData.email.split('@')[0] + '_' + Date.now()
+          name: `${userData.firstName} ${userData.lastName}`,
+          roles: ['subscriber'],
+          send_user_notification: false
         })
       });
-
-      if (customerResponse.ok) {
-        const customerData = await customerResponse.json();
-        customerId = customerData.id;
-        console.log('✅ WooCommerce customer created:', customerId);
-      } else {
-        const errorData = await customerResponse.json().catch(() => ({}));
-        console.error('❌ WooCommerce customer creation failed:', errorData);
-        throw new Error('Failed to create WooCommerce customer');
+      if (!createRes.ok) {
+        const err = await createRes.json().catch(() => ({}));
+        console.error('❌ WP user creation failed:', err);
+        throw new Error('WordPress subscriber creation failed');
       }
-    } catch (error) {
-      console.error('❌ Error creating WooCommerce customer:', error);
+      wpUser = await createRes.json();
+      console.log('✅ WP user created:', wpUser.id);
+    } else {
+      console.log('✅ WP user found:', wpUser.id);
+    }
+
+    // Guard 1: Ensure role is subscriber
+    await ensureSubscriberRole(wpUser.id);
+
+    // Step 3: Ensure Woo customer exists and is linked to WP user
+    console.log('📦 Ensuring Woo customer linked to WP user...');
+    let customerId: number | undefined = undefined;
+    try {
+      // Lookup by email first
+      const lookup = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers?email=${encodeURIComponent(userData.email)}`, {
+        headers: { 'Authorization': `Basic ${wooAuth}` }
+      });
+      if (lookup.ok) {
+        const arr = await lookup.json();
+        if (Array.isArray(arr) && arr.length > 0) {
+          customerId = arr[0].id;
+          // Link to WP user if not already
+          if (!arr[0].user_id || arr[0].user_id !== wpUser.id) {
+            await linkWooCommerceCustomerToWordPressUser(customerId!, wpUser.id, wooAuth);
+          }
+        }
+      }
+      if (!customerId) {
+        const createCustomer = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers`, {
+          method: 'POST',
+          headers: { 'Authorization': `Basic ${wooAuth}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: userData.email,
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            user_id: wpUser.id,
+            username: username
+          })
+        });
+        if (createCustomer.ok) {
+          const c = await createCustomer.json();
+          customerId = c.id;
+          console.log('✅ WooCommerce customer ensured:', customerId);
+        } else {
+          const e = await createCustomer.json().catch(() => ({}));
+          console.error('❌ Woo customer ensure failed:', e);
+          throw new Error('WooCommerce customer creation failed');
+        }
+      }
+    } catch (e) {
+      console.error('❌ Error ensuring Woo customer:', e);
       throw new Error('WooCommerce customer creation failed');
     }
+
+    // Guard 2: After Woo customer link, ensure subscriber role is preserved
+    await ensureSubscriberRoleWithCustomer(wpUser.id);
 
     // Create WooCommerce order
     console.log('📊 Cart data for order creation:', {
@@ -178,49 +242,10 @@ export async function POST(request: NextRequest) {
       throw new Error('WooCommerce order creation failed');
     }
 
-    // Step 3: Create WordPress subscriber (separate from WooCommerce customer)
-    console.log('👤 Creating WordPress subscriber...');
-    const username = userData.email.split('@')[0] + '_' + Date.now();
-    const tempPassword = generatePassword();
-    const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
-    const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
+    // wpUser already ensured above
 
-    let wpUser;
-    try {
-      // Create WordPress user without password (will use password reset)
-      const wpUserResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users`, {
-        method: 'POST',
-        headers: { 'Authorization': wpAuth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username,
-          email: userData.email,
-          password: tempPassword,
-          first_name: userData.firstName,
-          last_name: userData.lastName,
-          name: `${userData.firstName} ${userData.lastName}`,
-          roles: ['subscriber'],
-          send_user_notification: false // Don't send default WordPress email
-        })
-      });
-
-      if (wpUserResponse.ok) {
-        wpUser = await wpUserResponse.json();
-        console.log('✅ WordPress subscriber created:', wpUser.id);
-        
-        // Ensure role is subscriber (some installs flip to customer)
-        await ensureSubscriberRole(wpUser.id);
-
-        // Link WooCommerce customer to WordPress user (after role is fixed)
-        await linkWooCommerceCustomerToWordPressUser(customerId, wpUser.id, wooAuth);
-      } else {
-        const errorData = await wpUserResponse.json().catch(() => ({}));
-        console.error('❌ WordPress subscriber creation failed:', errorData);
-        throw new Error('Failed to create WordPress subscriber');
-      }
-    } catch (error) {
-      console.error('❌ Error creating WordPress subscriber:', error);
-      throw new Error('WordPress subscriber creation failed');
-    }
+    // Guard 3: Just before enrollment, ensure subscriber role is still present
+    await ensureSubscriberRoleBeforeEnrollment(wpUser.id);
 
     // Step 4: Approve user as Tutor LMS student
     console.log('🎓 Approving user as Tutor LMS student...');
@@ -439,6 +464,80 @@ async function ensureSubscriberRole(userId: number): Promise<void> {
     }
   } catch (error) {
     console.error('❌ Error ensuring subscriber role:', error);
+  }
+}
+
+// Ensure WordPress user has both subscriber and customer roles (after Woo link)
+async function ensureSubscriberRoleWithCustomer(userId: number): Promise<void> {
+  try {
+    console.log(`🔧 Ensuring WordPress user ${userId} has roles ['subscriber', 'customer']...`);
+    const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
+    const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
+
+    const response = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': wpAuth,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        roles: ['subscriber', 'customer']
+      })
+    });
+
+    if (response.ok) {
+      console.log('✅ User roles set to [subscriber, customer]');
+    } else {
+      const body = await response.json().catch(() => ({} as any));
+      console.warn('⚠️ Failed to set user roles to [subscriber, customer]', body);
+    }
+  } catch (error) {
+    console.error('❌ Error ensuring subscriber+customer roles:', error);
+  }
+}
+
+// Final check before enrollment - ensure subscriber role is present
+async function ensureSubscriberRoleBeforeEnrollment(userId: number): Promise<void> {
+  try {
+    console.log(`🔧 Final check: ensuring WordPress user ${userId} has subscriber role before enrollment...`);
+    const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
+    const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
+
+    // Fetch current roles
+    const getRes = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/${userId}?context=edit`, {
+      method: 'GET',
+      headers: { 'Authorization': wpAuth }
+    });
+    const current = await getRes.json().catch(() => ({} as any));
+    const currentRoles = current?.roles || [];
+    console.log('Final check - Current WP user roles:', currentRoles);
+
+    // If subscriber is missing, add it back
+    if (!currentRoles.includes('subscriber')) {
+      console.log('⚠️ Subscriber role missing, adding it back...');
+      const newRoles = [...currentRoles, 'subscriber'];
+      const response = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': wpAuth,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          roles: newRoles
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Subscriber role restored:', newRoles);
+      } else {
+        const body = await response.json().catch(() => ({} as any));
+        console.warn('⚠️ Failed to restore subscriber role', body);
+      }
+    } else {
+      console.log('✅ Subscriber role confirmed present');
+    }
+  } catch (error) {
+    console.error('❌ Error in final subscriber role check:', error);
   }
 }
 
