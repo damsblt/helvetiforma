@@ -31,10 +31,25 @@ export async function POST(request: NextRequest) {
       });
       if (!create.ok) {
         const e = await create.json().catch(() => ({}));
-        return NextResponse.json({ success: false, error: 'Woo customer create failed', details: e }, { status: create.status });
+        // If email exists, re-lookup and reuse instead of failing
+        if (e?.code === 'registration-error-email-exists') {
+          const relook = await fetch(`${WORDPRESS_URL}/wp-json/wc/v3/customers?email=${encodeURIComponent(email)}`, {
+            headers: { 'Authorization': `Basic ${wooAuth}` }
+          });
+          if (relook.ok) {
+            const arr = await relook.json();
+            if (Array.isArray(arr) && arr.length > 0) {
+              customerId = arr[0].id;
+            }
+          }
+        }
+        if (!customerId) {
+          return NextResponse.json({ success: false, error: 'Woo customer create failed', details: e }, { status: create.status });
+        }
+      } else {
+        const c = await create.json();
+        customerId = c.id;
       }
-      const c = await create.json();
-      customerId = c.id;
     }
 
     const orderData = {
