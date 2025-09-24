@@ -1,0 +1,68 @@
+{
+  "cases": [
+    {
+      "name": "single_course_purchase",
+      "request": {
+        "paymentIntentId": "pi_test_single_12345",
+        "cartData": {
+          "items": [
+            {
+              "product_id": 300,
+              "course_id": 299,
+              "name": "Impôt à la source - Test",
+              "price": 500,
+              "total": 500,
+              "quantity": 1
+            }
+          ],
+          "total": 500,
+          "currency": "CHF",
+          "item_count": 1
+        },
+        "userData": {
+          "firstName": "Test",
+          "lastName": "User",
+          "email": "test_user+single@helvetiforma.ch",
+          "paymentMethod": "stripe"
+        }
+      }
+    },
+    {
+      "name": "multi_course_purchase",
+      "request": {
+        "paymentIntentId": "pi_test_multi_67890",
+        "cartData": {
+          "items": [
+            {
+              "product_id": 300,
+              "course_id": 299,
+              "name": "Impôt à la source - Test",
+              "price": 500,
+              "total": 500,
+              "quantity": 1
+            },
+            {
+              "product_id": 301,
+              "course_id": 302,
+              "name": "Deuxième formation (exemple)",
+              "price": 200,
+              "total": 200,
+              "quantity": 1
+            }
+          ],
+          "total": 700,
+          "currency": "CHF",
+          "item_count": 2
+        },
+        "userData": {
+          "firstName": "Test",
+          "lastName": "Multi",
+          "email": "test_user+multi@helvetiforma.ch",
+          "paymentMethod": "stripe"
+        }
+      }
+    }
+  ]
+}
+
+
