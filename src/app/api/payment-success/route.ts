@@ -670,47 +670,88 @@ async function approveEnrollment(enrollmentId: number | string, userId: number, 
   try {
     console.log(`🎓 Approving enrollment ${enrollmentId} for user ${userId} in course ${courseId}...`);
     
-    // Try to update enrollment status to completed/approved
-    const updateData = {
+    // Preferred endpoint per Tutor LMS docs: mark enrollment completed
+    const completeData = { enrollment_id: enrollmentId } as any;
+
+    // Try with Tutor API first: PUT /wp-json/tutor/v1/enrollments/completed
+    if (TUTOR_CLIENT_ID && TUTOR_SECRET_KEY) {
+      try {
+        const auth = `Basic ${Buffer.from(`${TUTOR_CLIENT_ID}:${TUTOR_SECRET_KEY}`).toString('base64')}`;
+        const response = await fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments/completed`, {
+          method: 'PUT',
+          headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
+          body: JSON.stringify(completeData)
+        });
+
+        if (response.ok) {
+          console.log(`✅ Enrollment ${enrollmentId} marked completed via Tutor API /completed`);
+          return;
+        }
+      } catch (error) {
+        console.log(`⚠️ Tutor API /completed endpoint failed:`, error);
+      }
+    }
+
+    // Fallback 1: Try with WordPress App Password on /completed
+    if (process.env.WORDPRESS_APP_PASSWORD) {
+      try {
+        const auth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${process.env.WORDPRESS_APP_PASSWORD}`).toString('base64')}`;
+        const response = await fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/enrollments/completed`, {
+          method: 'PUT',
+          headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
+          body: JSON.stringify(completeData)
+        });
+
+        if (response.ok) {
+          console.log(`✅ Enrollment ${enrollmentId} marked completed via WP App Password /completed`);
+          return;
+        }
+      } catch (error) {
+        console.log(`⚠️ WP App Password /completed endpoint failed:`, error);
+      }
+    }
+
+    // Fallback 2: Legacy endpoint updating status directly (if /completed is unavailable)
+    const legacyUpdate = {
       status: 'completed',
       enrolled_date: new Date().toISOString()
     };
 
-    // Try with Tutor API first
+    // Try with Tutor API legacy endpoint
     if (TUTOR_CLIENT_ID && TUTOR_SECRET_KEY) {
       try {
         const auth = `Basic ${Buffer.from(`${TUTOR_CLIENT_ID}:${TUTOR_SECRET_KEY}`).toString('base64')}`;
         const response = await fetch(`${TUTOR_API_URL}/wp-json/tutor/v1/enrollments/${enrollmentId}`, {
           method: 'PUT',
           headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
-          body: JSON.stringify(updateData)
+          body: JSON.stringify(legacyUpdate)
         });
 
         if (response.ok) {
-          console.log(`✅ Enrollment ${enrollmentId} approved via Tutor API`);
+          console.log(`✅ Enrollment ${enrollmentId} approved via Tutor API legacy endpoint`);
           return;
         }
       } catch (error) {
-        console.log(`⚠️ Tutor API enrollment approval failed:`, error);
+        console.log(`⚠️ Tutor API legacy approval failed:`, error);
       }
     }
 
-    // Fallback: Try with WordPress App Password
+    // Fallback 3: Legacy endpoint via WP App Password
     if (process.env.WORDPRESS_APP_PASSWORD) {
       try {
         const auth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${process.env.WORDPRESS_APP_PASSWORD}`).toString('base64')}`;
         const response = await fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/enrollments/${enrollmentId}`, {
           method: 'PUT',
           headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
-          body: JSON.stringify(updateData)
+          body: JSON.stringify(legacyUpdate)
         });
 
         if (response.ok) {
-          console.log(`✅ Enrollment ${enrollmentId} approved via WP App Password`);
+          console.log(`✅ Enrollment ${enrollmentId} approved via WP App Password legacy endpoint`);
           return;
         }
       } catch (error) {
-        console.log(`⚠️ WP App Password enrollment approval failed:`, error);
+        console.log(`⚠️ WP App Password legacy approval failed:`, error);
       }
     }
 
