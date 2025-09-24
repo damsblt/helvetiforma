@@ -207,6 +207,9 @@ export async function POST(request: NextRequest) {
         
         // Link WooCommerce customer to WordPress user
         await linkWooCommerceCustomerToWordPressUser(customerId, wpUser.id, wooAuth);
+
+        // Ensure role is subscriber (Woo may set customer)
+        await ensureSubscriberRole(wpUser.id);
       } else {
         const errorData = await wpUserResponse.json().catch(() => ({}));
         console.error('❌ WordPress subscriber creation failed:', errorData);
@@ -398,6 +401,35 @@ async function safeJson(res: Response): Promise<any> {
 
 function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Ensure WordPress user has subscriber role
+async function ensureSubscriberRole(userId: number): Promise<void> {
+  try {
+    console.log(`🔧 Ensuring WordPress user ${userId} has role 'subscriber'...`);
+    const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
+    const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
+
+    const response = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': wpAuth,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        roles: ['subscriber']
+      })
+    });
+
+    if (response.ok) {
+      console.log('✅ User role set to subscriber');
+    } else {
+      const body = await response.json().catch(() => ({} as any));
+      console.warn('⚠️ Failed to set user role to subscriber', body);
+    }
+  } catch (error) {
+    console.error('❌ Error ensuring subscriber role:', error);
+  }
 }
 
 // Function to link WooCommerce customer to WordPress user
