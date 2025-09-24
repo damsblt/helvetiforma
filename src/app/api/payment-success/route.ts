@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
           first_name: userData.firstName,
           last_name: userData.lastName,
           name: `${userData.firstName} ${userData.lastName}`,
-          role: 'subscriber',
+          roles: ['subscriber'],
           send_user_notification: false // Don't send default WordPress email
         })
       });
@@ -205,11 +205,11 @@ export async function POST(request: NextRequest) {
         wpUser = await wpUserResponse.json();
         console.log('✅ WordPress subscriber created:', wpUser.id);
         
-        // Link WooCommerce customer to WordPress user
-        await linkWooCommerceCustomerToWordPressUser(customerId, wpUser.id, wooAuth);
-
-        // Ensure role is subscriber (Woo may set customer)
+        // Ensure role is subscriber (some installs flip to customer)
         await ensureSubscriberRole(wpUser.id);
+
+        // Link WooCommerce customer to WordPress user (after role is fixed)
+        await linkWooCommerceCustomerToWordPressUser(customerId, wpUser.id, wooAuth);
       } else {
         const errorData = await wpUserResponse.json().catch(() => ({}));
         console.error('❌ WordPress subscriber creation failed:', errorData);
@@ -409,6 +409,14 @@ async function ensureSubscriberRole(userId: number): Promise<void> {
     console.log(`🔧 Ensuring WordPress user ${userId} has role 'subscriber'...`);
     const appPw = process.env.WORDPRESS_APP_PASSWORD || '';
     const wpAuth = `Basic ${Buffer.from(`${WORDPRESS_APP_USER}:${appPw}`).toString('base64')}`;
+
+    // First fetch current roles
+    const getRes = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/${userId}`, {
+      method: 'GET',
+      headers: { 'Authorization': wpAuth }
+    });
+    const current = await getRes.json().catch(() => ({} as any));
+    console.log('Current WP user roles:', current?.roles);
 
     const response = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/${userId}`, {
       method: 'POST',
