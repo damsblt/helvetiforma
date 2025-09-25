@@ -28,6 +28,10 @@ export async function GET(request: NextRequest) {
 
     // Transform the data to include course information
     const transformedProducts = courseProducts.map((product: any) => {
+      const priceFromMeta = product.meta_data?.find((m: any) => m.key === '_price')?.value
+        || product.meta_data?.find((m: any) => m.key === '_regular_price')?.value
+        || product.meta_data?.find((m: any) => m.key === '_course_price')?.value
+        || '';
       const tutorCourseId = product.meta_data?.find((meta: any) => 
         meta.key === '_tutor_course_id'
       )?.value || product.id; // Use product ID as fallback
@@ -43,7 +47,7 @@ export async function GET(request: NextRequest) {
       return {
         id: product.id,
         name: product.name,
-        price: product.regular_price,
+        price: product.regular_price || priceFromMeta,
         description: product.description,
         short_description: product.short_description,
         images: product.images,

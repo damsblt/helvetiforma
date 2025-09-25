@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/services/authService';
 
-function LoginForm() {
+function AdminLoginForm() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -14,9 +14,21 @@ function LoginForm() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Redirect canonical /login to admin-login to avoid confusion
-    window.location.href = '/admin-login';
-  }, []);
+    // If already authenticated, go to redirect or home
+    if (authService.isAuthenticated()) {
+      const redirectTo = searchParams.get('redirect') || '/';
+      router.push(redirectTo);
+      return;
+    }
+
+    // Optional informational messages
+    const urlMessage = searchParams.get('message');
+    if (urlMessage === 'admin_required') {
+      setMessage('Accès administrateur requis pour cette page');
+    } else if (urlMessage === 'login_required') {
+      setMessage('Veuillez vous connecter pour accéder à cette page');
+    }
+  }, [router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,37 +37,29 @@ function LoginForm() {
 
     try {
       const response = await authService.login({ identifier, password });
-      
       if (response.success) {
-        // Smart redirect logic
         const redirectTo = searchParams.get('redirect');
         const referrer = document.referrer;
-        
-        // Priority: 1. URL parameter, 2. Referrer (if not from same domain), 3. Home
         let finalRedirect = '/';
-        
         if (redirectTo) {
           finalRedirect = redirectTo;
         } else if (referrer && !referrer.includes(window.location.origin)) {
-          // If user came from external site or different page, go to home
           finalRedirect = '/';
         } else if (referrer && referrer.includes(window.location.origin)) {
-          // If user came from same site, try to go back
           try {
-            const referrerUrl = new URL(referrer);
-            if (referrerUrl.pathname !== '/login' && referrerUrl.pathname !== '/construction') {
-              finalRedirect = referrerUrl.pathname;
+            const refUrl = new URL(referrer);
+            if (refUrl.pathname !== '/admin-login' && refUrl.pathname !== '/construction') {
+              finalRedirect = refUrl.pathname;
             }
-          } catch (e) {
+          } catch {
             finalRedirect = '/';
           }
         }
-        
         router.push(finalRedirect);
       } else {
         setError(response.message || 'Identifiants incorrects');
       }
-    } catch (error) {
+    } catch {
       setError('Erreur lors de la connexion');
     } finally {
       setIsLoading(false);
@@ -70,12 +74,8 @@ function LoginForm() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Connexion
-          </h2>
-          <p className="text-gray-600">
-            Accédez à votre espace HelvetiForma
-          </p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Connexion administrateur</h2>
+          <p className="text-gray-600">Accédez au panneau d'administration</p>
         </div>
       </div>
 
@@ -89,9 +89,7 @@ function LoginForm() {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">
-                Email ou nom d'utilisateur
-              </label>
+              <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">Email ou nom d'utilisateur</label>
               <div className="mt-1">
                 <input
                   id="identifier"
@@ -107,9 +105,7 @@ function LoginForm() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Mot de passe
-              </label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Mot de passe</label>
               <div className="mt-1">
                 <input
                   id="password"
@@ -131,22 +127,12 @@ function LoginForm() {
             )}
 
             <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={handleBackToConstruction}
-                className="text-sm text-gray-600 hover:text-gray-500"
-              >
-                ← Retour au site en construction
-              </button>
+              <button type="button" onClick={handleBackToConstruction} className="text-sm text-gray-600 hover:text-gray-500">← Retour au site en construction</button>
             </div>
 
             <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Connexion...' : 'Se connecter'}
+              <button type="submit" disabled={isLoading} className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed">
+                {isLoading ? 'Connexion…' : 'Se connecter'}
               </button>
             </div>
           </form>
@@ -157,17 +143,19 @@ function LoginForm() {
   );
 }
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirection vers l'espace administrateur…</p>
+          <p className="text-gray-600">Chargement…</p>
         </div>
       </div>
     }>
-      <LoginForm />
+      <AdminLoginForm />
     </Suspense>
   );
-} 
+}
+
+

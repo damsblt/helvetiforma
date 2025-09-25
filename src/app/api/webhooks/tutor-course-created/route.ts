@@ -101,17 +101,22 @@ export async function POST(request: NextRequest) {
       courseDetails = detailsData.data || {};
     }
 
-    // Check if WooCommerce product already exists for this course
-    const existingProducts = await wooCommerceService.getProducts({
-      per_page: 100
-    });
-    
-    // Filter products by meta data
-    const existingProduct = existingProducts.find((product: any) => 
-      product.meta_data?.some((meta: any) => 
-        meta.key === '_tutor_course_id' && meta.value === course_id.toString()
-      )
-    );
+    // Check if WooCommerce product already exists for this course (paginate up to 10 pages)
+    let existingProduct = null as any;
+    {
+      let page = 1;
+      const perPage = 100;
+      while (!existingProduct && page <= 10) {
+        const productsPage = await wooCommerceService.getProducts({ per_page: perPage, page });
+        if (!productsPage || productsPage.length === 0) break;
+        existingProduct = productsPage.find((product: any) => 
+          product.meta_data?.some((meta: any) => 
+            meta.key === '_tutor_course_id' && meta.value === course_id.toString()
+          )
+        );
+        page++;
+      }
+    }
 
     // Extract course details from meta and course details
     const courseDuration = courseMeta.meta?._course_duration || 
@@ -121,9 +126,13 @@ export async function POST(request: NextRequest) {
     const courseLevel = courseMeta.meta?._course_level || 
       (courseDetails as any).course_level?.[0] || 
       'Intermédiaire';
-    const coursePrice = courseMeta.meta?._course_price || 
-      tutorCourse.price || 
-      '0';
+    // Allow overriding price from webhook body (sent by mu-plugin)
+    let coursePrice = courseMeta.meta?._course_price || '0';
+    try {
+      if ((body as any)?.course_price !== undefined && (body as any)?.course_price !== null && (body as any)?.course_price !== '') {
+        coursePrice = String((body as any).course_price);
+      }
+    } catch {}
     const introVideo = courseMeta.meta?._intro_video || '';
     
     // Extract additional course attributes
@@ -162,8 +171,11 @@ export async function POST(request: NextRequest) {
       description: tutorCourse.content?.rendered || tutorCourse.description,
       short_description: tutorCourse.excerpt?.rendered || tutorCourse.short_description || '',
       status: tutorCourse.status === 'publish' ? 'publish' : 'draft',
+      type: 'simple',
       virtual: true,
       downloadable: false,
+      manage_stock: false,
+      catalog_visibility: 'visible',
       meta_data: [
         {
           key: '_tutor_course_id',
@@ -260,18 +272,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Set price if not free
-    if (coursePrice && coursePrice !== '0') {
-      productData.regular_price = coursePrice;
+    let sanitizedPrice = '';
+    if (typeof coursePrice === 'string') {
+      sanitizedPrice = coursePrice.replace(/[^0-9.,]/g, '').replace(',', '.');
+    }
+    if (sanitizedPrice) {
+      const numeric = parseFloat(sanitizedPrice);
+      if (Number.isFinite(numeric) && numeric >= 0) {
+        const fixed = numeric.toFixed(2);
+        productData.regular_price = fixed;
+        // Ensure WooCommerce meta also reflects price
+        productData.meta_data.push({ key: '_regular_price', value: fixed });
+        productData.meta_data.push({ key: '_price', value: fixed });
+      }
     }
 
-    // Add featured image if available
-    if (tutorCourse.featured_image) {
-      productData.images = [
-        {
-          src: tutorCourse.featured_image,
-          alt: tutorCourse.post_title
+    // Add featured image from WP featured media if available
+    if ((tutorCourse as any).featured_media) {
+      try {
+        const mediaResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/media/${(tutorCourse as any).featured_media}`);
+        if (mediaResponse.ok) {
+          const media = await mediaResponse.json();
+          const imageUrl = media.source_url;
+          if (imageUrl) {
+            productData.images = [
+              { src: imageUrl, alt: tutorCourse.title?.rendered || '' }
+            ];
+          }
         }
-      ];
+      } catch {}
     }
 
     let wooCommerceProduct;

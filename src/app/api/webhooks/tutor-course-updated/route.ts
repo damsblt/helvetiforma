@@ -22,33 +22,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use the same authentication method as working API endpoints
-    const tutorAuth = process.env.TUTOR_CLIENT_ID && process.env.TUTOR_SECRET_KEY
-      ? `Basic ${Buffer.from(`${process.env.TUTOR_CLIENT_ID}:${process.env.TUTOR_SECRET_KEY}`).toString('base64')}`
-      : `Basic ${Buffer.from(`gibivawa:${process.env.WORDPRESS_APP_PASSWORD || 'your-app-password'}`).toString('base64')}`;
-
-    // Get course details from Tutor LMS using the working approach
-    const tutorResponse = await fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/courses`, {
-      headers: {
-        'Authorization': tutorAuth,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!tutorResponse.ok) {
+    // Fetch course via public WordPress REST (no extra auth required)
+    const wpCourseResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/courses/${course_id}`);
+    if (!wpCourseResponse.ok) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Course not found in Tutor LMS',
-          message: 'Cours non trouvé dans Tutor LMS'
+          error: 'Course not found in WordPress',
+          message: 'Cours non trouvé dans WordPress'
         },
         { status: 404 }
       );
     }
-
-    const coursesData = await tutorResponse.json();
-    const courses = coursesData.data?.posts || [];
-    const tutorCourse = courses.find((c: any) => c.ID == course_id);
+    const tutorCourse = await wpCourseResponse.json();
 
     if (!tutorCourse) {
       return NextResponse.json(
@@ -65,41 +51,40 @@ export async function POST(request: NextRequest) {
     const metaResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/posts/${course_id}`);
     const courseMeta = metaResponse.ok ? await metaResponse.json() : {};
 
-    // Get detailed course information from TutorLMS API
-    const detailsResponse = await fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/courses/${course_id}`, {
-      headers: {
-        'Authorization': tutorAuth,
-        'Content-Type': 'application/json'
+    // Optional: Try Tutor endpoint for extra details, but don't fail if unauthorized
+    let courseDetails = {} as any;
+    try {
+      const detailsResponse = await fetch(`${WORDPRESS_URL}/wp-json/tutor/v1/courses/${course_id}`);
+      if (detailsResponse.ok) {
+        const detailsData = await detailsResponse.json();
+        courseDetails = detailsData.data || {};
       }
-    });
-    
-    let courseDetails = {};
-    if (detailsResponse.ok) {
-      const detailsData = await detailsResponse.json();
-      courseDetails = detailsData.data || {};
+    } catch {}
+
+    // Small delay to ensure WP saved meta
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Check if WooCommerce product already exists for this course (paginate up to 10 pages)
+    let existingProduct = null as any;
+    {
+      let page = 1;
+      const perPage = 100;
+      while (!existingProduct && page <= 10) {
+        const productsPage = await wooCommerceService.getProducts({ per_page: perPage, page });
+        if (!productsPage || productsPage.length === 0) break;
+        existingProduct = productsPage.find((product: any) => 
+          product.meta_data?.some((meta: any) => 
+            meta.key === '_tutor_course_id' && meta.value === course_id.toString()
+          )
+        );
+        page++;
+      }
     }
 
-    // Check if WooCommerce product already exists for this course
-    const existingProducts = await wooCommerceService.getProducts({
-      per_page: 100
-    });
-    
-    // Filter products by meta data
-    const existingProduct = existingProducts.find((product: any) => 
-      product.meta_data?.some((meta: any) => 
-        meta.key === '_tutor_course_id' && meta.value === course_id.toString()
-      )
-    );
-
+    // If no product exists yet, create it on update as well
+    let isCreating = false;
     if (!existingProduct) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'No WooCommerce product found for this course',
-          message: 'Aucun produit WooCommerce trouvé pour ce cours'
-        },
-        { status: 404 }
-      );
+      isCreating = true;
     }
 
     // Extract course details from meta and course details
@@ -110,9 +95,12 @@ export async function POST(request: NextRequest) {
     const courseLevel = courseMeta.meta?._course_level || 
       (courseDetails as any).course_level?.[0] || 
       'Intermédiaire';
-    const coursePrice = courseMeta.meta?._course_price || 
-      tutorCourse.price || 
-      '0';
+    // Allow overriding price from webhook body (sent by mu-plugin)
+    let coursePrice = courseMeta.meta?._course_price || '0';
+    if ((body as any)?.course_price !== undefined && (body as any)?.course_price !== null && (body as any)?.course_price !== '') {
+      coursePrice = String((body as any).course_price);
+    }
+    const coursePriceTypeOverride = (body as any)?.course_price_type ? String((body as any).course_price_type) : '';
     const introVideo = courseMeta.meta?._intro_video || '';
     
     // Extract additional course attributes
@@ -147,12 +135,15 @@ export async function POST(request: NextRequest) {
 
     // Create WooCommerce product data for update
     const productData: any = {
-      name: tutorCourse.post_title,
-      description: tutorCourse.post_content,
-      short_description: tutorCourse.post_excerpt || tutorCourse.post_content?.substring(0, 160) || '',
-      status: tutorCourse.post_status === 'publish' ? 'publish' : 'draft',
+      name: tutorCourse.title?.rendered || tutorCourse.title || '',
+      description: tutorCourse.content?.rendered || '',
+      short_description: tutorCourse.excerpt?.rendered || (tutorCourse.content?.rendered || '').replace(/<[^>]*>/g, '').slice(0, 160),
+      status: tutorCourse.status === 'publish' ? 'publish' : 'draft',
+      type: 'simple',
       virtual: true,
       downloadable: false,
+      manage_stock: false,
+      catalog_visibility: 'visible',
       meta_data: [
         {
           key: '_tutor_course_id',
@@ -248,23 +239,47 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Set price if not free
-    if (coursePrice && coursePrice !== '0') {
-      productData.regular_price = coursePrice;
+    // Decide price from override or meta
+    const effectivePriceType = coursePriceTypeOverride || (courseMeta.meta?._course_price_type || '');
+    let sanitizedPrice = '';
+    if (typeof coursePrice === 'string') {
+      sanitizedPrice = coursePrice.replace(/[^0-9.,]/g, '').replace(',', '.');
+    }
+    if (effectivePriceType && effectivePriceType.toLowerCase().includes('free')) {
+      productData.regular_price = '0.00';
+      productData.sale_price = '';
+      productData.meta_data = [...(productData.meta_data || []), { key: '_regular_price', value: '0.00' }, { key: '_price', value: '0.00' }];
+    } else if (sanitizedPrice) {
+      const numeric = parseFloat(sanitizedPrice);
+      if (Number.isFinite(numeric) && numeric >= 0) {
+        const fixed = numeric.toFixed(2);
+        productData.regular_price = fixed;
+        productData.sale_price = '';
+        productData.meta_data = [...(productData.meta_data || []), { key: '_regular_price', value: fixed }, { key: '_price', value: fixed }];
+      }
     }
 
     // Add featured image if available
-    if (tutorCourse.featured_image) {
-      productData.images = [
-        {
-          src: tutorCourse.featured_image,
-          alt: tutorCourse.post_title
+    // Featured image: try WP REST featured media
+    if (tutorCourse.featured_media) {
+      try {
+        const mediaResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/media/${tutorCourse.featured_media}`);
+        if (mediaResponse.ok) {
+          const media = await mediaResponse.json();
+          const imageUrl = media.source_url;
+          if (imageUrl) {
+            productData.images = [
+              { src: imageUrl, alt: tutorCourse.title?.rendered || '' }
+            ];
+          }
         }
-      ];
+      } catch {}
     }
 
-    // Update existing product
-    const wooCommerceProduct = await wooCommerceService.updateProduct(existingProduct.id, productData);
+    // Create or update product
+    const wooCommerceProduct = isCreating
+      ? await wooCommerceService.createProduct(productData)
+      : await wooCommerceService.updateProduct(existingProduct.id, productData);
 
     // Trigger frontend revalidation
     try {
