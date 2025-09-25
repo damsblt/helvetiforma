@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+import React from 'react';
 import WpFullScreenIframe from '@/components/WpFullScreenIframe';
 
 export default function WpCourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
