@@ -55,9 +55,6 @@ export default function CourseDetailsPage() {
         setIsLoading(true);
         setError(null);
 
-        // Find the specific course by ID
-        const courseId = parseInt(params.id as string);
-        
         // Fetch course data from WooCommerce
         const response = await fetch('/api/woocommerce/courses-with-content');
         const result = await response.json();
@@ -67,9 +64,28 @@ export default function CourseDetailsPage() {
           setIsLoading(false);
           return;
         }
-        const wooCommerceProduct = result.data.find((p: any) => 
-          p.tutor_course_id == courseId || p.id == courseId
-        );
+        const idOrSlug = String(params.id);
+        const isNumeric = /^\d+$/.test(idOrSlug);
+
+        let wooCommerceProduct = null;
+        if (isNumeric) {
+          const courseId = parseInt(idOrSlug);
+          wooCommerceProduct = result.data.find((p: any) => 
+            p?.tutor_course_id == courseId || p?.id == courseId || p?.product_id == courseId
+          );
+        } else {
+          const slug = idOrSlug.toLowerCase();
+          wooCommerceProduct = result.data.find((p: any) => {
+            const candidateSlug = (p?.course_slug || p?.slug || (p?.permalink ? String(p.permalink).split('/').filter(Boolean).pop() : null) || '')
+              .toLowerCase();
+            const nameAsSlug = (p?.name || '')
+              .toLowerCase()
+              .replace(/[^a-z0-9\s-]/g, '')
+              .replace(/\s+/g, '-')
+              .replace(/-+/g, '-');
+            return candidateSlug === slug || nameAsSlug === slug;
+          });
+        }
 
         if (!wooCommerceProduct) {
           setError('Formation non trouvée');
@@ -78,12 +94,14 @@ export default function CourseDetailsPage() {
         }
 
         // Create course object from WooCommerce data
+        const resolvedCourseId: number = (wooCommerceProduct.tutor_course_id ?? wooCommerceProduct.id ?? 0) as number;
+
         const courseData: Course = {
-          id: courseId,
+          id: resolvedCourseId,
           title: wooCommerceProduct.name,
           content: wooCommerceProduct.description || '',
           excerpt: wooCommerceProduct.short_description || '',
-          slug: wooCommerceProduct.course_slug || wooCommerceProduct.name.toLowerCase().replace(/\s+/g, '-'),
+          slug: (wooCommerceProduct.course_slug || wooCommerceProduct.slug || (wooCommerceProduct.permalink ? String(wooCommerceProduct.permalink).split('/').filter(Boolean).pop() : null) || wooCommerceProduct.name.toLowerCase().replace(/\s+/g, '-')),
           status: 'publish',
           date: new Date().toISOString(),
           modified: new Date().toISOString(),
