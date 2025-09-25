@@ -35,4 +35,16 @@ add_action('init', function () {
   }
 });
 
+// Also add a top-level REST field "product_id" for easy consumption
+add_action('rest_api_init', function () {
+  foreach (['courses', 'tutor_course'] as $post_type) {
+    register_rest_field($post_type, 'product_id', [
+      'get_callback' => function ($object) {
+        return (int) get_post_meta((int) $object['id'], '_tutor_course_product_id', true);
+      },
+      'schema' => [ 'type' => 'integer', 'context' => ['view'] ],
+    ]);
+  }
+});
+
 
