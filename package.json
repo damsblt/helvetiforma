@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "next lint",
     "deploy:gh-pages": "npm run build:static && touch out/.nojekyll",
-    "deploy:netlify": "npm run build:netlify"
+    "deploy:netlify": "npm run build:netlify",
+    "generate:logo": "tsx src/scripts/generate-helvetiforma-png.ts"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@resvg/resvg-js": "^2.6.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -43,7 +45,10 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "postcss": "^8.5.6",
+    "sharp": "^0.34.4",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.5",
     "typescript": "^5"
   }
 }
