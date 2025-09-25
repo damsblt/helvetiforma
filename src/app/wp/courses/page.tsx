@@ -1,12 +1,12 @@
 export const dynamic = 'force-dynamic';
 
-import WpFullScreenIframe from '@/components/WpFullScreenIframe';
+import WpEmbeddedIframe from '@/components/WpEmbeddedIframe';
 
 export default function WpCoursesIndexPage() {
   const iframeSrc = 'https://api.helvetiforma.ch/courses/';
 
   return (
-    <WpFullScreenIframe src={iframeSrc} />
+    <WpEmbeddedIframe src={iframeSrc} />
   );
 }
 

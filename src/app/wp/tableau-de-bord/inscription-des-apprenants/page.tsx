@@ -1,12 +1,12 @@
 export const dynamic = 'force-dynamic';
 
-import WpFullScreenIframe from '@/components/WpFullScreenIframe';
+import WpEmbeddedIframe from '@/components/WpEmbeddedIframe';
 
 export default function WpStudentRegistrationPage() {
   const iframeSrc = 'https://api.helvetiforma.ch/tableau-de-bord/inscription-des-apprenants/';
 
   return (
-    <WpFullScreenIframe src={iframeSrc} />
+    <WpEmbeddedIframe src={iframeSrc} />
   );
 }
 
