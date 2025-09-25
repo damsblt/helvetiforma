@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
 
@@ -39,6 +39,7 @@ interface Course {
 
 export default function CourseDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const { addToCart } = useCart();
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +56,15 @@ export default function CourseDetailsPage() {
         setIsLoading(true);
         setError(null);
 
+        const idOrSlug = String(params.id);
+        const isNumeric = /^\d+$/.test(idOrSlug);
+
+        // If it's a slug, redirect to the embedded WP route to guarantee parity
+        if (!isNumeric) {
+          router.replace(`/wp/courses/${encodeURIComponent(idOrSlug)}`);
+          return;
+        }
+
         // Fetch course data from WooCommerce
         const response = await fetch('/api/woocommerce/courses-with-content');
         const result = await response.json();
@@ -64,28 +74,11 @@ export default function CourseDetailsPage() {
           setIsLoading(false);
           return;
         }
-        const idOrSlug = String(params.id);
-        const isNumeric = /^\d+$/.test(idOrSlug);
 
-        let wooCommerceProduct = null;
-        if (isNumeric) {
-          const courseId = parseInt(idOrSlug);
-          wooCommerceProduct = result.data.find((p: any) => 
-            p?.tutor_course_id == courseId || p?.id == courseId || p?.product_id == courseId
-          );
-        } else {
-          const slug = idOrSlug.toLowerCase();
-          wooCommerceProduct = result.data.find((p: any) => {
-            const candidateSlug = (p?.course_slug || p?.slug || (p?.permalink ? String(p.permalink).split('/').filter(Boolean).pop() : null) || '')
-              .toLowerCase();
-            const nameAsSlug = (p?.name || '')
-              .toLowerCase()
-              .replace(/[^a-z0-9\s-]/g, '')
-              .replace(/\s+/g, '-')
-              .replace(/-+/g, '-');
-            return candidateSlug === slug || nameAsSlug === slug;
-          });
-        }
+        const numericId = parseInt(idOrSlug);
+        const wooCommerceProduct = result.data.find((p: any) => (
+          p?.tutor_course_id == numericId || p?.id == numericId || p?.product_id == numericId
+        ));
 
         if (!wooCommerceProduct) {
           setError('Formation non trouvée');
@@ -93,7 +86,6 @@ export default function CourseDetailsPage() {
           return;
         }
 
-        // Create course object from WooCommerce data
         const resolvedCourseId: number = (wooCommerceProduct.tutor_course_id ?? wooCommerceProduct.id ?? 0) as number;
 
         const courseData: Course = {
