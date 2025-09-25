@@ -50,7 +50,7 @@
   "crons": [
     {
       "path": "/api/sync/course-prices",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 3 * * *"
     }
   ]
 }
