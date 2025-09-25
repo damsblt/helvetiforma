@@ -22,4 +22,17 @@ add_action('after_setup_theme', function () {
   ]);
 });
 
+// Expose Tutor LMS product ID via REST without a plugin (very lightweight)
+add_action('init', function () {
+  // Tutor commonly uses post type slug 'courses' (sometimes 'tutor_course'). Support both.
+  foreach (['courses', 'tutor_course'] as $post_type) {
+    register_post_meta($post_type, '_tutor_course_product_id', [
+      'type'          => 'integer',
+      'single'        => true,
+      'show_in_rest'  => true,
+      'auth_callback' => '__return_true', // public read-only
+    ]);
+  }
+});
+
 
