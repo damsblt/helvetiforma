@@ -46,5 +46,11 @@
       ]
     }
   ],
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "crons": [
+    {
+      "path": "/api/sync/course-prices",
+      "schedule": "*/10 * * * *"
+    }
+  ]
 }

@@ -82,29 +82,68 @@ export async function syncAllCoursePrices(): Promise<{ updated: number; skipped:
 
   const courseIdToProduct = await getAllProductsIndexedByCourseId();
 
-  // Iterate Tutor courses (up to a few pages)
-  for (let page = 1; page <= 10; page++) {
-    const courses = await fetchTutorCoursesPage(page);
-    if (courses.length === 0) break;
+  // Iterate Tutor courses (for price) and map by ID for quick lookup
+  const tutorPriceById = new Map<string, string>();
+  for (let p = 1; p <= 10; p++) {
+    const tCourses = await fetchTutorCoursesPage(p);
+    if (tCourses.length === 0) break;
+    for (const c of tCourses) {
+      const id = String((c as any).ID ?? (c as any).id ?? '');
+      if (!id) continue;
+      const price = sanitizePrice((c as any).price ?? c?.meta?._course_price ?? '');
+      if (price) tutorPriceById.set(id, price);
+    }
+  }
 
-    for (const course of courses) {
-      const courseId = String((course as any).ID ?? (course as any).id ?? '');
+  // Iterate WordPress courses for content/title/image/status mapping
+  for (let page = 1; page <= 10; page++) {
+    const wpRes = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/courses?page=${page}&per_page=50&_fields=id,title,content,excerpt,status,featured_media`);
+    if (!wpRes.ok) break;
+    const wpCourses: any[] = await wpRes.json();
+    if (!Array.isArray(wpCourses) || wpCourses.length === 0) break;
+
+    for (const wpCourse of wpCourses) {
+      const courseId = String(wpCourse.id ?? '');
       if (!courseId) { skipped++; continue; }
 
       const product = courseIdToProduct.get(courseId);
       if (!product) { missing++; continue; }
 
-      const priceRaw = (course as any).price ?? course?.meta?._course_price ?? '';
-      const price = sanitizePrice(priceRaw);
-      if (!price) { skipped++; continue; }
-
+      // Build update payload
       const updatePayload: any = {
-        regular_price: price,
+        name: wpCourse.title?.rendered || product.name,
+        description: wpCourse.content?.rendered ?? product.description ?? '',
+        short_description: wpCourse.excerpt?.rendered ?? product.short_description ?? '',
+        status: wpCourse.status === 'publish' ? 'publish' : 'draft',
+        type: 'simple',
+        virtual: true,
+        downloadable: false,
+        manage_stock: false,
+        catalog_visibility: 'visible',
         meta_data: [
-          { key: '_price', value: price },
-          { key: '_regular_price', value: price },
+          { key: '_tutor_course_id', value: courseId },
         ],
       };
+
+      // Featured image
+      try {
+        if (wpCourse.featured_media) {
+          const m = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/media/${wpCourse.featured_media}`);
+          if (m.ok) {
+            const media = await m.json();
+            const src = media?.source_url;
+            if (src) updatePayload.images = [{ src, alt: wpCourse.title?.rendered || '' }];
+          }
+        }
+      } catch {}
+
+      // Price
+      const price = tutorPriceById.get(courseId);
+      if (price) {
+        updatePayload.regular_price = price;
+        updatePayload.meta_data.push({ key: '_price', value: price });
+        updatePayload.meta_data.push({ key: '_regular_price', value: price });
+      }
 
       try {
         await wooCommerceService.updateProduct(product.id, updatePayload);
