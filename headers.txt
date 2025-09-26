@@ -1,0 +1,16 @@
+HTTP/2 302 
+expires: Wed, 11 Jan 1984 05:00:00 GMT
+cache-control: no-cache, must-revalidate, max-age=0, no-store, private
+x-frame-options: SAMEORIGIN
+referrer-policy: strict-origin-when-cross-origin
+x-redirect-by: WordPress
+set-cookie: wordpress_test_cookie=WP%20Cookie%20check; path=/; secure; HttpOnly
+set-cookie: wordpress_sec_65c93996b6e937e25d7792288882f48d=gibivawa%7C1759042628%7C9kNQlNy3TsqxDZAK9Y4pw9k6fomcRzhL5mKKTsnzTLo%7C42c98733679b862638ff5ce898434a05df387a76f015244c4dfe0843b43bbb21; path=/wp-content/plugins; secure; HttpOnly
+set-cookie: wordpress_sec_65c93996b6e937e25d7792288882f48d=gibivawa%7C1759042628%7C9kNQlNy3TsqxDZAK9Y4pw9k6fomcRzhL5mKKTsnzTLo%7C42c98733679b862638ff5ce898434a05df387a76f015244c4dfe0843b43bbb21; path=/wp-admin; secure; HttpOnly
+set-cookie: wordpress_logged_in_65c93996b6e937e25d7792288882f48d=gibivawa%7C1759042628%7C9kNQlNy3TsqxDZAK9Y4pw9k6fomcRzhL5mKKTsnzTLo%7C17721673efdac32c4b3faad1160b7efdc8dabdcf832632a0ddcf29533782e661; path=/; secure; HttpOnly
+location: https://api.helvetiforma.ch/wp-admin/
+content-length: 0
+content-type: text/html; charset=UTF-8
+date: Fri, 26 Sep 2025 06:57:07 GMT
+server: Apache
+

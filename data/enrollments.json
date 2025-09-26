@@ -1,0 +1,66 @@
+[
+  {
+    "id": "enrollment_180_3633_1758871827777",
+    "user_id": 180,
+    "course_id": 3633,
+    "status": "enrolled",
+    "enrolled_at": "2025-09-26T07:30:27.777Z",
+    "progress": 0
+  },
+  {
+    "id": "enrollment_180_3209_1758871842108",
+    "user_id": 180,
+    "course_id": 3209,
+    "status": "enrolled",
+    "enrolled_at": "2025-09-26T07:30:42.108Z",
+    "progress": 0
+  },
+  {
+    "id": "enrollment_182_3633_1758871936412",
+    "user_id": 182,
+    "course_id": 3633,
+    "status": "enrolled",
+    "enrolled_at": "2025-09-26T07:32:16.412Z",
+    "progress": 0
+  },
+  {
+    "id": "enrollment_182_3531_1758872513777",
+    "user_id": 182,
+    "course_id": 3531,
+    "status": "enrolled",
+    "enrolled_at": "2025-09-26T07:41:53.777Z",
+    "progress": 0
+  },
+  {
+    "id": "enrollment_182_3209_1758872534734",
+    "user_id": 182,
+    "course_id": 3209,
+    "status": "enrolled",
+    "enrolled_at": "2025-09-26T07:42:14.734Z",
+    "progress": 0
+  },
+  {
+    "id": "enrollment_183_3209_1758873328486",
+    "user_id": 183,
+    "course_id": 3209,
+    "status": "enrolled",
+    "enrolled_at": "2025-09-26T07:55:28.486Z",
+    "progress": 0
+  },
+  {
+    "id": "enrollment_183_3633_1758873410948",
+    "user_id": 183,
+    "course_id": 3633,
+    "status": "enrolled",
+    "enrolled_at": "2025-09-26T07:56:50.948Z",
+    "progress": 0
+  },
+  {
+    "id": "enrollment_183_3531_1758873492298",
+    "user_id": 183,
+    "course_id": 3531,
+    "status": "enrolled",
+    "enrolled_at": "2025-09-26T07:58:12.298Z",
+    "progress": 0
+  }
+]
