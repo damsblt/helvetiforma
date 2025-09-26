@@ -142,6 +142,11 @@ export default function FormationsPage() {
                     {!course.is_free && (
                       <CartButton
                         courseId={course.id}
+                        courseTitle={course.title}
+                        coursePrice={course.price || 0}
+                        courseSalePrice={course.sale_price}
+                        courseSlug={course.slug}
+                        courseFeaturedImage={course.featured_image}
                         className="text-green-600 hover:text-green-700 p-1"
                         showIcon={false}
                       >
