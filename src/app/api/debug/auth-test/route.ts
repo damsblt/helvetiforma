@@ -19,7 +19,7 @@ export async function GET() {
           headers: getAuthHeaders(),
         });
 
-        const result = {
+        const result: any = {
           endpoint,
           status: response.status,
           statusText: response.statusText,
@@ -62,7 +62,7 @@ export async function GET() {
       } catch (error) {
         results.push({
           endpoint,
-          status: 'ERROR',
+          status: 'ERROR' as any,
           error: error instanceof Error ? error.message : 'Network error',
           success: false
         });
