@@ -26,13 +26,15 @@ export async function GET() {
           headers: getAuthHeaders(),
         });
 
-        results.push({
+        const result: any = {
           endpoint,
           status: response.status,
           statusText: response.statusText,
           available: response.ok,
           contentType: response.headers.get('content-type'),
-        });
+        };
+        
+        results.push(result);
 
         // If it's a discovery endpoint, try to get the data
         if (response.ok && (endpoint.endsWith('/') || endpoint.includes('courses'))) {
@@ -40,9 +42,9 @@ export async function GET() {
             const data = await response.json();
             if (endpoint.endsWith('/')) {
               // Discovery endpoint - show available routes
-              results[results.length - 1].routes = Object.keys(data.routes || {}).slice(0, 10);
+              result.routes = Object.keys(data.routes || {}).slice(0, 10);
             } else if (Array.isArray(data)) {
-              results[results.length - 1].sampleCount = data.length;
+              result.sampleCount = data.length;
             }
           } catch (e) {
             // Ignore JSON parsing errors
@@ -51,7 +53,7 @@ export async function GET() {
       } catch (error) {
         results.push({
           endpoint,
-          status: 'ERROR',
+          status: 'ERROR' as any,
           error: error instanceof Error ? error.message : 'Unknown error',
           available: false,
         });
