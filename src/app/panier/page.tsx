@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { cartService, Cart } from '@/services/cartService';
 import { authService } from '@/services/authService';
 
-export default function CartPage() {
+function CartPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [cart, setCart] = useState<Cart>({ items: [], total: 0, currency: 'CHF' });
@@ -236,5 +236,24 @@ export default function CartPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Chargement du panier...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function CartPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <CartPageContent />
+    </Suspense>
   );
 }
