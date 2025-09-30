@@ -585,3 +585,5 @@ PAYLOAD_SECRET=change-me
 PAYLOAD_API_URL=https://your-payload-cloud.app
 BLOB_READ_WRITE_TOKEN=vercel-blob-token
 ```
+
+# Frontend connected to Payload CMS
