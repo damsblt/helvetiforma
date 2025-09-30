@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload/types'
+import type { CollectionConfig } from 'payload'
 
 // This collection stores references to files we upload to Vercel Blob.
 // We only persist the URL and basic metadata in Payload.
