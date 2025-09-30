@@ -1,11 +1,12 @@
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
+import { PortableTextBlock } from '@portabletext/types'
 
 export const sanityConfig = {
-  projectId: 'xzzyyelh',
-  dataset: 'production',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh',
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
   apiVersion: '2024-01-01',
-  useCdn: false, // Set to true in production for faster response times
+  useCdn: true, // Use CDN for faster response times in production
 }
 
 export const sanityClient = createClient(sanityConfig)
@@ -17,16 +18,60 @@ export function urlFor(source: any) {
   return builder.image(source)
 }
 
+// Types for Sanity content
+export interface SanityPage {
+  _id: string
+  title: string
+  slug: { current: string }
+  description?: string
+  hero?: {
+    title?: string
+    subtitle?: string
+    backgroundImage?: any
+    ctaPrimary?: {
+      text?: string
+      link?: string
+    }
+  }
+  sections?: Array<{
+    _key: string
+    _type: string
+    title?: string
+    subtitle?: string
+    content?: PortableTextBlock[]
+    columns?: number
+    items?: Array<{
+      title?: string
+      description?: string
+      image?: any
+    }>
+  }>
+  seo?: {
+    title?: string
+    description?: string
+    keywords?: string
+  }
+}
+
 // Helper to fetch pages
-export async function getPageBySlug(slug: string) {
+export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
   try {
     const query = `*[_type == "page" && slug.current == $slug][0]{
       _id,
       title,
       slug,
       description,
-      hero,
+      hero {
+        title,
+        subtitle,
+        backgroundImage,
+        ctaPrimary {
+          text,
+          link
+        }
+      },
       sections[] {
+        _key,
         _type,
         title,
         subtitle,

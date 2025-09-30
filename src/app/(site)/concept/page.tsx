@@ -1,12 +1,8 @@
-import { getPageBySlug } from '@/lib/payload'
-import { notFound } from 'next/navigation'
+import { getPageBySlug } from '@/lib/sanity'
 import type { Metadata } from 'next'
 import HeroSection from '@/components/sections/HeroSection'
-import FeaturesSection from '@/components/sections/FeaturesSection'
-import StatsSection from '@/components/sections/StatsSection'
-import CTASection from '@/components/sections/CTASection'
-import ColumnsSection from '@/components/sections/ColumnsSection'
 import PromoBand from '@/components/sections/PromoBand'
+import PortableText from '@/components/ui/PortableText'
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getPageBySlug('concept')
@@ -37,64 +33,52 @@ export default async function ConceptPage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       {content?.hero && (
-        <HeroSection hero={content.hero} />
+        <HeroSection 
+          hero={{
+            title: content.hero.title || '',
+            subtitle: content.hero.subtitle || '',
+            backgroundImage: content.hero.backgroundImage,
+            cta_primary: content.hero.ctaPrimary,
+          }} 
+        />
       )}
       
       {/* Temporary content while CMS is being set up */}
       {!content && <PromoBand title="Notre concept en action" subtitle="Section temporaire affichée entre le header et le footer." />}
 
-      {/* Dynamic Sections from CMS */}
-      {content?.sections?.map((section, index) => {
-        switch (section.type) {
-          case 'features':
-            return (
-              <FeaturesSection
-                key={index}
-                title={section.title}
-                subtitle={section.subtitle}
-                items={section.items}
-                markdownHtml={section.markdownHtml}
-              />
-            )
-          
-          case 'stats':
-            return (
-              <StatsSection
-                key={index}
-                title={section.title}
-                items={section.items}
-                markdownHtml={section.markdownHtml}
-              />
-            )
-          
-          case 'cta':
-            return (
-              <CTASection
-                key={index}
-                title={section.title}
-                subtitle={section.subtitle}
-                cta_primary={section.cta_primary}
-                cta_secondary={section.cta_secondary}
-                markdownHtml={section.markdownHtml}
-              />
-            )
-          case 'columns':
-            return (
-              <ColumnsSection
-                key={index}
-                title={section.title}
-                subtitle={section.subtitle}
-                columns={section.columns}
-                columnsContent={section.columnsContent}
-              />
-            )
-          
-          default:
-            return null
+      {/* Dynamic Sections from Sanity CMS */}
+      {content?.sections?.map((section) => {
+        // Generic content section with Portable Text
+        if (section.content) {
+          return (
+            <section key={section._key} className="py-16 bg-white">
+              <div className="container mx-auto px-4">
+                {section.title && (
+                  <h2 className="text-3xl font-bold text-center mb-4">{section.title}</h2>
+                )}
+                {section.subtitle && (
+                  <p className="text-xl text-center text-gray-600 mb-8">{section.subtitle}</p>
+                )}
+                
+                {/* Render content in columns if specified */}
+                {section.columns && section.columns > 1 ? (
+                  <div className={`grid grid-cols-1 md:grid-cols-${section.columns} gap-8 max-w-6xl mx-auto`}>
+                    <div className="prose prose-lg max-w-none">
+                      <PortableText content={section.content} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="prose prose-lg max-w-4xl mx-auto">
+                    <PortableText content={section.content} />
+                  </div>
+                )}
+              </div>
+            </section>
+          )
         }
+        
+        return null
       })}
-      
-      {/* Main Content removed: sections are fully driven by frontmatter */}
     </div>
   )
 }

@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "@sanity/vision": "^4.10.2",
-    "sanity": "^4.10.2"
+    "sanity": "^4.10.2",
+    "styled-components": "^6.1.19"
   }
 }
