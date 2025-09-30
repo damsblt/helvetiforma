@@ -68,3 +68,5 @@ https://helvetiforma-cms.vercel.app/api/graphql-playground
 ```
 
 # Trigger redeploy with fixed DB connection
+
+# SSL connection enabled
