@@ -1,9 +1,16 @@
+export interface PayloadSEO {
+  title?: string
+  description?: string
+  keywords?: string[]
+}
+
 export interface PayloadPage {
   slug: string
   title: string
   description?: string
   hero?: any
   sections?: any[]
+  seo?: PayloadSEO
 }
 
 const API_URL = process.env.PAYLOAD_API_URL || ''
