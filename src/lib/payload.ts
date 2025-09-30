@@ -26,9 +26,18 @@ async function payloadFetch(pathname: string, init: RequestInit = {}) {
 }
 
 export async function getPageBySlug(slug: string): Promise<PayloadPage | null> {
-  if (!API_URL) return null
-  const data = await payloadFetch(`/api/pages?where[slug][equals]=${encodeURIComponent(slug)}&limit=1`)
-  return data?.docs?.[0] || null
+  if (!API_URL) {
+    console.warn('PAYLOAD_API_URL not configured - CMS integration disabled')
+    return null
+  }
+  
+  try {
+    const data = await payloadFetch(`/api/pages?where[slug][equals]=${encodeURIComponent(slug)}&limit=1`)
+    return data?.docs?.[0] || null
+  } catch (error) {
+    console.error(`Failed to fetch page "${slug}" from Payload CMS:`, error)
+    return null
+  }
 }
 
 

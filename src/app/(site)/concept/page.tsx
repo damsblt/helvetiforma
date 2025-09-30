@@ -32,23 +32,19 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ConceptPage() {
   const content = await getPageBySlug('concept')
-  
-  if (!content) {
-    notFound()
-  }
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      {content.hero && (
+      {content?.hero && (
         <HeroSection hero={content.hero} />
       )}
       
-      {/* Temporary content while CMS is integrated */}
-      <PromoBand title="Notre concept en action" subtitle="Section temporaire affichée entre le header et le footer." />
+      {/* Temporary content while CMS is being set up */}
+      {!content && <PromoBand title="Notre concept en action" subtitle="Section temporaire affichée entre le header et le footer." />}
 
-      {/* Dynamic Sections (will be fed by CMS later) */}
-      {content.sections?.map((section, index) => {
+      {/* Dynamic Sections from CMS */}
+      {content?.sections?.map((section, index) => {
         switch (section.type) {
           case 'features':
             return (
