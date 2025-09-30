@@ -1,13 +1,15 @@
-import { getPageContent } from '@/lib/content-server'
+import { getPageBySlug } from '@/lib/payload'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import HeroSection from '@/components/sections/HeroSection'
 import FeaturesSection from '@/components/sections/FeaturesSection'
 import StatsSection from '@/components/sections/StatsSection'
 import CTASection from '@/components/sections/CTASection'
+import ColumnsSection from '@/components/sections/ColumnsSection'
+import PromoBand from '@/components/sections/PromoBand'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const content = await getPageContent('concept')
+  const content = await getPageBySlug('concept')
   
   if (!content) {
     return {
@@ -29,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ConceptPage() {
-  const content = await getPageContent('concept')
+  const content = await getPageBySlug('concept')
   
   if (!content) {
     notFound()
@@ -42,7 +44,10 @@ export default async function ConceptPage() {
         <HeroSection hero={content.hero} />
       )}
       
-      {/* Dynamic Sections */}
+      {/* Temporary content while CMS is integrated */}
+      <PromoBand title="Notre concept en action" subtitle="Section temporaire affichée entre le header et le footer." />
+
+      {/* Dynamic Sections (will be fed by CMS later) */}
       {content.sections?.map((section, index) => {
         switch (section.type) {
           case 'features':
@@ -52,6 +57,7 @@ export default async function ConceptPage() {
                 title={section.title}
                 subtitle={section.subtitle}
                 items={section.items}
+                markdownHtml={section.markdownHtml}
               />
             )
           
@@ -61,6 +67,7 @@ export default async function ConceptPage() {
                 key={index}
                 title={section.title}
                 items={section.items}
+                markdownHtml={section.markdownHtml}
               />
             )
           
@@ -72,6 +79,17 @@ export default async function ConceptPage() {
                 subtitle={section.subtitle}
                 cta_primary={section.cta_primary}
                 cta_secondary={section.cta_secondary}
+                markdownHtml={section.markdownHtml}
+              />
+            )
+          case 'columns':
+            return (
+              <ColumnsSection
+                key={index}
+                title={section.title}
+                subtitle={section.subtitle}
+                columns={section.columns}
+                columnsContent={section.columnsContent}
               />
             )
           
@@ -80,17 +98,7 @@ export default async function ConceptPage() {
         }
       })}
       
-      {/* Main Content */}
-      {content.content && (
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto">
-            <div 
-              className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: content.content }}
-            />
-          </div>
-        </section>
-      )}
+      {/* Main Content removed: sections are fully driven by frontmatter */}
     </div>
   )
 }

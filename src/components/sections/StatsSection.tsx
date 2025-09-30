@@ -11,6 +11,7 @@ interface StatItem {
 interface StatsSectionProps {
   title?: string
   items?: StatItem[]
+  markdownHtml?: string
 }
 
 // Hook pour animer les nombres
@@ -71,7 +72,7 @@ function AnimatedStat({ item, delay }: { item: StatItem; delay: number }) {
   )
 }
 
-export default function StatsSection({ title, items }: StatsSectionProps) {
+export default function StatsSection({ title, items, markdownHtml }: StatsSectionProps) {
   if (!items || items.length === 0) return null
 
   return (
@@ -90,6 +91,11 @@ export default function StatsSection({ title, items }: StatsSectionProps) {
           </motion.h2>
         )}
         
+        {markdownHtml && (
+          <div className="max-w-3xl mx-auto mb-12">
+            <div className="prose dark:prose-invert max-w-none text-center" dangerouslySetInnerHTML={{ __html: markdownHtml }} />
+          </div>
+        )}
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {items.map((item, index) => (

@@ -1,8 +1,8 @@
 # HelvetiForma v3 - État du Développement
 
 **Date de création :** 26 septembre 2025  
-**Dernière mise à jour :** 26 septembre 2025  
-**Statut :** Phase 1 Complète + Interface d'Édition Fonctionnelle  
+**Dernière mise à jour :** 29 septembre 2025  
+**Statut :** Phase 1 Complète + Interface d'Édition Fonctionnelle + Déploiement initial Vercel  
 **Version :** 1.0.0-alpha  
 
 ---
@@ -208,6 +208,11 @@ helvetiforma_v3/
 - **Hot Reload** : Fonctionnel
 - **Erreurs** : Aucune erreur bloquante
 
+### Déploiement Vercel
+- **URL de production** : https://helvetiforma-v3-hsyj1a143-damsblts-projects.vercel.app
+- **Projet** : `damsblts-projects/helvetiforma-v3`
+- **Variables d'environnement** : importées depuis `env.example` (mettre à jour domaine final et secrets si besoin)
+
 ### Base de Code
 - **TypeScript** : Configuration stricte, pas d'erreurs
 - **Tailwind CSS** : v4 avec configuration inline moderne
@@ -263,7 +268,7 @@ helvetiforma_v3/
 ### Phase 3 - Production (Quand prêt)
 - [ ] **Tests automatisés** : Jest + Cypress
 - [ ] **Optimisations** : Performance et SEO
-- [ ] **Déploiement Vercel** : Configuration production
+- [x] **Déploiement Vercel** : Configuration production (29 septembre 2025)
 - [ ] **Configuration WordPress** : Setup API réel
 - [ ] **Configuration Microsoft** : Setup Graph API
 

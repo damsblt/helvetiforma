@@ -14,9 +14,10 @@ interface CTASectionProps {
     text: string
     link: string
   }
+  markdownHtml?: string
 }
 
-export default function CTASection({ title, subtitle, cta_primary, cta_secondary }: CTASectionProps) {
+export default function CTASection({ title, subtitle, cta_primary, cta_secondary, markdownHtml }: CTASectionProps) {
   return (
     <section className="py-24 px-4">
       <div className="max-w-4xl mx-auto text-center">
@@ -53,6 +54,10 @@ export default function CTASection({ title, subtitle, cta_primary, cta_secondary
               >
                 {subtitle}
               </motion.p>
+            )}
+
+            {markdownHtml && (
+              <div className="prose prose-invert max-w-none text-left md:text-center mx-auto mb-8" dangerouslySetInnerHTML={{ __html: markdownHtml }} />
             )}
             
             {/* CTAs */}

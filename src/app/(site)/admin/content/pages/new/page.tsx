@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { createPageContentClient } from '@/lib/content-client'
 
 export default function NewPage() {
   const router = useRouter()
@@ -46,13 +47,15 @@ Votre contenu ici...
     setError(null)
     
     try {
-      // Simuler la sauvegarde
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // En production, ici on ferait l'appel API pour créer la page
-      console.log('Creating new page:', { title, slug, description, content })
-      
-      // Rediriger vers la liste des pages
+      const ok = await createPageContentClient({
+        slug,
+        title,
+        description,
+        content,
+      } as any)
+      if (!ok) {
+        throw new Error('Échec de la création')
+      }
       router.push('/admin/content/pages')
     } catch (err) {
       setError('Erreur lors de la création de la page')

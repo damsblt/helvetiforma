@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getAllPageSlugs, getPageContent, updatePageContent } from '@/lib/content-server'
 
 export async function GET(request: NextRequest) {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
       })
     } else {
       // Récupérer la liste de toutes les pages
-      const slugs = getAllPageSlugs()
+      const slugs = await getAllPageSlugs()
       
       // Charger les métadonnées de chaque page
       const pages = await Promise.all(
@@ -106,6 +107,10 @@ export async function POST(request: NextRequest) {
       sections: body.sections,
     })
 
+    // Revalidation des pages concernées
+    const pathToRevalidate = body.slug === 'home' ? '/' : `/${body.slug}`
+    try { revalidatePath(pathToRevalidate) } catch {}
+
     // Récupérer la page créée pour la retourner
     const createdPage = await getPageContent(body.slug)
     
@@ -169,6 +174,10 @@ export async function PUT(request: NextRequest) {
     }
 
     await updatePageContent(body.slug, updatedPageData)
+
+    // Revalidation des pages concernées
+    const pathToRevalidate = body.slug === 'home' ? '/' : `/${body.slug}`
+    try { revalidatePath(pathToRevalidate) } catch {}
 
     // Récupérer la page mise à jour pour la retourner
     const updatedPage = await getPageContent(body.slug)

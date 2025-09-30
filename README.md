@@ -573,3 +573,15 @@ const nextConfig = {
 - Confirmation des intégrations requises
 
 **Une fois ce brief validé, nous pourrons commencer le développement immédiatement avec une roadmap claire et des objectifs précis.**
+
+## Payload CMS Setup
+
+This project uses Payload CMS with Supabase (Postgres) and Vercel Blob for media.
+
+Required envs:
+```
+DATABASE_URL=postgresql://... (with sslmode=require)
+PAYLOAD_SECRET=change-me
+PAYLOAD_API_URL=https://your-payload-cloud.app
+BLOB_READ_WRITE_TOKEN=vercel-blob-token
+```

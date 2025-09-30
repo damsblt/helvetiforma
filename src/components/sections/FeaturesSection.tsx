@@ -13,6 +13,7 @@ interface FeaturesSectionProps {
   title?: string
   subtitle?: string
   items?: FeatureItem[]
+  markdownHtml?: string
 }
 
 const colorClasses = {
@@ -22,7 +23,7 @@ const colorClasses = {
   orange: 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400',
 }
 
-export default function FeaturesSection({ title, subtitle, items }: FeaturesSectionProps) {
+export default function FeaturesSection({ title, subtitle, items, markdownHtml }: FeaturesSectionProps) {
   if (!items || items.length === 0) return null
 
   return (
@@ -54,6 +55,12 @@ export default function FeaturesSection({ title, subtitle, items }: FeaturesSect
             </motion.p>
           )}
         </div>
+
+        {markdownHtml && (
+          <div className="max-w-3xl mx-auto mb-12">
+            <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: markdownHtml }} />
+          </div>
+        )}
         
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

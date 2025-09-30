@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { getPageContentClient, updatePageContentClient } from '@/lib/content-client'
 
 interface PageContent {
   slug: string
@@ -25,7 +26,7 @@ export default function PageEditor({ params }: PageEditorProps) {
   const [saving, setSaving] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [content, setContent] = useState('')
+  const [sections, setSections] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -33,20 +34,21 @@ export default function PageEditor({ params }: PageEditorProps) {
       try {
         const resolvedParams = await params
         setSlug(resolvedParams.slug)
-        
-        // Simuler le chargement du contenu de la page
-        const mockContent: PageContent = {
-          slug: resolvedParams.slug,
-          title: getPageTitle(resolvedParams.slug),
-          description: getPageDescription(resolvedParams.slug),
-          frontmatter: {},
-          contentHtml: getPageContent(resolvedParams.slug)
+        const existing = await getPageContentClient(resolvedParams.slug)
+        if (!existing) {
+          setError('Page introuvable')
+          return
         }
-        
-        setPageContent(mockContent)
-        setTitle(mockContent.title)
-        setDescription(mockContent.description)
-        setContent(mockContent.contentHtml)
+        setPageContent({
+          slug: existing.slug,
+          title: existing.title,
+          description: existing.description,
+          frontmatter: {},
+          contentHtml: existing.content || ''
+        })
+        setTitle(existing.title || '')
+        setDescription(existing.description || '')
+        setSections(Array.isArray((existing as any).sections) ? (existing as any).sections : [])
       } catch (err) {
         setError('Erreur lors du chargement de la page')
         console.error('Error loading page:', err)
@@ -129,11 +131,27 @@ Du lundi au vendredi : 9h00 - 17h00`
     setError(null)
     
     try {
-      // Simuler la sauvegarde
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // En production, ici on ferait l'appel API
-      console.log('Saving page:', { slug, title, description, content })
+      const ok = await updatePageContentClient(slug, {
+        slug,
+        title,
+        description,
+        content: '',
+        sections: sections.map((s) => ({
+          type: s.type,
+          title: s.title,
+          subtitle: s.subtitle,
+          items: s.items,
+          limit: s.limit,
+          cta_primary: s.cta_primary,
+          cta_secondary: s.cta_secondary,
+          markdown: s.markdown,
+          columns: s.columns,
+          columnsContent: s.columnsContent,
+        })),
+      } as any)
+      if (!ok) {
+        throw new Error('Échec de la sauvegarde')
+      }
       
       // Rediriger vers la liste des pages
       router.push('/admin/content/pages')
@@ -271,20 +289,223 @@ Du lundi au vendredi : 9h00 - 17h00`
               </div>
             </div>
 
+            {/* Sections Editor */}
             <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Contenu Markdown</h2>
-              
+              <h2 className="text-lg font-semibold text-foreground mb-4">Sections</h2>
+              {/* Add Section Buttons */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                <button
+                  onClick={() => setSections(prev => [...prev, { type: 'columns', columns: 1, title: '', subtitle: '', markdown: '', columnsContent: [{ title: '', description: '', markdown: '' }] }])}
+                  className="px-3 py-2 text-sm border border-border rounded-md hover:bg-muted"
+                >
+                  + Ajouter section 1 colonne
+                </button>
+                <button
+                  onClick={() => setSections(prev => [...prev, { type: 'columns', columns: 2, title: '', subtitle: '', markdown: '', columnsContent: [{ title: '', description: '', markdown: '' }, { title: '', description: '', markdown: '' }] }])}
+                  className="px-3 py-2 text-sm border border-border rounded-md hover:bg-muted"
+                >
+                  + Ajouter section 2 colonnes
+                </button>
+                <button
+                  onClick={() => setSections(prev => [...prev, { type: 'columns', columns: 3, title: '', subtitle: '', markdown: '', columnsContent: [{ title: '', description: '', markdown: '' }, { title: '', description: '', markdown: '' }, { title: '', description: '', markdown: '' }] }])}
+                  className="px-3 py-2 text-sm border border-border rounded-md hover:bg-muted"
+                >
+                  + Ajouter section 3 colonnes
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {sections.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Aucune section n'est définie dans cette page.</p>
+                )}
+                {sections.map((section, index) => (
+                  <div key={index} className="border border-border rounded-lg p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">Section {index + 1}</div>
+                        <div className="font-semibold">Type: <span className="font-mono text-sm">{section.type}</span></div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            if (index === 0) return
+                            const next = [...sections]
+                            const [removed] = next.splice(index, 1)
+                            next.splice(index - 1, 0, removed)
+                            setSections(next)
+                          }}
+                          className="text-sm px-2 py-1 border border-border rounded hover:bg-muted"
+                        >
+                          ↑ Monter
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (index === sections.length - 1) return
+                            const next = [...sections]
+                            const [removed] = next.splice(index, 1)
+                            next.splice(index + 1, 0, removed)
+                            setSections(next)
+                          }}
+                          className="text-sm px-2 py-1 border border-border rounded hover:bg-muted"
+                        >
+                          ↓ Descendre
+                        </button>
+                        <button
+                          onClick={() => {
+                            const next = [...sections]
+                            next.splice(index, 1)
+                            setSections(next)
+                          }}
+                          className="text-sm px-2 py-1 border border-destructive text-destructive rounded hover:bg-destructive/10"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Disposition</label>
+                        <select
+                          value={section.columns || 1}
+                          onChange={(e) => {
+                            const next = [...sections]
+                            next[index] = { ...next[index], columns: Number(e.target.value) as 1 | 2 | 3 }
+                            setSections(next)
+                          }}
+                          className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        >
+                          <option value={1}>1 colonne</option>
+                          <option value={2}>2 colonnes</option>
+                          <option value={3}>3 colonnes</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Titre</label>
+                        <input
+                          type="text"
+                          value={section.title || ''}
+                          onChange={(e) => {
+                            const next = [...sections]
+                            next[index] = { ...next[index], title: e.target.value }
+                            setSections(next)
+                          }}
+                          className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          placeholder="Titre de la section"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Sous-titre</label>
+                        <input
+                          type="text"
+                          value={section.subtitle || ''}
+                          onChange={(e) => {
+                            const next = [...sections]
+                            next[index] = { ...next[index], subtitle: e.target.value }
+                            setSections(next)
+                          }}
+                          className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          placeholder="Sous-titre de la section"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-foreground mb-2">Markdown</label>
               <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={20}
+                        value={section.markdown || ''}
+                        onChange={(e) => {
+                          const next = [...sections]
+                          next[index] = { ...next[index], markdown: e.target.value }
+                          setSections(next)
+                        }}
+                        rows={10}
                 className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-                placeholder="# Votre contenu en Markdown
+                        placeholder="# Votre texte de section en Markdown"
+                      />
+                    </div>
 
-## Sous-titre
-
-Votre texte ici..."
-              />
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-foreground">Colonnes</label>
+                        <button
+                          onClick={() => {
+                            const next = [...sections]
+                            const cols = Array.isArray(next[index].columnsContent) ? next[index].columnsContent : []
+                            next[index] = { ...next[index], columnsContent: [...cols, { title: '', description: '', markdown: '' }] }
+                            setSections(next)
+                          }}
+                          className="text-primary text-sm hover:underline"
+                        >
+                          + Ajouter une colonne
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {(section.columnsContent || []).map((col: any, cIdx: number) => (
+                          <div key={cIdx} className="border border-border rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="text-xs uppercase tracking-wide text-muted-foreground">Colonne {cIdx + 1}</div>
+                              <button
+                                onClick={() => {
+                                  const next = [...sections]
+                                  const cols = [...(next[index].columnsContent || [])]
+                                  cols.splice(cIdx, 1)
+                                  next[index] = { ...next[index], columnsContent: cols }
+                                  setSections(next)
+                                }}
+                                className="text-destructive text-xs hover:underline"
+                              >
+                                Supprimer
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-1 gap-2 mt-2">
+                              <input
+                                type="text"
+                                value={col.title || ''}
+                                onChange={(e) => {
+                                  const next = [...sections]
+                                  const cols = [...(next[index].columnsContent || [])]
+                                  cols[cIdx] = { ...cols[cIdx], title: e.target.value }
+                                  next[index] = { ...next[index], columnsContent: cols }
+                                  setSections(next)
+                                }}
+                                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+                                placeholder="Titre"
+                              />
+                              <input
+                                type="text"
+                                value={col.description || ''}
+                                onChange={(e) => {
+                                  const next = [...sections]
+                                  const cols = [...(next[index].columnsContent || [])]
+                                  cols[cIdx] = { ...cols[cIdx], description: e.target.value }
+                                  next[index] = { ...next[index], columnsContent: cols }
+                                  setSections(next)
+                                }}
+                                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+                                placeholder="Description"
+                              />
+                              <textarea
+                                value={col.markdown || ''}
+                                onChange={(e) => {
+                                  const next = [...sections]
+                                  const cols = [...(next[index].columnsContent || [])]
+                                  cols[cIdx] = { ...cols[cIdx], markdown: e.target.value }
+                                  next[index] = { ...next[index], columnsContent: cols }
+                                  setSections(next)
+                                }}
+                                rows={6}
+                                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground font-mono text-sm"
+                                placeholder="Markdown colonne"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -294,9 +515,7 @@ Votre texte ici..."
             
             <div className="prose dark:prose-invert max-w-none">
               <div className="border border-border rounded-lg p-4 bg-background min-h-[500px]">
-                <div className="whitespace-pre-wrap text-foreground">
-                  {content || 'Tapez votre contenu pour voir la prévisualisation...'}
-                </div>
+                <div className="text-sm text-muted-foreground">La prévisualisation du Markdown de section apparaît côté site une fois sauvegardée.</div>
               </div>
             </div>
           </div>
