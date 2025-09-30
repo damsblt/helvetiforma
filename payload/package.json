@@ -17,7 +17,6 @@
   "dependencies": {
     "@payloadcms/db-postgres": "^3.8.1",
     "@payloadcms/next": "^3.8.1",
-    "@payloadcms/plugin-cloud": "^3.8.1",
     "@payloadcms/richtext-lexical": "^3.8.1",
     "@payloadcms/storage-vercel-blob": "^3.8.1",
     "cross-env": "^7.0.3",

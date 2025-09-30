@@ -3,7 +3,6 @@ import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
-import { payloadCloudPlugin } from '@payloadcms/plugin-cloud'
 import { fileURLToPath } from 'url'
 
 import Pages from './src/collections/Pages'
@@ -26,7 +25,6 @@ export default buildConfig({
     },
   }),
   plugins: [
-    payloadCloudPlugin(),
     vercelBlobStorage({
       enabled: true,
       collections: {
