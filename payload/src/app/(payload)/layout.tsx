@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import config from '@payload-config'
 import { RootLayout } from '@payloadcms/next/layouts'
+import { serverFunction } from '@payloadcms/next/utilities'
 import { importMap } from './admin/importMap'
 import './globals.css'
 
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 }
 
 const Layout = ({ children }: Args) => (
-  <RootLayout config={config} importMap={importMap}>
+  <RootLayout config={config} importMap={importMap} serverFunction={serverFunction}>
     {children}
   </RootLayout>
 )
