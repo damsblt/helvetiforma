@@ -1,11 +1,11 @@
 // Server-side content functions (using fs)
+import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
 import remarkHtml from 'remark-html'
 import type { PageContent, FormationContent, NavigationConfig } from '@/lib/content-types'
-import { readTextFile, writeTextFile, listFiles } from '@/lib/storage'
 
 // Chemins des dossiers de contenu
 const CONTENT_DIR = path.join(process.cwd(), 'content')
@@ -20,14 +20,7 @@ const processor = remark().use(remarkGfm).use(remarkHtml)
  * Lit et parse un fichier Markdown
  */
 async function parseMarkdownFile(filePath: string) {
-  const fileContents = await (async () => {
-    // Try storage first (supports prod via Blob and dev via fs)
-    const relative = path.relative(CONTENT_DIR, filePath)
-    const content = await readTextFile(relative)
-    if (content !== null) return content
-    // Fallback none
-    throw new Error(`File not found: ${filePath}`)
-  })()
+  const fileContents = fs.readFileSync(filePath, 'utf8')
   const { data, content } = matter(fileContents)
   
   // Convertir le Markdown en HTML
@@ -47,57 +40,20 @@ export async function getPageContent(slug: string): Promise<PageContent | null> 
   try {
     const filePath = path.join(PAGES_DIR, `${slug}.md`)
     
-    const rel = path.join('pages', `${slug}.md`)
-    const raw = await readTextFile(rel)
-    if (raw === null) return null
-    const { data, content } = matter(raw)
-    const processedContent = await processor.process(content)
-    const htmlContent = processedContent.toString()
-
-    // Traiter le markdown par section si présent
-    let processedSections = (data as any).sections
-    if (Array.isArray(processedSections)) {
-      processedSections = await Promise.all(
-        processedSections.map(async (section: any) => {
-          // Section-level markdown
-          if (section?.markdown) {
-            try {
-              const md = await processor.process(section.markdown as string)
-              return { ...section, markdownHtml: md.toString() }
-            } catch {
-              return { ...section }
-            }
-          }
-          // Columns per-item markdown
-          if (Array.isArray(section?.columnsContent)) {
-            const processedCols = await Promise.all(
-              section.columnsContent.map(async (col: any) => {
-                if (col?.markdown) {
-                  try {
-                    const md = await processor.process(col.markdown as string)
-                    return { ...col, markdownHtml: md.toString() }
-                  } catch {
-                    return { ...col }
-                  }
-                }
-                return col
-              })
-            )
-            return { ...section, columnsContent: processedCols }
-          }
-          return section
-        })
-      )
+    if (!fs.existsSync(filePath)) {
+      return null
     }
+    
+    const { frontmatter, content } = await parseMarkdownFile(filePath)
     
     return {
       slug,
-      title: (data as any).title || '',
-      description: (data as any).description || '',
-      content: htmlContent,
-      seo: (data as any).seo,
-      hero: (data as any).hero,
-      sections: processedSections,
+      title: frontmatter.title || '',
+      description: frontmatter.description || '',
+      content,
+      seo: frontmatter.seo,
+      hero: frontmatter.hero,
+      sections: frontmatter.sections,
     }
   } catch (error) {
     console.error(`Error reading page ${slug}:`, error)
@@ -108,13 +64,16 @@ export async function getPageContent(slug: string): Promise<PageContent | null> 
 /**
  * Récupère toutes les pages disponibles
  */
-export async function getAllPageSlugs(): Promise<string[]> {
+export function getAllPageSlugs(): string[] {
   try {
-    const files = await listFiles('pages')
-    return files
-      .map(f => path.basename(f.pathname))
-      .filter(name => name.endsWith('.md'))
-      .map(name => name.replace(/\.md$/, ''))
+    if (!fs.existsSync(PAGES_DIR)) {
+      return []
+    }
+    
+    return fs
+      .readdirSync(PAGES_DIR)
+      .filter(file => file.endsWith('.md'))
+      .map(file => file.replace('.md', ''))
   } catch (error) {
     console.error('Error reading pages directory:', error)
     return []
@@ -126,9 +85,10 @@ export async function getAllPageSlugs(): Promise<string[]> {
  */
 export async function getNavigationConfig(): Promise<NavigationConfig> {
   try {
-    const rel = path.join('config', 'navigation.md')
-    const raw = await readTextFile(rel)
-    if (raw === null) {
+    const filePath = path.join(CONFIG_DIR, 'navigation.md')
+    
+    if (!fs.existsSync(filePath)) {
+      // Configuration par défaut
       return {
         main: [
           { name: 'Accueil', href: '/' },
@@ -138,13 +98,40 @@ export async function getNavigationConfig(): Promise<NavigationConfig> {
           { name: 'Calendrier', href: '/calendrier' },
           { name: 'Contact', href: '/contact' },
         ],
-        footer: [],
+        footer: [
+          {
+            title: 'Formation',
+            links: [
+              { name: 'Nos formations', href: '/formations' },
+              { name: 'Cours en ligne', href: '/courses' },
+              { name: 'Webinaires', href: '/calendrier' },
+            ],
+          },
+          {
+            title: 'Support',
+            links: [
+              { name: 'Contact', href: '/contact' },
+              { name: 'FAQ', href: '/faq' },
+              { name: 'Documentation', href: '/docs' },
+            ],
+          },
+          {
+            title: 'Légal',
+            links: [
+              { name: 'Mentions légales', href: '/mentions' },
+              { name: 'CGU', href: '/cgu' },
+              { name: 'Politique de confidentialité', href: '/privacy' },
+            ],
+          },
+        ],
       }
     }
-    const { data } = matter(raw)
-    return data as NavigationConfig
+    
+    const { frontmatter } = await parseMarkdownFile(filePath)
+    return frontmatter as NavigationConfig
   } catch (error) {
     console.error('Error reading navigation config:', error)
+    // Retourner la configuration par défaut en cas d'erreur
     return {
       main: [
         { name: 'Accueil', href: '/' },
@@ -177,8 +164,12 @@ export async function updatePageContent(slug: string, content: PageContent): Pro
     
     const fileContent = matter.stringify(content.content, frontmatter)
     
-    // Priorité: Vercel Blob / fs via storage abstraction
-    await writeTextFile(path.join('pages', `${slug}.md`), fileContent)
+    // Créer le dossier si nécessaire
+    if (!fs.existsSync(PAGES_DIR)) {
+      fs.mkdirSync(PAGES_DIR, { recursive: true })
+    }
+    
+    fs.writeFileSync(filePath, fileContent, 'utf8')
   } catch (error) {
     console.error(`Error updating page ${slug}:`, error)
     throw error

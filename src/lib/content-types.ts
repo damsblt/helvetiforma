@@ -38,22 +38,6 @@ export interface PageContent {
       text: string
       link: string
     }
-    // Raw Markdown managed in frontmatter for this section
-    markdown?: string
-    // Server-rendered HTML derived from markdown (runtime only)
-    markdownHtml?: string
-    // Columns layout support
-    columns?: 1 | 2 | 3
-    // For column sections, allow per-column markdown
-    columnsContent?: Array<{
-      title?: string
-      description?: string
-      emoji?: string
-      markdown?: string
-      markdownHtml?: string
-      image?: string
-      cta?: { text: string; link: string }
-    }>
   }>
 }
 

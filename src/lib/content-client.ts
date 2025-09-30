@@ -61,27 +61,6 @@ export async function updatePageContentClient(slug: string, content: PageContent
 }
 
 /**
- * Crée une nouvelle page via API
- */
-export async function createPageContentClient(content: PageContent): Promise<boolean> {
-  try {
-    const response = await fetch('/api/content/pages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(content),
-    })
-
-    const data = await response.json()
-    return data.success
-  } catch (error) {
-    console.error('Error creating page:', error)
-    return false
-  }
-}
-
-/**
  * Récupère la configuration de navigation (statique côté client)
  */
 export function getNavigationConfigClient(): NavigationConfig {
