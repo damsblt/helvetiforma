@@ -72,3 +72,4 @@ https://helvetiforma-cms.vercel.app/api/graphql-playground
 # SSL connection enabled
 
 # Fixed SSL certificate validation
+# Trigger fresh deployment
