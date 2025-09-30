@@ -1,43 +1,39 @@
-# HelvetiForma v3 - Brief de Développement Optimisé
+# HelvetiForma v3 - Modern Learning Platform
 
 ## 🎯 Vision du Projet
 
-**HelvetiForma v3** est une plateforme d'apprentissage hybride moderne, conçue pour offrir la meilleure expérience utilisateur tout en simplifiant drastiquement la gestion de contenu pour la cliente. Cette version combine les leçons apprises des versions précédentes avec une approche révolutionnaire pour la gestion de contenu.
+**HelvetiForma v3** est une plateforme d'apprentissage hybride moderne, conçue pour offrir la meilleure expérience utilisateur avec une gestion de contenu professionnelle et intuitive. Cette version combine les leçons apprises des versions précédentes avec **Sanity CMS**, une solution mature et éprouvée par des milliers de sites en production.
 
 ---
 
-## 🚀 Innovation Majeure : Gestion de Contenu Simplifiée
+## 🚀 Innovation Majeure : Sanity CMS
 
-### Problème Identifié
-Les projets précédents utilisaient des systèmes complexes :
-- **v1** : Système custom Supabase + interface admin complexe
-- **v2** : ACF WordPress + API headless (complexité technique élevée)
+### Évolution des Versions
+- **v1** : Système custom Supabase + interface admin complexe → Trop complexe
+- **v2** : ACF WordPress + API headless → Lourd et difficile à maintenir
+- **Payload CMS** : Nouveau, instable, erreurs de cache, problèmes React 19
+- **v3 (Sanity)** : Solution mature, performante, et éprouvée ✨
 
-### Solution v3 : Fichiers Markdown + Interface Admin Intuitive
+### Pourquoi Sanity ?
 ```
-📁 content/
-├── pages/
-│   ├── home.md              # Page d'accueil
-│   ├── concept.md           # Page concept  
-│   ├── formations.md        # Page formations
-│   └── contact.md           # Page contact
-├── formations/
-│   ├── charges-sociales.md
-│   ├── impot-source.md
-│   └── salaires.md
-└── config/
-    ├── navigation.md        # Configuration navigation
-    ├── seo.md              # Paramètres SEO globaux
-    └── contact-info.md     # Informations de contact
+📁 sanity/
+├── sanity.config.ts         # Configuration Sanity
+├── schemaTypes/
+│   ├── index.ts
+│   └── page.ts             # Schema pour pages flexibles
+└── package.json            # Sanity dependencies
 ```
 
-**Avantages :**
-- ✅ **Simplicité** : Fichiers Markdown = édition intuitive
-- ✅ **Versionning** : Git = historique complet des modifications
-- ✅ **Performance** : Pas de base de données = chargement instantané
-- ✅ **Backup automatique** : Chaque modification = commit Git
-- ✅ **Collaboration** : Plusieurs personnes peuvent éditer
-- ✅ **Portabilité** : Contenu indépendant de la technologie
+**Avantages Sanity :**
+- ✅ **Mature & Stable** : Utilisé par des milliers de sites en production
+- ✅ **Pas de BDD à gérer** : Sanity héberge tout sur son infrastructure
+- ✅ **Collaboration temps réel** : Plusieurs éditeurs simultanés
+- ✅ **Éditeur intuitif** : Rich text avec Portable Text (headings, lists, images, links)
+- ✅ **Performance** : CDN global Sanity pour contenu ultra-rapide
+- ✅ **Images optimisées** : Transformation d'images à la volée
+- ✅ **TypeScript natif** : Types générés automatiquement
+- ✅ **Free tier généreux** : Parfait pour vos besoins
+- ✅ **Support professionnel** : Documentation excellente, communauté active
 
 ---
 
@@ -47,16 +43,18 @@ Les projets précédents utilisaient des systèmes complexes :
 - **Next.js 15.5.4** + **React 19.1.0** + **TypeScript**
 - **Tailwind CSS v4** (configuration inline moderne)
 - **Framer Motion** pour les animations
-- **next-mdx-remote** pour le rendu Markdown avancé
+- **Sanity CMS** avec `next-sanity` et `@portabletext/react`
+- **Portable Text** pour rich text rendering
 
 ### Backend & Services
+- **Sanity CMS** : Gestion de contenu headless
 - **TutorLMS** (WordPress) : Cours payants + authentification
 - **Microsoft Graph API** : Webinaires Teams gratuits
 - **Supabase** : Données utilisateur minimales + analytics
-- **Stripe** : Paiements (fallback si TutorLMS insuffisant)
 
 ### Déploiement
 - **Vercel** : Frontend Next.js
+- **Sanity Cloud** : CMS hosting (Sanity Studio peut aussi être hébergé sur Sanity)
 - **WordPress** : `cms.helvetiforma.ch` (TutorLMS)
 - **Domaine principal** : `app.helvetiforma.ch`
 
@@ -66,10 +64,12 @@ Les projets précédents utilisaient des systèmes complexes :
 
 ```
 helvetiforma_v3/
-├── content/                     # 🎯 CONTENU ÉDITABLE
-│   ├── pages/
-│   ├── formations/
-│   └── config/
+├── sanity/                      # 🎯 SANITY CMS STUDIO
+│   ├── sanity.config.ts
+│   ├── schemaTypes/
+│   │   ├── index.ts
+│   │   └── page.ts
+│   └── package.json
 ├── src/
 │   ├── app/                     # Pages Next.js App Router
 │   │   ├── (public)/           # Pages publiques
@@ -94,7 +94,7 @@ helvetiforma_v3/
 │   │   ├── forms/              # Formulaires
 │   │   └── integrations/       # Intégrations externes
 │   ├── lib/
-│   │   ├── content.ts          # Gestion contenu Markdown
+│   │   ├── sanity.ts           # Sanity client et GROQ queries
 │   │   ├── wordpress.ts        # API WordPress/TutorLMS
 │   │   ├── microsoft.ts        # API Microsoft Graph
 │   │   └── supabase.ts         # Supabase minimal
@@ -106,36 +106,41 @@ helvetiforma_v3/
 
 ---
 
-## 🎨 Interface Admin Révolutionnaire
+## 🎨 Sanity Studio - Interface Admin Professionnelle
 
-### Concept : "Notion-like" pour Markdown
+### Concept : CMS Headless Moderne
 ```typescript
-interface ContentEditor {
-  // Éditeur WYSIWYG pour Markdown
-  editor: 'rich-text' | 'markdown' | 'split-view';
-  
-  // Prévisualisation en temps réel
-  preview: 'live' | 'side-by-side';
-  
-  // Sauvegarde automatique
-  autosave: boolean;
-  
-  // Gestion des médias
-  media: {
-    upload: 'drag-drop' | 'file-picker';
-    storage: 'public/images' | 'external-cdn';
-  };
+interface SanityPage {
+  _id: string
+  title: string
+  slug: { current: string }
+  description?: string
+  hero?: {
+    title?: string
+    subtitle?: string
+    backgroundImage?: any
+    ctaPrimary?: { text?: string; link?: string }
+  }
+  sections?: Array<{
+    _key: string
+    title?: string
+    subtitle?: string
+    content?: PortableTextBlock[]  // Rich text
+    columns?: number  // 1, 2, or 3 column layouts
+  }>
 }
 ```
 
-### Fonctionnalités Admin
-- 📝 **Éditeur Markdown WYSIWYG** (style Notion/Obsidian)
-- 🖼️ **Upload d'images** par drag & drop
-- 👀 **Prévisualisation temps réel** de la page
-- 💾 **Sauvegarde automatique** + Git commits
-- 🔄 **Historique des versions** avec rollback
+### Fonctionnalités Sanity Studio
+- 📝 **Rich Text Editor** avec Portable Text (headings, lists, links, images, blockquotes)
+- 🖼️ **Gestion des médias** intégrée avec transformations d'images
+- 👀 **Prévisualisation en temps réel** (built-in feature)
+- 💾 **Autosave** automatique
+- 🔄 **Historique des versions** avec rollback (built-in)
+- 👥 **Collaboration temps réel** multi-utilisateurs
 - 📱 **Interface responsive** pour édition mobile
-- 🎨 **Thèmes d'éditeur** (clair/sombre)
+- 🎨 **Thèmes** clair/sombre
+- 🌐 **Accessible de n'importe où** (cloud-hosted)
 
 ---
 
@@ -283,56 +288,64 @@ CREATE TABLE webinar_registrations (
 
 ---
 
-## 📄 Système de Contenu Markdown
+## 📄 Système de Contenu Sanity
 
-### Structure des Fichiers Markdown
-```markdown
----
-title: "Accueil - HelvetiForma"
-description: "Formation professionnelle en comptabilité suisse"
-seo:
-  title: "HelvetiForma - Formation Comptabilité Suisse"
-  description: "Formations certifiées en comptabilité suisse..."
-  keywords: ["formation", "comptabilité", "suisse"]
-hero:
-  title: "Maîtrisez la Comptabilité Suisse"
-  subtitle: "Formations certifiées par des experts"
-  cta_text: "Découvrir nos formations"
-  cta_link: "/formations"
-  background_image: "/images/hero-bg.jpg"
-sections:
-  - type: "features"
-    title: "Pourquoi HelvetiForma ?"
-    items:
-      - title: "Expertise Suisse"
-        description: "Formateurs certifiés en comptabilité suisse"
-        icon: "🇨🇭"
-      - title: "Flexibilité"
-        description: "Cours en ligne et webinaires interactifs"
-        icon: "⏰"
----
+### Structure de Contenu dans Sanity Studio
+Les pages sont éditées visuellement dans Sanity Studio avec:
+- **Title** : Titre de la page
+- **Slug** : URL slug (auto-généré)
+- **Description** : Description SEO
+- **Hero** : Section hero avec titre, sous-titre, image de fond, CTA
+- **Sections** : Sections flexibles avec:
+  - Titre et sous-titre
+  - Rich text content (Portable Text)
+  - Choix de colonnes (1, 2, ou 3)
 
-# Contenu de la page
+### API Sanity
+```typescript
+// lib/sanity.ts
+import { createClient } from 'next-sanity'
 
-Votre contenu Markdown ici...
+export const sanityClient = createClient({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
+  apiVersion: '2024-01-01',
+  useCdn: true,
+})
+
+// Fetch page by slug with GROQ
+export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
+  const query = `*[_type == "page" && slug.current == $slug][0]{
+    _id,
+    title,
+    slug,
+    description,
+    hero {
+      title,
+      subtitle,
+      backgroundImage,
+      ctaPrimary { text, link }
+    },
+    sections[] {
+      _key,
+      title,
+      subtitle,
+      content,
+      columns
+    }
+  }`
+  
+  return await sanityClient.fetch(query, { slug })
+}
 ```
 
-### API de Contenu
+### Portable Text Rendering
 ```typescript
-// lib/content.ts
-interface ContentAPI {
-  // Lecture
-  getPage(slug: string): Promise<PageContent>;
-  getFormation(slug: string): Promise<FormationContent>;
-  getNavigation(): Promise<NavigationConfig>;
-  
-  // Écriture (admin uniquement)
-  updatePage(slug: string, content: PageContent): Promise<void>;
-  uploadImage(file: File): Promise<string>;
-  
-  // Git intégration
-  commitChanges(message: string): Promise<void>;
-  getHistory(file: string): Promise<GitCommit[]>;
+// components/ui/PortableText.tsx
+import { PortableText as PortableTextReact } from '@portabletext/react'
+
+export default function PortableText({ content }: { content: PortableTextBlock[] }) {
+  return <PortableTextReact value={content} components={components} />
 }
 ```
 
@@ -408,6 +421,11 @@ interface AuthStrategy {
 
 ### Variables d'Environnement
 ```bash
+# Sanity CMS
+NEXT_PUBLIC_SANITY_PROJECT_ID=xzzyyelh
+NEXT_PUBLIC_SANITY_DATASET=production
+SANITY_API_TOKEN=your-sanity-token # Optionnel, pour write access
+
 # WordPress/TutorLMS
 NEXT_PUBLIC_WORDPRESS_URL=https://cms.helvetiforma.ch
 WORDPRESS_APP_USER=service-account
@@ -423,10 +441,6 @@ MICROSOFT_TENANT_ID=your-tenant-id
 SUPABASE_URL=your-supabase-url
 SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-key
-
-# Content Management
-GITHUB_TOKEN=xxxx # Pour commits automatiques (optionnel)
-ADMIN_PASSWORD=secure-admin-password
 
 # Deployment
 VERCEL_TOKEN=xxxx
@@ -497,12 +511,12 @@ const nextConfig = {
 
 ## 🚀 Plan de Développement
 
-### Phase 1 : Foundation (Semaine 1-2)
+### Phase 1 : Foundation (Complété ✅)
 - [x] Setup Next.js 15 + TypeScript + Tailwind v4
-- [ ] Architecture de dossiers
-- [ ] Système de contenu Markdown
-- [ ] Interface admin de base
-- [ ] Pages statiques (accueil, concept, contact)
+- [x] Architecture de dossiers
+- [x] Sanity CMS intégration complète
+- [x] Sanity Studio configuré
+- [x] Pages dynamiques (accueil, concept, contact)
 
 ### Phase 2 : Intégrations (Semaine 3-4)
 - [ ] TutorLMS API + authentification
@@ -526,25 +540,30 @@ const nextConfig = {
 
 ## 💡 Innovations Clés de la v3
 
-### 1. **Gestion de Contenu Révolutionnaire**
-- Markdown + Git = Simplicité + Robustesse
-- Interface admin "Notion-like"
-- Versionning automatique
+### 1. **Sanity CMS - Solution Mature**
+- Plateforme éprouvée par des milliers de sites
+- Interface intuitive avec Portable Text
+- Collaboration temps réel multi-utilisateurs
+- CDN global pour performance maximale
+- Zéro infrastructure à gérer
 
 ### 2. **Architecture Hybride Optimale**
-- Next.js pour l'UX moderne
+- Next.js 15 pour l'UX moderne
+- Sanity pour la gestion de contenu
 - TutorLMS pour la robustesse e-learning
 - Microsoft Teams pour l'interactivité
 
 ### 3. **Performance Maximale**
 - Tailwind v4 inline
+- Sanity CDN global
+- Images optimisées automatiquement
 - ISR intelligent
-- Bundle size optimisé
 
 ### 4. **Maintenance Minimale**
-- Moins de dépendances
+- CMS hébergé par Sanity
 - Code plus simple
-- Documentation intégrée
+- Support professionnel Sanity
+- Documentation excellente
 
 ---
 
@@ -574,16 +593,54 @@ const nextConfig = {
 
 **Une fois ce brief validé, nous pourrons commencer le développement immédiatement avec une roadmap claire et des objectifs précis.**
 
-## Payload CMS Setup
+## 🚀 Getting Started with Sanity
 
-This project uses Payload CMS with Supabase (Postgres) and Vercel Blob for media.
-
-Required envs:
+### 1. Start the Frontend
+```bash
+npm run dev
 ```
-DATABASE_URL=postgresql://... (with sslmode=require)
-PAYLOAD_SECRET=change-me
-PAYLOAD_API_URL=https://your-payload-cloud.app
-BLOB_READ_WRITE_TOKEN=vercel-blob-token
+Visit http://localhost:3000
+
+### 2. Start Sanity Studio
+```bash
+cd sanity
+npm run dev
+```
+Visit http://localhost:3333
+
+### 3. Configure CORS (First Time)
+```bash
+cd sanity
+npx sanity login
+npx sanity cors add https://helvetiforma-v3.vercel.app --credentials
+npx sanity cors add http://localhost:3000 --credentials
 ```
 
-# Frontend connected to Payload CMS
+### 4. Create Content
+1. Access Sanity Studio at http://localhost:3333
+2. Log in with Google or GitHub
+3. Create a page with slug `home` or `concept`
+4. Add hero section and flexible content sections
+5. Publish!
+
+### 5. Deploy Sanity Studio (Optional)
+```bash
+cd sanity
+npm run build
+npx sanity deploy
+```
+
+## 📚 Documentation
+
+- **SANITY_SETUP.md** : Quick start guide
+- **SANITY_MIGRATION_COMPLETE.md** : Complete migration documentation
+- **sanity/README.md** : Sanity Studio guide
+- **DEVELOPMENT_STATUS.md** : Current development status
+
+## 🔗 Useful Links
+
+- **Sanity Studio (Local)**: http://localhost:3333
+- **Sanity Management**: https://www.sanity.io/manage
+- **Your Sanity Project**: https://www.sanity.io/manage/personal/project/xzzyyelh
+- **Sanity Docs**: https://www.sanity.io/docs
+- **GROQ Docs**: https://www.sanity.io/docs/groq

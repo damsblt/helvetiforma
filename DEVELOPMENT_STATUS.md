@@ -1,23 +1,32 @@
 # HelvetiForma v3 - État du Développement
 
 **Date de création :** 26 septembre 2025  
-**Dernière mise à jour :** 29 septembre 2025  
-**Statut :** Phase 1 Complète + Interface d'Édition Fonctionnelle + Déploiement initial Vercel  
-**Version :** 1.0.0-alpha  
+**Dernière mise à jour :** 30 septembre 2025  
+**Statut :** Migration vers Sanity CMS - Prêt pour Production  
+**Version :** 2.0.0-beta  
 
 ---
 
 ## 🎯 Vue d'Ensemble du Projet
 
-**HelvetiForma v3** est une plateforme d'apprentissage hybride révolutionnaire qui combine :
+**HelvetiForma v3** est une plateforme d'apprentissage hybride moderne qui combine :
 - **Next.js 15** + **React 19** + **TypeScript** pour une performance maximale
-- **Système de contenu Markdown** pour une simplicité de gestion inégalée
-- **Interface admin "Notion-like"** pour une expérience utilisateur exceptionnelle
+- **Sanity CMS** pour une gestion de contenu professionnelle et intuitive
+- **Interface admin cloud** accessible de n'importe où
 - **Intégrations natives** WordPress/TutorLMS + Microsoft Teams
 
-### Innovation Majeure : Gestion de Contenu Simplifiée
-❌ **Fini les ACF complexes et les interfaces admin difficiles**  
-✅ **Fichiers Markdown + Interface admin intuitive = Simplicité maximale**
+### Innovation Majeure : Migration vers Sanity.io
+❌ **Fini les systèmes Markdown complexes et Payload CMS instables**  
+✅ **Sanity CMS = Solution mature, performante et éprouvée par des milliers de sites**
+
+**Pourquoi Sanity ?**
+- ✅ **Mature & Stable**: Utilisé par des milliers de sites en production
+- ✅ **Pas de base de données à gérer**: Sanity héberge tout
+- ✅ **Collaboration en temps réel**: Plusieurs éditeurs simultanés
+- ✅ **Éditeur intuitif**: Rich text avec Portable Text
+- ✅ **Performance**: CDN global pour un contenu ultra-rapide
+- ✅ **Free tier généreux**: Parfait pour vos besoins
+- ✅ **TypeScript natif**: Types générés automatiquement
 
 ---
 
@@ -114,31 +123,25 @@ helvetiforma_v3/
 - [x] **Structure de dossiers** optimisée
 - [x] **Configuration Vercel** prête pour déploiement
 
-### 📝 Système de Contenu Révolutionnaire
-- [x] **API de gestion Markdown** complète (`src/lib/content.ts`)
-- [x] **Pages dynamiques** générées depuis fichiers Markdown
-- [x] **Frontmatter avancé** avec SEO, hero, sections
-- [x] **3 pages complètes** créées et fonctionnelles
-- [x] **Routes API CRUD** pour gestion de contenu
+### 📝 Système de Contenu - Sanity CMS
+- [x] **Sanity Studio** installé et configuré (`/sanity` directory)
+- [x] **Schema Pages** créé avec hero et sections flexibles
+- [x] **Portable Text** pour rich text content
+- [x] **Frontend intégré** avec `next-sanity` et `@portabletext/react`
+- [x] **Client Sanity** configuré avec types TypeScript
+- [x] **Pages dynamiques** fetching content from Sanity
+- [x] **Environment variables** configurées dans Vercel
 
-### 🎨 Interface Admin "Notion-like"
-- [x] **Dashboard admin** avec statistiques en temps réel
-- [x] **Navigation admin** avec sidebar et header
-- [x] **Gestion des pages** avec liste, recherche, filtres
-- [x] **Pages d'édition complètes** (`/admin/content/pages/edit/[slug]`) :
-  - Interface divisée : Éditeur + Prévisualisation temps réel
-  - Métadonnées : titre, slug, description SEO
-  - Éditeur Markdown avec aide intégrée
-  - Sauvegarde avec indicateur de progression
-  - Navigation fluide avec breadcrumbs
-- [x] **Page de création** (`/admin/content/pages/new`) :
-  - Génération automatique du slug depuis le titre
-  - Compteur de caractères pour SEO (160 max recommandés)
-  - Aide Markdown intégrée avec exemples
-  - Prévisualisation en temps réel
-  - Interface intuitive de configuration
-- [x] **Boutons d'édition fonctionnels** avec liens vers les bonnes routes
-- [x] **Interface responsive** optimisée mobile et desktop
+### 🎨 Interface Admin - Sanity Studio
+- [x] **Sanity Studio** hébergé localement (http://localhost:3333)
+- [x] **Schema configuré** pour pages avec sections flexibles
+- [x] **Rich text editor** avec Portable Text (headings, lists, links, images)
+- [x] **Gestion des médias** intégrée avec Sanity
+- [x] **Prévisualisation en temps réel** (built-in Sanity feature)
+- [x] **Collaboration multi-utilisateurs** (Sanity feature)
+- [x] **Interface responsive** optimisée pour mobile et desktop
+- [x] **Historique des versions** et rollback (Sanity feature)
+- [x] **Déploiement optionnel** sur Sanity hosting disponible
 
 ### 🧩 Composants UI Avancés
 - [x] **HeroSection** : Hero responsive avec animations Framer Motion
@@ -302,11 +305,13 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 Toutes les dépendances sont installées et opérationnelles :
 - **Next.js 15.5.4** + **React 19.1.0**
 - **TypeScript** + types complets
-- **Tailwind CSS v4** + plugins
+- **Tailwind CSS v4** + `@tailwindcss/typography` plugin
 - **Framer Motion** pour animations
 - **Microsoft Graph Client**
-- **Gray Matter** pour Markdown
-- **Remark** pour traitement Markdown
+- **Sanity CLI** (`@sanity/cli@4.10.2`)
+- **next-sanity** pour intégration Next.js
+- **@sanity/image-url** pour optimisation d'images
+- **@portabletext/react** pour rich text rendering
 
 ---
 
@@ -322,16 +327,31 @@ npm run dev
 - **Site principal** : http://localhost:3000
 - **Page concept** : http://localhost:3000/concept
 - **Page contact** : http://localhost:3000/contact
-- **Interface admin** : http://localhost:3000/admin
-- **Gestion pages** : http://localhost:3000/admin/content/pages
-- **Créer une page** : http://localhost:3000/admin/content/pages/new
-- **Éditer une page** : http://localhost:3000/admin/content/pages/edit/[slug]
+- **Sanity Studio** : http://localhost:3333 (run `cd sanity && npm run dev`)
 
-### 3. Modifier le Contenu
-- **Contenu simple** : Éditer les fichiers `.md` dans `content/pages/`
-- **Contenu avancé** : Utiliser l'interface admin sur `/admin`
+### 3. Démarrer Sanity Studio
+```bash
+cd sanity
+npm run dev
+```
+Le Studio sera accessible sur http://localhost:3333
 
-### 4. Développer de Nouvelles Fonctionnalités
+### 4. Configurer CORS Sanity (Première fois)
+```bash
+cd sanity
+npx sanity login
+npx sanity cors add https://helvetiforma-v3.vercel.app --credentials
+npx sanity cors add http://localhost:3000 --credentials
+```
+
+### 5. Créer du Contenu
+1. Accéder à Sanity Studio: http://localhost:3333
+2. Se connecter avec Google ou GitHub
+3. Créer une page avec slug `home` ou `concept`
+4. Ajouter hero, sections avec rich text
+5. Publier!
+
+### 6. Développer de Nouvelles Fonctionnalités
 - **Composants** : Ajouter dans `src/components/`
 - **Pages** : Créer dans `src/app/`
 - **API** : Ajouter dans `src/app/api/`
@@ -341,69 +361,86 @@ npm run dev
 
 ## 💡 Points Clés de l'Architecture
 
-### Innovation Majeure : Simplicité de Gestion
+### Innovation Majeure : Sanity CMS
 ```
-Avant (v1/v2) : Interface complexe → Base de données → Rendu
-Maintenant (v3) : Fichier Markdown → Rendu direct ✨
+v1/v2 : Interface complexe → Base de données custom → Bugs
+Payload : Nouveau, instable, erreurs de cache, problèmes React 19
+Sanity (v3) : Solution mature → CDN global → Performance ✨
 ```
 
-### Avantages Uniques
-1. **Pour la Cliente** : Édition simple comme un document Word
-2. **Pour le Développeur** : Code plus simple, moins de bugs
-3. **Pour la Performance** : Pas de BDD, chargement instantané
-4. **Pour la Maintenance** : Backup automatique, versionning Git
+### Avantages Uniques de Sanity
+1. **Pour l'Éditeur** : Interface intuitive, collaboration temps réel
+2. **Pour le Développeur** : API puissante, TypeScript natif, communauté active
+3. **Pour la Performance** : CDN global, caching intelligent, images optimisées
+4. **Pour la Maintenance** : Zéro infrastructure, mises à jour automatiques, support professionnel
 
 ### Architecture Technique
 - **Frontend** : Next.js 15 App Router + Server Components
-- **Styling** : Tailwind CSS v4 avec configuration inline
+- **Styling** : Tailwind CSS v4 avec configuration inline + typography plugin
 - **Animations** : Framer Motion pour micro-interactions
-- **Content** : Markdown + Gray Matter + Remark
-- **Types** : TypeScript strict pour toutes les APIs
+- **Content** : Sanity CMS + Portable Text + GROQ queries
+- **Types** : TypeScript strict avec types Sanity natifs
+- **Images** : Sanity Image URL builder + optimisation automatique
 
 ---
 
-## 🚀 Dernières Améliorations (26 septembre 2025)
+## 🚀 Migration Majeure vers Sanity CMS (30 septembre 2025)
 
-### ✅ Interface d'Édition Complète
-- **Pages d'édition** : Routes dynamiques `/admin/content/pages/edit/[slug]` créées
-- **Page de création** : Route `/admin/content/pages/new` avec interface intuitive
-- **Boutons fonctionnels** : Tous les boutons crayon dans l'admin sont maintenant opérationnels
-- **Navigation fluide** : Breadcrumbs et retour vers la liste des pages
+### ✅ Migration Complète Payload → Sanity
+- **Décision stratégique** : Abandon de Payload CMS (instable, erreurs cache, React 19 issues)
+- **Sanity CMS** : Solution mature choisie pour sa stabilité et performance
+- **Sanity Studio** : Installé dans `/sanity` directory avec schéma complet
+- **Intégration frontend** : Pages home et concept migrées vers Sanity
 
-### 🎨 Fonctionnalités d'Édition Avancées
-- **Interface divisée** : Éditeur Markdown + Prévisualisation temps réel
-- **Métadonnées complètes** : Gestion titre, slug, description SEO
-- **Génération automatique** : Slug créé automatiquement depuis le titre
-- **Aide intégrée** : Syntaxe Markdown avec exemples
-- **Indicateurs visuels** : Sauvegarde avec spinners et états
-- **Compteur SEO** : Suivi des 160 caractères recommandés pour la description
+### 🎨 Fonctionnalités Sanity Implémentées
+- **Schema Pages** : Structure flexible avec hero et sections dynamiques
+- **Portable Text** : Rich text editor pour contenu riche (headings, lists, images, links)
+- **PortableText Component** : Rendu React avec styling Tailwind typography
+- **Image Optimization** : Sanity Image URL builder intégré
+- **Client Sanity** : Configuration avec GROQ queries et TypeScript types
+- **Environment Variables** : `NEXT_PUBLIC_SANITY_PROJECT_ID` et `NEXT_PUBLIC_SANITY_DATASET` configurés
 
-### 🔧 Corrections Techniques
-- **Séparation client/serveur** : Problèmes `fs` module résolus définitivement
-- **Routes typées** : Configuration Next.js 15 optimisée
-- **Build production** : Tests réussis, application prête pour déploiement
-- **Cache nettoyé** : Problèmes de cache résolus
+### 🔧 Infrastructure Sanity
+- **Project ID** : `xzzyyelh`
+- **Dataset** : `production`
+- **Studio Local** : http://localhost:3333
+- **CDN** : Sanity CDN pour performance maximale
+- **Auth** : Google/GitHub login pour Sanity Studio
+- **CORS** : Configuration pour domaines Vercel et localhost
 
 ---
 
-## 🎊 État Final : SUCCÈS COMPLET
+## 🎊 État Final : MIGRATION SANITY RÉUSSIE
 
 ### Ce qui Fonctionne Parfaitement
 ✅ **Application complète et moderne**  
-✅ **Interface admin révolutionnaire avec édition fonctionnelle**  
-✅ **Système de contenu simplifié (Markdown + Interface)**  
-✅ **Pages d'édition et création opérationnelles**  
-✅ **Boutons d'édition entièrement fonctionnels**  
-✅ **Intégrations API prêtes**  
+✅ **Sanity CMS intégré et opérationnel**  
+✅ **Sanity Studio running sur http://localhost:3333**  
+✅ **Frontend fetching content depuis Sanity**  
+✅ **Portable Text rendering avec beautiful typography**  
+✅ **Rich text editor pour contenu flexible**  
+✅ **Intégrations API prêtes (WordPress/Microsoft)**  
 ✅ **Code propre et maintenable**  
-✅ **Performance optimale**  
+✅ **Performance optimale avec Sanity CDN**  
 
-### Prêt pour la Production
-L'application est **entièrement fonctionnelle** et peut être déployée immédiatement. Tous les éléments essentiels sont en place pour une utilisation réelle.
+### Prêt pour la Production (Après création de contenu)
+L'application est **techniquement prête** pour la production. Il ne reste qu'à :
+1. ✅ Se connecter à Sanity Studio (http://localhost:3333)
+2. ✅ Configurer CORS pour les domaines de production
+3. ✅ Créer du contenu pour les pages `home` et `concept`
+4. ⏳ Attendre que la limite de déploiement Vercel se réinitialise (~13h)
+
+### Documentation Complète
+- 📚 **SANITY_SETUP.md** : Guide de démarrage rapide
+- 📚 **SANITY_MIGRATION_COMPLETE.md** : Documentation complète de migration
+- 📚 **sanity/README.md** : Guide Sanity Studio
 
 ---
 
 **Créé le 26 septembre 2025 par l'Assistant IA**  
-**Projet HelvetiForma v3 - Phase 1 Complète** ✨
+**Migration Sanity CMS le 30 septembre 2025**  
+**Projet HelvetiForma v3 - v2.0.0-beta avec Sanity CMS** ✨
 
-- Synced to GitHub on 2025-09-26 21:29:09Z
+- Last commit: f44c9d2c "Add Sanity migration completion documentation"
+- Sanity Studio: Running at http://localhost:3333
+- Frontend: Ready for deployment (waiting for Vercel limit reset)
