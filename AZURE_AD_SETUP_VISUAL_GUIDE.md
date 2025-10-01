@@ -142,3 +142,5 @@ I see `User.Invite.All` has "Pas accordé pour HelvetiForma.ch" with warning ico
 
 **Once you grant admin consent, the real calendar events from damien@helvetiforma.onmicrosoft.com will appear!** 🎉
 
+
+

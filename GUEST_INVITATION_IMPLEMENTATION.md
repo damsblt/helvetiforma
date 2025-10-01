@@ -96,3 +96,5 @@ User clicks button → API call → Microsoft Graph:
 **This is exactly the flow you wanted!** 🎉
 
 Once you add the `User.Invite.All` permission, the system will work perfectly with automatic guest invitations and event registration.
+
+

@@ -136,3 +136,5 @@ Would you like me to:
 1. Wait while you assign yourself Global Admin role?
 2. Or implement the workaround approach using delegated permissions?
 
+
+
