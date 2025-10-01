@@ -11,11 +11,20 @@ import PortableText from '@/components/ui/PortableText'
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getPageBySlug('contact')
   
-  if (!content) {
-    return {
+  // Use default metadata if no content from Sanity
+  const defaultMetadata = {
+    title: 'Contact - HelvetiForma',
+    description: 'Contactez notre équipe d\'experts pour vos questions sur la formation professionnelle.',
+    keywords: 'contact, formation, conseil, accompagnement, HelvetiForma',
+    openGraph: {
       title: 'Contact - HelvetiForma',
       description: 'Contactez notre équipe d\'experts pour vos questions sur la formation professionnelle.',
-    }
+      type: 'website' as const,
+    },
+  }
+  
+  if (!content) {
+    return defaultMetadata
   }
 
   return {
@@ -33,20 +42,34 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ContactPage() {
   const content = await getPageBySlug('contact')
   
-  if (!content) {
-    notFound()
+  // If no content from Sanity, use default content
+  const defaultContent = {
+    title: 'Contact',
+    description: 'Contactez notre équipe d\'experts pour vos questions sur la formation professionnelle.',
+    hero: {
+      title: 'Contactez-nous',
+      subtitle: 'Notre équipe d\'experts est là pour vous accompagner dans votre parcours de formation professionnelle.',
+      backgroundImage: null,
+      ctaPrimary: {
+        text: 'Découvrir nos formations',
+        link: '/concept'
+      }
+    },
+    sections: []
   }
+  
+  const pageContent = content || defaultContent
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      {content.hero && (
+      {pageContent.hero && (
         <HeroSection 
           hero={{
-            title: content.hero.title || '',
-            subtitle: content.hero.subtitle || '',
-            backgroundImage: content.hero.backgroundImage,
-            cta_primary: content.hero.ctaPrimary,
+            title: pageContent.hero.title || '',
+            subtitle: pageContent.hero.subtitle || '',
+            backgroundImage: pageContent.hero.backgroundImage,
+            cta_primary: pageContent.hero.ctaPrimary,
           }} 
         />
       )}
@@ -78,7 +101,7 @@ export default async function ContactPage() {
       </section>
       
       {/* Dynamic Sections from Sanity CMS */}
-      {content.sections?.map((section, index) => {
+      {pageContent.sections?.map((section, index) => {
         // Rich Text Section
         if (section._type === 'richTextSection' && section.content) {
           const bgColor = section.backgroundColor === 'gray' ? 'bg-gray-50' :
