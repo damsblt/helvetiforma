@@ -1,6 +1,7 @@
 import { getPageBySlug } from '@/lib/sanity'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import HeroSection from '@/components/sections/HeroSection'
 import ContactForm from '@/components/forms/ContactForm'
 import ContactInfo from '@/components/sections/ContactInfo'
@@ -86,7 +87,9 @@ export default async function ContactPage() {
               <p className="text-muted-foreground mb-8">
                 Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.
               </p>
-              <ContactForm />
+              <Suspense fallback={<div>Chargement du formulaire...</div>}>
+                <ContactForm />
+              </Suspense>
             </div>
             
             {/* Contact Information */}

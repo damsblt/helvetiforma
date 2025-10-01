@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'next/navigation'
 
 interface FormData {
   name: string
@@ -14,6 +15,7 @@ interface FormData {
 }
 
 export default function ContactForm() {
+  const searchParams = useSearchParams()
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -23,6 +25,21 @@ export default function ContactForm() {
     message: '',
     interest: '',
   })
+
+  // Handle webinar parameters from URL
+  useEffect(() => {
+    const webinar = searchParams.get('webinar')
+    const webinarId = searchParams.get('webinarId')
+    
+    if (webinar) {
+      setFormData(prev => ({
+        ...prev,
+        subject: `Demande d'accès au webinaire: ${webinar}`,
+        message: `Bonjour,\n\nJe souhaite participer au webinaire "${webinar}" organisé par HelvetiForma.\n\nPouvez-vous m'envoyer une invitation pour rejoindre la session Microsoft Teams ?\n\nCordialement`,
+        interest: 'webinaire'
+      }))
+    }
+  }, [searchParams])
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')

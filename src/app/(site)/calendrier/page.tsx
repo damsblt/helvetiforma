@@ -40,31 +40,51 @@ export default function CalendrierPage() {
     try {
       setRegistering(webinarId)
       
-      // Store webinar info for after guest registration
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        sessionStorage.setItem('pendingWebinar', JSON.stringify({
-          id: webinarId,
-          title: webinarTitle,
-          timestamp: Date.now()
-        }))
+      // Prompt user for their email and name
+      const email = prompt('Veuillez entrer votre adresse email pour recevoir l\'invitation:')
+      if (!email) {
+        setRegistering(null)
+        return
       }
-      
-      // Redirect to Microsoft guest invitation
-      const tenantId = '0c41c554-0d55-4550-8412-ba89c98481f0'
-      const currentUrl = typeof window !== 'undefined' ? window.location.origin : ''
-      const redirectUrl = encodeURIComponent(`https://myaccount.microsoft.com/?tenantId=${tenantId}`)
-      
-      // Microsoft self-service guest signup URL
-      const signupUrl = `https://signup.microsoft.com/get-started/signup?sku=guest&ru=${redirectUrl}`
-      
-      // Redirect user to Microsoft guest invitation
-      if (typeof window !== 'undefined') {
-        window.location.href = signupUrl
+
+      const name = prompt('Veuillez entrer votre nom complet:')
+      if (!name) {
+        setRegistering(null)
+        return
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        alert('Veuillez entrer une adresse email valide')
+        setRegistering(null)
+        return
+      }
+
+      // Send guest invitation via API
+      const response = await fetch(`/api/webinars/${encodeURIComponent(webinarId)}/invite`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          name: name
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        alert(`✅ ${result.message}\n\nVous recevrez un email avec le lien pour rejoindre le webinaire Teams.`)
+      } else {
+        alert(`❌ ${result.message}`)
       }
       
     } catch (err) {
-      alert('Une erreur est survenue lors de la redirection')
+      alert('Une erreur est survenue lors de l\'envoi de l\'invitation')
       console.error(err)
+    } finally {
       setRegistering(null)
     }
   }
@@ -189,11 +209,11 @@ export default function CalendrierPage() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                      <span><strong>Créez un compte invité Microsoft</strong> (gratuit et rapide)</span>
+                      <span><strong>Entrez votre email et nom</strong> dans la popup</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                      <span><strong>Recevez votre invitation par email</strong> après approbation</span>
+                      <span><strong>Recevez votre invitation Teams par email</strong> automatiquement</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
@@ -344,7 +364,7 @@ export default function CalendrierPage() {
                             </svg>
                             <span>Demander l'accès</span>
                           </div>
-                          <span className="text-xs opacity-90 mt-1">Invitation Microsoft requise</span>
+                          <span className="text-xs opacity-90 mt-1">Invitation automatique</span>
                         </div>
                       )}
                     </button>

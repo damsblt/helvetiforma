@@ -4,6 +4,15 @@ const nextConfig: NextConfig = {
   // App Router optimisé
   // typedRoutes: true, // Désactivé temporairement pour éviter les erreurs de build
   
+  // Exclude Sanity directory from Next.js build
+  webpack: (config) => {
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: ['**/sanity/**', '**/node_modules/**'],
+    }
+    return config
+  },
+  
   // Images optimisées
   images: {
     remotePatterns: [

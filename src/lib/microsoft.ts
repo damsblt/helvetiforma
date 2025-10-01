@@ -454,3 +454,133 @@ export function canRegisterForWebinar(webinar: TeamsWebinar, userEmail?: string)
 
   return { canRegister: true }
 }
+
+/**
+ * Invite a guest user to the organization via Microsoft Graph
+ */
+export async function inviteGuestUser(
+  email: string,
+  displayName: string,
+  redirectUrl?: string
+): Promise<{ success: boolean; message: string; inviteRedeemUrl?: string }> {
+  try {
+    // Get application token for User.Invite.All permission
+    const tokenResponse = await fetch(
+      `https://login.microsoftonline.com/${process.env.MICROSOFT_TENANT_ID}/oauth2/v2.0/token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: process.env.MICROSOFT_CLIENT_ID!,
+          client_secret: process.env.MICROSOFT_CLIENT_SECRET!,
+          scope: 'https://graph.microsoft.com/.default',
+          grant_type: 'client_credentials',
+        }),
+      }
+    )
+
+    if (!tokenResponse.ok) {
+      throw new Error('Failed to get application token')
+    }
+
+    const { access_token } = await tokenResponse.json()
+    const graphClient = createGraphClient(access_token)
+
+    // Send guest invitation
+    const invitation = await graphClient
+      .api('/invitations')
+      .post({
+        invitedUserEmailAddress: email,
+        invitedUserDisplayName: displayName,
+        inviteRedirectUrl: redirectUrl || 'https://myaccount.microsoft.com/',
+        sendInvitationMessage: true,
+        invitationMessage: `Bonjour ${displayName},\n\nVous avez été invité à rejoindre HelvetiForma pour participer à nos webinaires de formation.\n\nCliquez sur le lien ci-dessous pour accepter l'invitation et accéder à nos sessions Microsoft Teams.\n\nCordialement,\nL'équipe HelvetiForma`
+      })
+
+    return {
+      success: true,
+      message: 'Invitation envoyée avec succès',
+      inviteRedeemUrl: invitation.inviteRedeemUrl
+    }
+  } catch (error) {
+    console.error('Error inviting guest user:', error)
+    return {
+      success: false,
+      message: 'Erreur lors de l\'envoi de l\'invitation'
+    }
+  }
+}
+
+/**
+ * Add a guest user to a calendar event
+ */
+export async function addGuestToEvent(
+  eventId: string,
+  guestEmail: string,
+  guestName: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    // Get application token
+    const tokenResponse = await fetch(
+      `https://login.microsoftonline.com/${process.env.MICROSOFT_TENANT_ID}/oauth2/v2.0/token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: process.env.MICROSOFT_CLIENT_ID!,
+          client_secret: process.env.MICROSOFT_CLIENT_SECRET!,
+          scope: 'https://graph.microsoft.com/.default',
+          grant_type: 'client_credentials',
+        }),
+      }
+    )
+
+    if (!tokenResponse.ok) {
+      throw new Error('Failed to get application token')
+    }
+
+    const { access_token } = await tokenResponse.json()
+    const graphClient = createGraphClient(access_token)
+    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'damien@helvetiforma.onmicrosoft.com'
+
+    // Get current event
+    const event = await graphClient
+      .api(`/users/${calendarUser}/calendar/events/${eventId}`)
+      .get()
+
+    if (!event) {
+      return {
+        success: false,
+        message: 'Événement non trouvé'
+      }
+    }
+
+    // Add guest as attendee
+    const attendees = event.attendees || []
+    attendees.push({
+      emailAddress: {
+        address: guestEmail,
+        name: guestName
+      },
+      type: 'required'
+    })
+
+    // Update event with new attendee
+    await graphClient
+      .api(`/users/${calendarUser}/calendar/events/${eventId}`)
+      .patch({
+        attendees: attendees
+      })
+
+    return {
+      success: true,
+      message: 'Invité ajouté à l\'événement'
+    }
+  } catch (error) {
+    console.error('Error adding guest to event:', error)
+    return {
+      success: false,
+      message: 'Erreur lors de l\'ajout de l\'invité'
+    }
+  }
+}
