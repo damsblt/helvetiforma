@@ -16,7 +16,7 @@ console.log('Sanity Project ID Debug:', {
 
 export const sanityConfig = {
   projectId,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || '~production',
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
   apiVersion: '2024-01-01',
   useCdn: false, // Disable CDN during build to avoid validation issues
 }
