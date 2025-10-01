@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getNavigationConfigClient } from '@/lib/content-client'
-import type { NavigationConfig } from '@/lib/content-types'
+import { navigationConfig } from '@/lib/navigation'
+import type { NavigationConfig } from '@/lib/navigation'
 
 export default function Header() {
   const [navigation, setNavigation] = useState<NavigationConfig | null>(null)
@@ -14,8 +14,7 @@ export default function Header() {
   const pathname = usePathname()
 
   useEffect(() => {
-    const config = getNavigationConfigClient()
-    setNavigation(config)
+    setNavigation(navigationConfig)
   }, [])
 
   useEffect(() => {

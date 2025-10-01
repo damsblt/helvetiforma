@@ -36,24 +36,24 @@ export default function AdminDashboard() {
 
   const quickActions = [
     {
-      title: 'Nouvelle page',
-      description: 'Créer une nouvelle page de contenu',
-      href: '/admin/content/pages/new',
+      title: 'Sanity Studio',
+      description: 'Gérer le contenu avec Sanity',
+      href: '/admin/sanity',
       icon: '📄',
       color: 'bg-blue-500',
     },
     {
-      title: 'Nouvelle formation',
-      description: 'Ajouter une formation au catalogue',
-      href: '/admin/content/formations/new',
-      icon: '🎓',
+      title: 'Microsoft Teams',
+      description: 'Configurer l\'intégration Teams',
+      href: '/admin/integrations/teams',
+      icon: '👥',
       color: 'bg-green-500',
     },
     {
-      title: 'Upload média',
-      description: 'Ajouter des images ou documents',
-      href: '/admin/media/upload',
-      icon: '📤',
+      title: 'WordPress',
+      description: 'Gérer l\'intégration WordPress',
+      href: '/admin/integrations/wordpress',
+      icon: '🌐',
       color: 'bg-purple-500',
     },
     {
@@ -66,10 +66,10 @@ export default function AdminDashboard() {
   ]
 
   const recentActivity = [
-    { action: 'Page "Accueil" modifiée', time: '2 min ago', type: 'edit' },
-    { action: 'Formation "Comptabilité" créée', time: '1h ago', type: 'create' },
-    { action: 'Image "hero-bg.jpg" uploadée', time: '3h ago', type: 'upload' },
-    { action: 'Navigation mise à jour', time: '1 jour ago', type: 'edit' },
+    { action: 'Page "Accueil" modifiée dans Sanity', time: '2 min ago', type: 'edit' },
+    { action: 'Webinaire Teams créé', time: '1h ago', type: 'create' },
+    { action: 'Cours WordPress synchronisé', time: '3h ago', type: 'sync' },
+    { action: 'Configuration mise à jour', time: '1 jour ago', type: 'edit' },
   ]
 
   return (
@@ -174,9 +174,9 @@ export default function AdminDashboard() {
           <div className="space-y-3">
             {[
               { service: 'Site web', status: 'online', response: '45ms' },
+              { service: 'Sanity CMS', status: 'online', response: '89ms' },
               { service: 'WordPress API', status: 'online', response: '120ms' },
-              { service: 'Microsoft Teams', status: 'online', response: '89ms' },
-              { service: 'Supabase', status: 'online', response: '67ms' },
+              { service: 'Microsoft Teams', status: 'online', response: '67ms' },
             ].map((service, index) => (
               <div key={service.service} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

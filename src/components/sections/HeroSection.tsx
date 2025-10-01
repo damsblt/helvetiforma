@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { urlFor } from '@/lib/sanity'
 
 interface HeroProps {
   hero: {
@@ -23,20 +24,23 @@ interface HeroProps {
 }
 
 export default function HeroSection({ hero }: HeroProps) {
+  // Get the background image URL from Sanity or use the provided string
+  const backgroundImageUrl = hero.backgroundImage 
+    ? urlFor(hero.backgroundImage).width(1920).height(1080).url()
+    : hero.background_image
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background */}
-      {(hero.background_image || hero.backgroundImage) ? (
+      {backgroundImageUrl ? (
         <div className="absolute inset-0 z-0">
-          {hero.background_image && (
-            <Image
-              src={hero.background_image}
-              alt="Hero background"
-              fill
-              className="object-cover"
-              priority
-            />
-          )}
+          <Image
+            src={backgroundImageUrl}
+            alt="Hero background"
+            fill
+            className="object-cover"
+            priority
+          />
           <div className="absolute inset-0 bg-black/50" />
         </div>
       ) : (

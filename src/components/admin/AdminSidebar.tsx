@@ -8,24 +8,15 @@ const menuItems = [
   {
     category: 'Contenu',
     items: [
-      { name: 'Pages', href: '/admin/content/pages', icon: '📄' },
-      { name: 'Formations', href: '/admin/content/formations', icon: '🎓' },
-      { name: 'Navigation', href: '/admin/content/navigation', icon: '🧭' },
-    ]
-  },
-  {
-    category: 'Médias',
-    items: [
-      { name: 'Bibliothèque', href: '/admin/media', icon: '🖼️' },
-      { name: 'Upload', href: '/admin/media/upload', icon: '📤' },
+      { name: 'Sanity Studio', href: '/admin/sanity', icon: '📄' },
+      { name: 'Formations', href: '/admin/formations', icon: '🎓' },
     ]
   },
   {
     category: 'Intégrations',
     items: [
-      { name: 'TutorLMS', href: '/admin/integrations/tutor', icon: '🎯' },
       { name: 'Microsoft Teams', href: '/admin/integrations/teams', icon: '👥' },
-      { name: 'Supabase', href: '/admin/integrations/supabase', icon: '🗄️' },
+      { name: 'WordPress', href: '/admin/integrations/wordpress', icon: '🌐' },
     ]
   },
   {
@@ -33,7 +24,6 @@ const menuItems = [
     items: [
       { name: 'Général', href: '/admin/settings', icon: '⚙️' },
       { name: 'SEO', href: '/admin/settings/seo', icon: '🔍' },
-      { name: 'Sauvegardes', href: '/admin/settings/backups', icon: '💾' },
     ]
   }
 ]

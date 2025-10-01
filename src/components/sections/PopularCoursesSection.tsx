@@ -26,48 +26,65 @@ export default function PopularCoursesSection({ title, subtitle, limit = 3 }: Po
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simuler le chargement des cours populaires depuis TutorLMS
-    // En production, ceci sera remplacé par un appel API réel
     const fetchPopularCourses = async () => {
       try {
-        // Données simulées - à remplacer par l'API TutorLMS
-        const mockCourses: Course[] = [
-          {
-            id: 1,
-            title: "Comptabilité Suisse Fondamentale",
-            description: "Maîtrisez les bases de la comptabilité selon les normes suisses",
-            price: 299,
-            instructor: "Marie Dubois",
-            image: "/images/course-comptabilite.jpg",
-            level: "Débutant",
-            duration: "8 semaines"
-          },
-          {
-            id: 2,
-            title: "Gestion des Salaires en Suisse",
-            description: "Formation complète sur le calcul et la gestion des salaires",
-            price: 399,
-            instructor: "Jean-Claude Martin",
-            image: "/images/course-salaires.jpg",
-            level: "Intermédiaire",
-            duration: "6 semaines"
-          },
-          {
-            id: 3,
-            title: "Impôt à la Source",
-            description: "Tout savoir sur l'impôt à la source en Suisse",
-            price: 249,
-            instructor: "Sophie Lenoir",
-            image: "/images/course-impot.jpg",
-            level: "Intermédiaire",
-            duration: "4 semaines"
-          }
-        ]
+        const response = await fetch(`/api/wordpress/courses?per_page=${limit}&status=publish`)
+        const result = await response.json()
         
-        await new Promise(resolve => setTimeout(resolve, 500)) // Simuler le délai réseau
-        setCourses(mockCourses.slice(0, limit))
+        if (result.success && result.data) {
+          // Transform WordPress courses to our Course interface
+          const transformedCourses: Course[] = result.data.map((course: any) => ({
+            id: course.id,
+            title: course.title?.rendered || course.title || 'Cours sans titre',
+            description: course.excerpt?.rendered || course.content?.rendered || course.description || 'Description non disponible',
+            price: course.price || 0,
+            instructor: course.instructor || 'Instructeur non spécifié',
+            image: course.featured_media_url || course.image || '/images/course-default.jpg',
+            level: course.level || 'Tous niveaux',
+            duration: course.duration || 'Durée non spécifiée'
+          }))
+          
+          setCourses(transformedCourses)
+        } else {
+          // Fallback to mock data if API fails
+          const mockCourses: Course[] = [
+            {
+              id: 1,
+              title: "Comptabilité Suisse Fondamentale",
+              description: "Maîtrisez les bases de la comptabilité selon les normes suisses",
+              price: 299,
+              instructor: "Marie Dubois",
+              image: "/images/course-comptabilite.jpg",
+              level: "Débutant",
+              duration: "8 semaines"
+            },
+            {
+              id: 2,
+              title: "Gestion des Salaires en Suisse",
+              description: "Formation complète sur le calcul et la gestion des salaires",
+              price: 399,
+              instructor: "Jean-Claude Martin",
+              image: "/images/course-salaires.jpg",
+              level: "Intermédiaire",
+              duration: "6 semaines"
+            },
+            {
+              id: 3,
+              title: "Impôt à la Source",
+              description: "Tout savoir sur l'impôt à la source en Suisse",
+              price: 249,
+              instructor: "Sophie Lenoir",
+              image: "/images/course-impot.jpg",
+              level: "Intermédiaire",
+              duration: "4 semaines"
+            }
+          ]
+          setCourses(mockCourses.slice(0, limit))
+        }
       } catch (error) {
         console.error('Error fetching courses:', error)
+        // Set empty array on error
+        setCourses([])
       } finally {
         setLoading(false)
       }

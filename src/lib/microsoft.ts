@@ -1,6 +1,7 @@
 // Microsoft Graph API Integration pour Teams
 import { Client } from '@microsoft/microsoft-graph-client'
 import { TeamsWebinar, WebinarRegistration, CalendarEvent } from '@/types/microsoft'
+import { auth } from '@/auth'
 
 // Configuration Microsoft Graph
 const CLIENT_ID = process.env.MICROSOFT_CLIENT_ID || ''
@@ -16,6 +17,17 @@ function createGraphClient(accessToken: string): Client {
       done(null, accessToken)
     },
   })
+}
+
+/**
+ * Obtient le client Graph avec le token de la session utilisateur
+ */
+export async function getAuthenticatedGraphClient(): Promise<Client | null> {
+  const session = await auth()
+  if (!session?.accessToken) {
+    return null
+  }
+  return createGraphClient(session.accessToken)
 }
 
 /**
@@ -51,46 +63,65 @@ async function getApplicationAccessToken(): Promise<string> {
 }
 
 /**
- * Récupère les événements de calendrier (webinaires)
+ * Récupère les événements de calendrier (webinaires) avec le token utilisateur
  */
 export async function getTeamsWebinars(params?: {
   startDate?: Date
   endDate?: Date
   limit?: number
+  accessToken?: string
 }): Promise<TeamsWebinar[]> {
   try {
-    // En mode développement, retourner des données simulées
-    if (process.env.NODE_ENV === 'development') {
+    // Si pas de token, retourner des données simulées
+    if (!params?.accessToken) {
+      console.log('No access token provided, returning mock data')
       return getMockWebinars(params)
     }
 
-    const accessToken = await getApplicationAccessToken()
-    const graphClient = createGraphClient(accessToken)
+    const graphClient = createGraphClient(params.accessToken)
 
     const startTime = params?.startDate?.toISOString() || new Date().toISOString()
     const endTime = params?.endDate?.toISOString() || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
+    // Use specific user's calendar (damien@helvetiforma.onmicrosoft.com)
+    // When using application permissions, use /users/{userId}/calendar/events
+    const calendarUser = 'damien@helvetiforma.onmicrosoft.com'
+    
     const events = await graphClient
-      .api('/me/calendar/events')
+      .api(`/users/${calendarUser}/calendar/events`)
       .filter(`start/dateTime ge '${startTime}' and end/dateTime le '${endTime}'`)
-      .select('id,subject,body,start,end,location,attendees,onlineMeeting')
+      .select('id,subject,body,start,end,location,attendees,onlineMeeting,webLink')
       .top(params?.limit || 50)
       .get()
 
-    return events.value.map((event: any): TeamsWebinar => ({
-      id: event.id,
-      title: event.subject,
-      description: event.body?.content || '',
-      startDate: new Date(event.start.dateTime),
-      endDate: new Date(event.end.dateTime),
-      meetingUrl: event.onlineMeeting?.joinUrl || '',
-      attendees: event.attendees?.map((attendee: any) => attendee.emailAddress.address) || [],
-      maxAttendees: 100, // Valeur par défaut
-      registrationCount: event.attendees?.length || 0,
-      status: 'scheduled',
-      isPublic: true,
-      tags: ['webinaire', 'formation'],
-    }))
+    return events.value.map((event: any): TeamsWebinar => {
+      // Strip HTML from description
+      const description = event.body?.content || ''
+      const cleanDescription = description
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+        .replace(/&amp;/g, '&') // Replace &amp; with &
+        .replace(/&lt;/g, '<') // Replace &lt; with <
+        .replace(/&gt;/g, '>') // Replace &gt; with >
+        .replace(/&quot;/g, '"') // Replace &quot; with "
+        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .trim()
+      
+      return {
+        id: event.id,
+        title: event.subject || 'Événement sans titre',
+        description: cleanDescription || 'Aucune description disponible',
+        startDate: new Date(event.start.dateTime),
+        endDate: new Date(event.end.dateTime),
+        meetingUrl: event.onlineMeeting?.joinUrl || event.webLink || '',
+        attendees: event.attendees?.map((attendee: any) => attendee.emailAddress.address) || [],
+        maxAttendees: 100, // Valeur par défaut
+        registrationCount: event.attendees?.length || 0,
+        status: 'scheduled',
+        isPublic: true,
+        tags: ['webinaire', 'formation'],
+      }
+    })
   } catch (error) {
     console.error('Error fetching Teams webinars:', error)
     return getMockWebinars(params)
@@ -98,30 +129,46 @@ export async function getTeamsWebinars(params?: {
 }
 
 /**
- * Récupère un webinaire spécifique par son ID
+ * Récupère un webinaire spécifique par son ID avec le token utilisateur
  */
-export async function getTeamsWebinar(id: string): Promise<TeamsWebinar | null> {
+export async function getTeamsWebinar(id: string, accessToken?: string): Promise<TeamsWebinar | null> {
   try {
-    if (process.env.NODE_ENV === 'development') {
+    // Si pas de token, retourner des données simulées
+    if (!accessToken) {
+      console.log('No access token provided for getTeamsWebinar, returning mock data')
       const mockWebinars = getMockWebinars()
       return mockWebinars.find(w => w.id === id) || null
     }
 
-    const accessToken = await getApplicationAccessToken()
     const graphClient = createGraphClient(accessToken)
 
+    // Use specific user's calendar (damien@helvetiforma.onmicrosoft.com)
+    const calendarUser = 'damien@helvetiforma.onmicrosoft.com'
+    
     const event = await graphClient
-      .api(`/me/calendar/events/${id}`)
-      .select('id,subject,body,start,end,location,attendees,onlineMeeting')
+      .api(`/users/${calendarUser}/calendar/events/${id}`)
+      .select('id,subject,body,start,end,location,attendees,onlineMeeting,webLink')
       .get()
+
+    // Strip HTML from description
+    const description = event.body?.content || ''
+    const cleanDescription = description
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/\s+/g, ' ')
+      .trim()
 
     return {
       id: event.id,
-      title: event.subject,
-      description: event.body?.content || '',
+      title: event.subject || 'Événement sans titre',
+      description: cleanDescription || 'Aucune description disponible',
       startDate: new Date(event.start.dateTime),
       endDate: new Date(event.end.dateTime),
-      meetingUrl: event.onlineMeeting?.joinUrl || '',
+      meetingUrl: event.onlineMeeting?.joinUrl || event.webLink || '',
       attendees: event.attendees?.map((attendee: any) => attendee.emailAddress.address) || [],
       maxAttendees: 100,
       registrationCount: event.attendees?.length || 0,
@@ -130,7 +177,7 @@ export async function getTeamsWebinar(id: string): Promise<TeamsWebinar | null> 
       tags: ['webinaire', 'formation'],
     }
   } catch (error) {
-    console.error(`Error fetching Teams webinar ${id}:`, error)
+    console.error(`Error fetching Teams webinar:`, error)
     return null
   }
 }

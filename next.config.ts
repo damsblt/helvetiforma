@@ -1,4 +1,3 @@
-import { withPayload } from "@payloadcms/next/withPayload";
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
@@ -17,6 +16,12 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'api.helvetiforma.ch',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
         port: '',
         pathname: '/**',
       },
@@ -62,4 +67,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withPayload(nextConfig)
+export default nextConfig

@@ -1,9 +1,9 @@
 # HelvetiForma v3 - État du Développement
 
 **Date de création :** 26 septembre 2025  
-**Dernière mise à jour :** 30 septembre 2025  
-**Statut :** Migration vers Sanity CMS - Prêt pour Production  
-**Version :** 2.0.0-beta  
+**Dernière mise à jour :** 1 octobre 2025  
+**Statut :** Microsoft Teams Integration Complete - Ready for Azure AD Setup  
+**Version :** 2.1.0-beta  
 
 ---
 
@@ -159,14 +159,20 @@ helvetiforma_v3/
   - Gestion des cours (lecture, création, mise à jour)
   - Gestion des utilisateurs et inscriptions
   - Types TypeScript complets
-- [x] **Microsoft Graph/Teams** :
+- [x] **Microsoft Graph/Teams** : ✅ **OPÉRATIONNEL**
+  - NextAuth.js v5 avec Microsoft Entra ID provider
   - API webinaires avec authentification OAuth2
   - Gestion des événements calendrier
   - Inscription/désinscription aux webinaires
   - Types TypeScript complets
+  - Page calendrier avec UI moderne
+  - Protection middleware pour routes authentifiées
 - [x] **Routes API Next.js** :
+  - `/api/auth/[...nextauth]` - Authentification Microsoft ✅
+  - `/api/webinars` - Liste et création de webinaires ✅
+  - `/api/webinars/[id]` - Détails d'un webinaire ✅
+  - `/api/webinars/[id]/register` - Inscription/désinscription ✅
   - `/api/wordpress/courses` - CRUD cours TutorLMS
-  - `/api/microsoft/webinars` - CRUD webinaires Teams
   - `/api/content/pages` - CRUD pages Markdown
 
 ### 🧭 Navigation & Layout
@@ -261,12 +267,14 @@ helvetiforma_v3/
 
 ### Phase 2 - Extensions (Optionnelles)
 - [ ] **Pages Formations** : Listing complet des cours TutorLMS
-- [ ] **Pages Calendrier** : Gestion des webinaires Teams
-- [ ] **Authentification** : Login Microsoft + WordPress
+- [x] **Pages Calendrier** : Gestion des webinaires Teams ✅ (1 octobre 2025)
+- [x] **Authentification** : Login Microsoft + NextAuth.js ✅ (1 octobre 2025)
 - [x] **Composants manquants** : TeamSection, FAQSection (créés et fonctionnels)
+- [x] **API Webinaires** : Routes complètes pour inscription/désinscription ✅
 - [ ] **Gestion des médias** : Upload et bibliothèque d'images
 - [ ] **Sauvegarde réelle** : Intégration avec API pour sauvegarder les modifications
 - [ ] **Validation avancée** : Validation des contenus Markdown et métadonnées
+- [ ] **Authentification WordPress** : Login TutorLMS pour cours payants
 
 ### Phase 3 - Production (Quand prêt)
 - [ ] **Tests automatisés** : Jest + Cypress

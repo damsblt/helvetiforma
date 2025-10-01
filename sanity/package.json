@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "sanity dev",
     "start": "sanity start",
-    "build": "sanity build"
+    "build": "sanity build",
+    "import:concept": "tsx scripts/import-concept-page.ts"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +16,9 @@
     "@sanity/vision": "^4.10.2",
     "sanity": "^4.10.2",
     "styled-components": "^6.1.19"
+  },
+  "devDependencies": {
+    "@sanity/client": "^6.25.2",
+    "tsx": "^4.19.2"
   }
 }

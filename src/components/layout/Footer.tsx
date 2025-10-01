@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { getNavigationConfigClient } from '@/lib/content-client'
-import type { NavigationConfig } from '@/lib/content-types'
+import { navigationConfig } from '@/lib/navigation'
+import type { NavigationConfig } from '@/lib/navigation'
 
 export default function Footer() {
   const [navigation, setNavigation] = useState<NavigationConfig | null>(null)
 
   useEffect(() => {
-    const config = getNavigationConfigClient()
-    setNavigation(config)
+    setNavigation(navigationConfig)
   }, [])
 
   if (!navigation) {

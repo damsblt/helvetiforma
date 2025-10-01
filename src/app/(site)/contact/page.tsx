@@ -1,4 +1,4 @@
-import { getPageContent } from '@/lib/content-server'
+import { getPageBySlug } from '@/lib/sanity'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import HeroSection from '@/components/sections/HeroSection'
@@ -6,9 +6,10 @@ import ContactForm from '@/components/forms/ContactForm'
 import ContactInfo from '@/components/sections/ContactInfo'
 import TeamSection from '@/components/sections/TeamSection'
 import FAQSection from '@/components/sections/FAQSection'
+import PortableText from '@/components/ui/PortableText'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const content = await getPageContent('contact')
+  const content = await getPageBySlug('contact')
   
   if (!content) {
     return {
@@ -30,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactPage() {
-  const content = await getPageContent('contact')
+  const content = await getPageBySlug('contact')
   
   if (!content) {
     notFound()
@@ -40,7 +41,14 @@ export default async function ContactPage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       {content.hero && (
-        <HeroSection hero={content.hero} />
+        <HeroSection 
+          hero={{
+            title: content.hero.title || '',
+            subtitle: content.hero.subtitle || '',
+            backgroundImage: content.hero.backgroundImage,
+            cta_primary: content.hero.ctaPrimary,
+          }} 
+        />
       )}
       
       {/* Contact Form Section */}
@@ -69,44 +77,32 @@ export default async function ContactPage() {
         </div>
       </section>
       
-      {/* Dynamic Sections */}
+      {/* Dynamic Sections from Sanity CMS */}
       {content.sections?.map((section, index) => {
-        switch (section.type) {
-          case 'team':
-            return (
-              <TeamSection
-                key={index}
-                title={section.title}
-                subtitle={section.subtitle}
-                items={section.items}
-              />
-            )
+        // Rich Text Section
+        if (section._type === 'richTextSection' && section.content) {
+          const bgColor = section.backgroundColor === 'gray' ? 'bg-gray-50' :
+                         section.backgroundColor === 'lightblue' ? 'bg-blue-50' : 'bg-white'
           
-          case 'faq':
-            return (
-              <FAQSection
-                key={index}
-                title={section.title}
-                items={section.items}
-              />
-            )
-          
-          default:
-            return null
+          return (
+            <section key={section._key} className={`${bgColor} py-16`}>
+              <div className="container mx-auto px-4 max-w-6xl">
+                {section.title && (
+                  <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">{section.title}</h2>
+                )}
+                {section.subtitle && (
+                  <p className="text-xl text-center text-gray-600 mb-8">{section.subtitle}</p>
+                )}
+                <div className="prose prose-lg max-w-4xl mx-auto">
+                  <PortableText content={section.content} />
+                </div>
+              </div>
+            </section>
+          )
         }
+        
+        return null
       })}
-      
-      {/* Main Content */}
-      {content.content && (
-        <section className="py-16 px-4 bg-secondary/30">
-          <div className="max-w-4xl mx-auto">
-            <div 
-              className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: content.content }}
-            />
-          </div>
-        </section>
-      )}
     </div>
   )
 }
