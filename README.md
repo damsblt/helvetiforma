@@ -648,3 +648,4 @@ npx sanity deploy
 # Cache cleared - fresh deployment Wed Oct  1 15:33:58 CEST 2025
 # CORS origin added - testing deployment Wed Oct  1 16:34:47 CEST 2025
 # CORS credentials enabled - testing deployment Wed Oct  1 16:40:03 CEST 2025
+# Testing trim fix - Wed Oct  1 16:55:36 CEST 2025
