@@ -7,14 +7,12 @@ const rawProjectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh'
 const projectId = rawProjectId.toLowerCase()
 
 // Debug logging for build issues
-if (process.env.NODE_ENV === 'development') {
-  console.log('Sanity Project ID:', { raw: rawProjectId, normalized: projectId })
-}
-
-// Validate project ID format (allow uppercase but normalize to lowercase)
-if (!/^[a-zA-Z0-9-]+$/.test(rawProjectId)) {
-  throw new Error(`Invalid Sanity project ID: ${rawProjectId}. Must contain only letters, numbers, and dashes.`)
-}
+console.log('Sanity Project ID Debug:', { 
+  raw: rawProjectId, 
+  normalized: projectId,
+  length: rawProjectId.length,
+  charCodes: rawProjectId.split('').map(c => c.charCodeAt(0))
+})
 
 export const sanityConfig = {
   projectId,
