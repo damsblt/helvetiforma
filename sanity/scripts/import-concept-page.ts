@@ -2,7 +2,7 @@ import { createClient } from '@sanity/client'
 
 // Initialize Sanity client
 const client = createClient({
-  projectId: 'helvetiforma-cms',
+  projectId: 'helvetiforma',
   dataset: 'production',
   apiVersion: '2024-01-01',
   token: 'skOf1cdTkc5TF7hHh07NAtcikT1gheEXy8R0Hrnim8mV5YUg6YX73bP3lK6sZajxPB3cfTyWzc6aoBhLC2hakDl4vjpY8m75a2OycTlVugOMd3z5vIgE4RRl4k3aruVaw2J7xF0jDacQO4qmZX6ZAZs253uyIn2ekRRLQWoiwxawMqSilCpo',

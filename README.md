@@ -644,3 +644,4 @@ npx sanity deploy
 - **Your Sanity Project**: https://www.sanity.io/manage/personal/project/xzzyyelh
 - **Sanity Docs**: https://www.sanity.io/docs
 - **GROQ Docs**: https://www.sanity.io/docs/groq
+# Force rebuild Wed Oct  1 15:20:27 CEST 2025
