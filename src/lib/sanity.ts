@@ -2,10 +2,18 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import { PortableTextBlock } from '@portabletext/types'
 
-// Validate project ID format
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh'
-if (!/^[a-z0-9-]+$/.test(projectId)) {
-  throw new Error(`Invalid Sanity project ID: ${projectId}. Must contain only lowercase letters, numbers, and dashes.`)
+// Get project ID and normalize it
+const rawProjectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh'
+const projectId = rawProjectId.toLowerCase()
+
+// Debug logging for build issues
+if (process.env.NODE_ENV === 'development') {
+  console.log('Sanity Project ID:', { raw: rawProjectId, normalized: projectId })
+}
+
+// Validate project ID format (allow uppercase but normalize to lowercase)
+if (!/^[a-zA-Z0-9-]+$/.test(rawProjectId)) {
+  throw new Error(`Invalid Sanity project ID: ${rawProjectId}. Must contain only letters, numbers, and dashes.`)
 }
 
 export const sanityConfig = {
