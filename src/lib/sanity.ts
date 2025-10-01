@@ -2,8 +2,14 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import { PortableTextBlock } from '@portabletext/types'
 
+// Validate project ID format
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh'
+if (!/^[a-z0-9-]+$/.test(projectId)) {
+  throw new Error(`Invalid Sanity project ID: ${projectId}. Must contain only lowercase letters, numbers, and dashes.`)
+}
+
 export const sanityConfig = {
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh',
+  projectId,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
   apiVersion: '2024-01-01',
   useCdn: false, // Disable CDN during build to avoid validation issues
