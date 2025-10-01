@@ -2,8 +2,8 @@ import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import { PortableTextBlock } from '@portabletext/types'
 
-// Get project ID and normalize it
-const rawProjectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh'
+// Get project ID and normalize it (trim whitespace/newlines)
+const rawProjectId = (process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh').trim()
 const projectId = rawProjectId.toLowerCase()
 
 // Debug logging for build issues
