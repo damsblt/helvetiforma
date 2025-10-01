@@ -21,6 +21,7 @@ export const navigationConfig: NavigationConfig = {
     { name: 'Concept', href: '/concept' },
     { name: 'Formations', href: '/formations' },
     { name: 'Cours', href: '/courses' },
+    { name: 'Articles', href: '/posts' },
     { name: 'Calendrier', href: '/calendrier' },
     { name: 'Contact', href: '/contact' },
   ],

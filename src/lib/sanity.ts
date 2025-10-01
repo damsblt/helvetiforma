@@ -6,17 +6,11 @@ import { PortableTextBlock } from '@portabletext/types'
 const rawProjectId = (process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh').trim()
 const projectId = rawProjectId.toLowerCase()
 
-// Debug logging for build issues
-console.log('Sanity Project ID Debug:', { 
-  raw: rawProjectId, 
-  normalized: projectId,
-  length: rawProjectId.length,
-  charCodes: rawProjectId.split('').map(c => c.charCodeAt(0))
-})
+// Sanity client configuration
 
 export const sanityConfig = {
   projectId,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || '~production',
   apiVersion: '2024-01-01',
   useCdn: false, // Disable CDN during build to avoid validation issues
 }
