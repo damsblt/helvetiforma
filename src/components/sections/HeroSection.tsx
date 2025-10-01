@@ -9,14 +9,15 @@ interface HeroProps {
     title?: string
     subtitle?: string
     cta_primary?: {
-      text: string
-      link: string
+      text?: string
+      link?: string
     }
     cta_secondary?: {
-      text: string
-      link: string
+      text?: string
+      link?: string
     }
     background_image?: string
+    backgroundImage?: any  // Sanity image object
     features?: string[]
   }
 }
@@ -25,15 +26,17 @@ export default function HeroSection({ hero }: HeroProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background */}
-      {hero.background_image ? (
+      {(hero.background_image || hero.backgroundImage) ? (
         <div className="absolute inset-0 z-0">
-          <Image
-            src={hero.background_image}
-            alt="Hero background"
-            fill
-            className="object-cover"
-            priority
-          />
+          {hero.background_image && (
+            <Image
+              src={hero.background_image}
+              alt="Hero background"
+              fill
+              className="object-cover"
+              priority
+            />
+          )}
           <div className="absolute inset-0 bg-black/50" />
         </div>
       ) : (
@@ -87,7 +90,7 @@ export default function HeroSection({ hero }: HeroProps) {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            {hero.cta_primary && (
+            {hero.cta_primary?.text && hero.cta_primary?.link && (
               <Link
                 href={hero.cta_primary.link}
                 className="bg-white text-primary hover:bg-white/90 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 hover:scale-105 shadow-lg"
@@ -96,7 +99,7 @@ export default function HeroSection({ hero }: HeroProps) {
               </Link>
             )}
             
-            {hero.cta_secondary && (
+            {hero.cta_secondary?.text && hero.cta_secondary?.link && (
               <Link
                 href={hero.cta_secondary.link}
                 className="border-2 border-white text-white hover:bg-white hover:text-primary px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 hover:scale-105"
