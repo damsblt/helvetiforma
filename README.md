@@ -645,3 +645,4 @@ npx sanity deploy
 - **Sanity Docs**: https://www.sanity.io/docs
 - **GROQ Docs**: https://www.sanity.io/docs/groq
 # Force rebuild Wed Oct  1 15:20:27 CEST 2025
+# Cache cleared - fresh deployment Wed Oct  1 15:33:58 CEST 2025
