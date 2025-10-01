@@ -260,6 +260,62 @@ export default defineType({
             },
           },
         },
+
+        // Contact Info Section
+        {
+          type: 'object',
+          name: 'contactInfoSection',
+          title: 'Contact Information Section',
+          fields: [
+            {name: 'title', type: 'string', title: 'Section Title'},
+            {name: 'subtitle', type: 'string', title: 'Section Subtitle'},
+            {
+              name: 'contactItems',
+              type: 'array',
+              title: 'Contact Items',
+              of: [
+                {
+                  type: 'object',
+                  fields: [
+                    {name: 'icon', type: 'string', title: 'Icon (emoji)', description: 'e.g., 📍, 📞, ✉️, 🕒'},
+                    {name: 'title', type: 'string', title: 'Item Title'},
+                    {
+                      name: 'content',
+                      type: 'array',
+                      title: 'Content Lines',
+                      of: [{type: 'string'}],
+                    },
+                    {name: 'link', type: 'url', title: 'Action Link (optional)'},
+                    {name: 'linkText', type: 'string', title: 'Link Text (optional)'},
+                  ],
+                  preview: {
+                    select: {
+                      title: 'title',
+                      icon: 'icon',
+                    },
+                    prepare({title, icon}) {
+                      return {
+                        title: `${icon || '•'} ${title}`,
+                      }
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+          preview: {
+            select: {
+              title: 'title',
+              items: 'contactItems',
+            },
+            prepare({title, items}) {
+              return {
+                title: title || 'Contact Information Section',
+                subtitle: `${items?.length || 0} contact items`,
+              }
+            },
+          },
+        },
       ],
     }),
   ],
