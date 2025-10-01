@@ -7,7 +7,7 @@ export default defineConfig({
   name: 'default',
   title: 'Helvetiforma CMS',
 
-  projectId: 'xzzyyelh',
+  projectId: 'helvetiforma-cms',
   dataset: 'production',
 
   plugins: [structureTool(), visionTool()],
