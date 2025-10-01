@@ -50,3 +50,4 @@ npx sanity cors add https://helvetiforma.vercel.app --credentials
 npx sanity cors add http://localhost:3000 --credentials
 ```
 
+# Deployment trigger - Wed Oct  1 22:40:52 CEST 2025
