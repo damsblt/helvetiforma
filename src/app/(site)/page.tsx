@@ -4,6 +4,8 @@ import HeroSection from '@/components/sections/HeroSection'
 import PopularCoursesSection from '@/components/sections/PopularCoursesSection'
 import PromoBand from '@/components/sections/PromoBand'
 import PortableText from '@/components/ui/PortableText'
+import FeatureCardsSection from '@/components/sections/FeatureCardsSection'
+import ListIconSection from '@/components/sections/ListIconSection'
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getPageBySlug('home')
@@ -48,11 +50,45 @@ export default async function HomePage() {
       {!content && <PromoBand />}
 
       {/* Dynamic Sections from Sanity CMS */}
-      {content?.sections?.map((section) => {
-        // Generic content section with Portable Text
-        if (section.content) {
+      {content?.sections?.map((section: any) => {
+        // Feature Cards Section
+        if (section._type === 'featureCards') {
           return (
-            <section key={section._key} className="py-16 bg-white">
+            <FeatureCardsSection
+              key={section._key}
+              title={section.title}
+              subtitle={section.subtitle}
+              cards={section.cards || []}
+              columns={section.columns}
+            />
+          )
+        }
+        
+        // List Icon Section
+        if (section._type === 'listSection') {
+          return (
+            <ListIconSection
+              key={section._key}
+              title={section.title}
+              subtitle={section.subtitle}
+              description={section.description}
+              items={section.items || []}
+              ctaText={section.ctaText}
+              ctaLink={section.ctaLink}
+            />
+          )
+        }
+        
+        // Rich Text Section
+        if (section._type === 'richTextSection' && section.content) {
+          const bgColor = section.backgroundColor === 'gray' 
+            ? 'bg-gray-50' 
+            : section.backgroundColor === 'lightblue' 
+            ? 'bg-blue-50' 
+            : 'bg-white'
+          
+          return (
+            <section key={section._key} className={`py-16 ${bgColor}`}>
               <div className="container mx-auto px-4">
                 {section.title && (
                   <h2 className="text-3xl font-bold text-center mb-4">{section.title}</h2>
@@ -60,19 +96,9 @@ export default async function HomePage() {
                 {section.subtitle && (
                   <p className="text-xl text-center text-gray-600 mb-8">{section.subtitle}</p>
                 )}
-                
-                {/* Render content in columns if specified */}
-                {section.columns && section.columns > 1 ? (
-                  <div className={`grid grid-cols-1 md:grid-cols-${section.columns} gap-8 max-w-6xl mx-auto`}>
-                    <div className="prose prose-lg max-w-none">
-                      <PortableText content={section.content} />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="prose prose-lg max-w-4xl mx-auto">
-                    <PortableText content={section.content} />
-                  </div>
-                )}
+                <div className="prose prose-lg max-w-4xl mx-auto">
+                  <PortableText content={section.content} />
+                </div>
               </div>
             </section>
           )

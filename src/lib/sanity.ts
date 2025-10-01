@@ -35,16 +35,29 @@ export interface SanityPage {
   }
   sections?: Array<{
     _key: string
-    _type: string
+    _type: 'featureCards' | 'listSection' | 'richTextSection'
     title?: string
     subtitle?: string
     content?: PortableTextBlock[]
+    description?: PortableTextBlock[]
     columns?: number
-    items?: Array<{
-      title?: string
-      description?: string
-      image?: any
+    backgroundColor?: string
+    // Feature Cards fields
+    cards?: Array<{
+      title: string
+      description: string
+      icon?: string
+      iconColor?: 'blue' | 'green' | 'purple' | 'orange'
     }>
+    // List Section fields
+    items?: Array<{
+      title: string
+      description: string
+      icon?: string
+      iconColor?: 'blue' | 'green' | 'purple' | 'orange'
+    }>
+    ctaText?: string
+    ctaLink?: string
   }>
   seo?: {
     title?: string
@@ -76,12 +89,23 @@ export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
         title,
         subtitle,
         content,
+        description,
         columns,
+        backgroundColor,
+        cards[] {
+          title,
+          description,
+          icon,
+          iconColor
+        },
         items[] {
           title,
           description,
-          image
-        }
+          icon,
+          iconColor
+        },
+        ctaText,
+        ctaLink
       }
     }`
     

@@ -50,9 +50,182 @@ export default defineType({
       title: 'Page Sections',
       type: 'array',
       of: [
+        // Feature Cards Section (like "Pourquoi choisir HelvetiForma ?")
         {
           type: 'object',
-          name: 'section',
+          name: 'featureCards',
+          title: 'Feature Cards Section',
+          fields: [
+            {name: 'title', type: 'string', title: 'Section Title'},
+            {name: 'subtitle', type: 'string', title: 'Section Subtitle'},
+            {
+              name: 'cards',
+              type: 'array',
+              title: 'Feature Cards',
+              of: [
+                {
+                  type: 'object',
+                  fields: [
+                    {name: 'title', type: 'string', title: 'Card Title'},
+                    {
+                      name: 'description',
+                      type: 'text',
+                      title: 'Card Description',
+                      rows: 4,
+                    },
+                    {
+                      name: 'icon',
+                      type: 'string',
+                      title: 'Icon',
+                      description: 'Emoji or icon identifier (e.g., ✓, 🎓, ⏰)',
+                    },
+                    {
+                      name: 'iconColor',
+                      type: 'string',
+                      title: 'Icon Background Color',
+                      options: {
+                        list: [
+                          {title: 'Blue', value: 'blue'},
+                          {title: 'Green', value: 'green'},
+                          {title: 'Purple', value: 'purple'},
+                          {title: 'Orange', value: 'orange'},
+                        ],
+                      },
+                    },
+                  ],
+                  preview: {
+                    select: {
+                      title: 'title',
+                      subtitle: 'description',
+                      icon: 'icon',
+                    },
+                    prepare({title, subtitle, icon}) {
+                      return {
+                        title: `${icon || '•'} ${title}`,
+                        subtitle: subtitle,
+                      }
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              name: 'columns',
+              type: 'number',
+              title: 'Number of Columns',
+              options: {
+                list: [
+                  {title: '2 columns', value: 2},
+                  {title: '3 columns', value: 3},
+                ],
+              },
+              initialValue: 3,
+            },
+          ],
+          preview: {
+            select: {
+              title: 'title',
+              cards: 'cards',
+            },
+            prepare({title, cards}) {
+              return {
+                title: title || 'Feature Cards Section',
+                subtitle: `${cards?.length || 0} cards`,
+              }
+            },
+          },
+        },
+        
+        // List Section with Icons (like "Une approche moderne")
+        {
+          type: 'object',
+          name: 'listSection',
+          title: 'List Section with Icons',
+          fields: [
+            {name: 'title', type: 'string', title: 'Section Title'},
+            {name: 'subtitle', type: 'string', title: 'Section Subtitle'},
+            {
+              name: 'description',
+              type: 'array',
+              title: 'Description',
+              of: [{type: 'block'}],
+            },
+            {
+              name: 'items',
+              type: 'array',
+              title: 'List Items',
+              of: [
+                {
+                  type: 'object',
+                  fields: [
+                    {name: 'title', type: 'string', title: 'Item Title'},
+                    {name: 'description', type: 'string', title: 'Item Description'},
+                    {
+                      name: 'icon',
+                      type: 'string',
+                      title: 'Icon',
+                      description: 'Emoji or icon identifier',
+                    },
+                    {
+                      name: 'iconColor',
+                      type: 'string',
+                      title: 'Icon Color',
+                      options: {
+                        list: [
+                          {title: 'Blue', value: 'blue'},
+                          {title: 'Green', value: 'green'},
+                          {title: 'Purple', value: 'purple'},
+                          {title: 'Orange', value: 'orange'},
+                        ],
+                      },
+                    },
+                  ],
+                  preview: {
+                    select: {
+                      title: 'title',
+                      subtitle: 'description',
+                      icon: 'icon',
+                    },
+                    prepare({title, subtitle, icon}) {
+                      return {
+                        title: `${icon || '•'} ${title}`,
+                        subtitle: subtitle,
+                      }
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              name: 'ctaText',
+              type: 'string',
+              title: 'CTA Button Text',
+            },
+            {
+              name: 'ctaLink',
+              type: 'string',
+              title: 'CTA Button Link',
+            },
+          ],
+          preview: {
+            select: {
+              title: 'title',
+              items: 'items',
+            },
+            prepare({title, items}) {
+              return {
+                title: title || 'List Section',
+                subtitle: `${items?.length || 0} items`,
+              }
+            },
+          },
+        },
+        
+        // Rich Text Section (Simple content)
+        {
+          type: 'object',
+          name: 'richTextSection',
+          title: 'Rich Text Section',
           fields: [
             {name: 'title', type: 'string', title: 'Section Title'},
             {name: 'subtitle', type: 'string', title: 'Section Subtitle'},
@@ -63,12 +236,29 @@ export default defineType({
               of: [{type: 'block'}],
             },
             {
-              name: 'columns',
-              type: 'number',
-              title: 'Number of Columns',
-              options: {list: [1, 2, 3]},
+              name: 'backgroundColor',
+              type: 'string',
+              title: 'Background Color',
+              options: {
+                list: [
+                  {title: 'White', value: 'white'},
+                  {title: 'Gray', value: 'gray'},
+                  {title: 'Light Blue', value: 'lightblue'},
+                ],
+              },
+              initialValue: 'white',
             },
           ],
+          preview: {
+            select: {
+              title: 'title',
+            },
+            prepare({title}) {
+              return {
+                title: title || 'Rich Text Section',
+              }
+            },
+          },
         },
       ],
     }),
