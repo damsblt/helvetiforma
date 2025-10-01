@@ -3,7 +3,7 @@ import imageUrlBuilder from '@sanity/image-url'
 import { PortableTextBlock } from '@portabletext/types'
 
 export const sanityConfig = {
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'helvetiforma',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh',
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
   apiVersion: '2024-01-01',
   useCdn: true, // Use CDN for faster response times in production
