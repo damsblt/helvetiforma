@@ -154,9 +154,12 @@ export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
       }
     }`
     
-    // Add revalidation to ensure fresh content
+    // Add revalidation and cache tags for better cache invalidation
     const page = await sanityClient.fetch(query, { slug }, {
-      next: { revalidate: 60 } // Revalidate every 60 seconds
+      next: { 
+        revalidate: 60, // Revalidate every 60 seconds
+        tags: ['pages', `page-${slug}`] // Add cache tags for targeted revalidation
+      }
     })
     return page
   } catch (error) {
@@ -180,9 +183,12 @@ export async function getAllPages() {
       "slug": slug.current
     }`
     
-    // Add revalidation to ensure fresh content
+    // Add revalidation and cache tags for better cache invalidation
     const pages = await sanityClient.fetch(query, {}, {
-      next: { revalidate: 60 } // Revalidate every 60 seconds
+      next: { 
+        revalidate: 60, // Revalidate every 60 seconds
+        tags: ['pages'] // Add cache tag for targeted revalidation
+      }
     })
     return pages
   } catch (error) {
