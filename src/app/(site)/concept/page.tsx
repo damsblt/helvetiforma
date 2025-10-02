@@ -6,9 +6,8 @@ import ListIconSection from '@/components/sections/ListIconSection'
 import AnimatedRichTextSection from '@/components/sections/AnimatedRichTextSection'
 import Link from 'next/link'
 
-// Force dynamic rendering to ensure fresh Sanity content
-export const dynamic = 'force-dynamic'
-export const revalidate = 60 // Revalidate every 60 seconds
+// Revalidate every 10 seconds for fresh Sanity content
+export const revalidate = 10
 
 export async function generateMetadata(): Promise<Metadata> {
   try {

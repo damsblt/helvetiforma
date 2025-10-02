@@ -23,7 +23,7 @@ export const sanityConfig = {
   projectId,
   dataset,
   apiVersion: '2024-01-01',
-  useCdn: false, // Disable CDN during build to avoid validation issues
+  useCdn: false, // Keep CDN disabled for real-time updates
 }
 
 // Create Sanity client with error handling
@@ -154,13 +154,8 @@ export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
       }
     }`
     
-    // Add revalidation and cache tags for better cache invalidation
-    const page = await sanityClient.fetch(query, { slug }, {
-      next: { 
-        revalidate: 60, // Revalidate every 60 seconds
-        tags: ['pages', `page-${slug}`] // Add cache tags for targeted revalidation
-      }
-    })
+    // Fetch without additional caching - rely on page-level revalidation
+    const page = await sanityClient.fetch(query, { slug })
     return page
   } catch (error) {
     console.error('Error fetching page from Sanity:', error)
@@ -183,13 +178,8 @@ export async function getAllPages() {
       "slug": slug.current
     }`
     
-    // Add revalidation and cache tags for better cache invalidation
-    const pages = await sanityClient.fetch(query, {}, {
-      next: { 
-        revalidate: 60, // Revalidate every 60 seconds
-        tags: ['pages'] // Add cache tag for targeted revalidation
-      }
-    })
+    // Fetch without additional caching - rely on page-level revalidation
+    const pages = await sanityClient.fetch(query, {})
     return pages
   } catch (error) {
     console.error('Error fetching pages from Sanity:', error)
