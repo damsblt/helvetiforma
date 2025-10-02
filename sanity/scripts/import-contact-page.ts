@@ -295,3 +295,4 @@ async function importContactPage() {
 
 // Run the import
 importContactPage()
+

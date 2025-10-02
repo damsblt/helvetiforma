@@ -41,3 +41,4 @@ async function updateContactHero() {
 
 // Run the update
 updateContactHero()
+

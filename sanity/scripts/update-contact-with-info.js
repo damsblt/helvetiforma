@@ -85,3 +85,4 @@ async function updateContactWithInfo() {
 
 // Run the update
 updateContactWithInfo()
+

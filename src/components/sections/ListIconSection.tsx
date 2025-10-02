@@ -37,7 +37,7 @@ export default function ListIconSection({
   ctaLink,
 }: ListIconSectionProps) {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-7xl mx-auto items-center">
           {/* Left Column: Content */}
@@ -48,19 +48,19 @@ export default function ListIconSection({
             transition={{ duration: 0.6 }}
           >
             {title && (
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
                 {title}
               </h2>
             )}
 
             {subtitle && (
-              <p className="text-xl text-gray-600 mb-6">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
                 {subtitle}
               </p>
             )}
 
             {description && description.length > 0 && (
-              <div className="text-gray-600 mb-8 prose prose-lg max-w-none">
+              <div className="text-gray-600 dark:text-gray-300 mb-8 prose prose-lg max-w-none">
                 <PortableText content={description} />
               </div>
             )}
@@ -68,7 +68,7 @@ export default function ListIconSection({
             {ctaText && ctaLink && (
               <Link
                 href={ctaLink}
-                className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold text-lg group"
+                className="inline-flex items-center text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-lg group"
               >
                 {ctaText}
                 <svg
@@ -94,7 +94,7 @@ export default function ListIconSection({
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="space-y-6 bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8"
+            className="space-y-6 bg-gradient-to-br from-blue-50 dark:from-blue-900/20 to-white dark:to-gray-800 rounded-2xl p-8"
           >
             {items.map((item, index) => (
               <motion.div
@@ -116,10 +116,10 @@ export default function ListIconSection({
 
                 {/* Content */}
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                     {item.title}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-300">
                     {item.description}
                   </p>
                 </div>

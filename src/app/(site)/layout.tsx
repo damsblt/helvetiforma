@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import DevWrapper from '@/components/DevWrapper'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -76,18 +77,20 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <div className="relative flex min-h-screen flex-col">
-          {/* Header Navigation */}
-          <Header />
-          
-          {/* Main Content */}
-          <main className="flex-1 pt-16">
-            {children}
-          </main>
-          
-          {/* Footer */}
-          <Footer />
-        </div>
+        <DevWrapper>
+          <div className="relative flex min-h-screen flex-col">
+            {/* Header Navigation */}
+            <Header />
+            
+            {/* Main Content */}
+            <main className="flex-1 pt-16">
+              {children}
+            </main>
+            
+            {/* Footer */}
+            <Footer />
+          </div>
+        </DevWrapper>
       </body>
     </html>
   )

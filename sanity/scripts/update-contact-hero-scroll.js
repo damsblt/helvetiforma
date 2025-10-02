@@ -41,3 +41,4 @@ async function updateContactHeroScroll() {
 
 // Run the update
 updateContactHeroScroll()
+

@@ -17,10 +17,10 @@ interface FeatureCardsSectionProps {
 }
 
 const iconColorClasses = {
-  blue: 'bg-blue-100 text-blue-600',
-  green: 'bg-green-100 text-green-600',
-  purple: 'bg-purple-100 text-purple-600',
-  orange: 'bg-orange-100 text-orange-600',
+  blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+  green: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+  purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+  orange: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
 }
 
 export default function FeatureCardsSection({
@@ -32,7 +32,7 @@ export default function FeatureCardsSection({
   const gridCols = columns === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-20 bg-gradient-to-b from-white dark:from-gray-900 to-gray-50 dark:to-gray-800">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         {title && (
@@ -43,11 +43,11 @@ export default function FeatureCardsSection({
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               {title}
             </h2>
             {subtitle && (
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
                 {subtitle}
               </p>
             )}
@@ -64,7 +64,7 @@ export default function FeatureCardsSection({
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
               whileHover={{ y: -5 }}
-              className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300"
+              className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300"
             >
               {/* Icon */}
               {card.icon && (
@@ -78,10 +78,10 @@ export default function FeatureCardsSection({
               )}
 
               {/* Card Content */}
-              <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 text-center">
                 {card.title}
               </h3>
-              <p className="text-gray-600 leading-relaxed text-center">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-center">
                 {card.description}
               </p>
             </motion.div>

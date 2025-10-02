@@ -2,47 +2,42 @@
 
 import { motion } from 'framer-motion'
 
-const contactItems = [
-  {
-    icon: '📍',
-    title: 'Adresse',
-    content: [
-      'HelvetiForma SA',
-      'Rue de la Formation 15',
-      '1200 Genève',
-      'Suisse'
-    ],
-    link: 'https://maps.google.com/?q=Rue+de+la+Formation+15,+1200+Genève',
-    linkText: 'Voir sur la carte'
-  },
-  {
-    icon: '📞',
-    title: 'Téléphone',
-    content: ['+41 22 123 45 67'],
-    link: 'tel:+41221234567',
-    linkText: 'Appeler maintenant'
-  },
-  {
-    icon: '✉️',
-    title: 'Email',
-    content: ['contact@helvetiforma.ch'],
-    link: 'mailto:contact@helvetiforma.ch',
-    linkText: 'Envoyer un email'
-  },
-  {
-    icon: '🕒',
-    title: 'Horaires',
-    content: [
-      'Lun-Ven: 8h00-18h00',
-      'Sam: 9h00-12h00',
-      'Dim: Fermé'
-    ]
-  }
-]
+interface ContactItem {
+  icon: string
+  title: string
+  content: string[]
+  link?: string
+  linkText?: string
+}
 
-export default function ContactInfo() {
+interface ContactInfoSectionProps {
+  title?: string
+  subtitle?: string
+  contactItems: ContactItem[]
+}
+
+export default function ContactInfoSection({
+  title,
+  subtitle,
+  contactItems,
+}: ContactInfoSectionProps) {
   return (
     <div className="space-y-6">
+      {/* Section Header */}
+      {title && (
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-foreground dark:text-white mb-4">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-muted-foreground dark:text-gray-300">
+              {subtitle}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Contact Items */}
       {contactItems.map((item, index) => (
         <motion.div
           key={item.title}
@@ -54,15 +49,17 @@ export default function ContactInfo() {
           <div className="flex items-start gap-4">
             <div className="text-3xl">{item.icon}</div>
             <div className="flex-1">
-              <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
+              <h3 className="font-semibold text-foreground dark:text-white mb-2">
+                {item.title}
+              </h3>
               <div className="space-y-1">
                 {item.content.map((line, lineIndex) => (
-                  <p key={lineIndex} className="text-muted-foreground">
+                  <p key={lineIndex} className="text-muted-foreground dark:text-gray-300">
                     {line}
                   </p>
                 ))}
               </div>
-              {item.link && (
+              {item.link && item.linkText && (
                 <a
                   href={item.link}
                   target={item.link.startsWith('http') ? '_blank' : undefined}
@@ -82,3 +79,4 @@ export default function ContactInfo() {
     </div>
   )
 }
+

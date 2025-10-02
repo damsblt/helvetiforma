@@ -99,10 +99,10 @@ export default function Header() {
               Se connecter
             </Link>
             <Link
-              href="/formations"
+              href="/contact"
               className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
             >
-              Nos formations
+              Nous contacter
             </Link>
           </div>
 
@@ -168,10 +168,10 @@ export default function Header() {
                     Se connecter
                   </Link>
                   <Link
-                    href="/formations"
+                    href="/contact"
                     className="block bg-primary text-primary-foreground px-4 py-3 rounded-lg text-base font-medium hover:bg-primary/90 transition-colors text-center"
                   >
-                    Nos formations
+                    Nous contacter
                   </Link>
                 </div>
               </nav>

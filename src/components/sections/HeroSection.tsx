@@ -26,7 +26,9 @@ interface HeroProps {
 export default function HeroSection({ hero }: HeroProps) {
   // Get the background image URL from Sanity or use the provided string
   const backgroundImageUrl = hero.backgroundImage 
-    ? urlFor(hero.backgroundImage).width(1920).height(1080).url()
+    ? (typeof hero.backgroundImage === 'string' 
+        ? hero.backgroundImage 
+        : urlFor(hero.backgroundImage).width(1920).height(1080).url())
     : hero.background_image
 
   return (
