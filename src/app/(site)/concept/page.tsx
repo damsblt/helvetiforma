@@ -61,7 +61,8 @@ export default async function ConceptPage() {
         hero={{
           title: content?.hero?.title || 'Notre Concept',
           subtitle: content?.hero?.subtitle || 'Découvrez notre approche unique de la formation professionnelle',
-          backgroundImage: content?.hero?.backgroundImage || '/images/concept-hero.jpg',
+          backgroundImage: content?.hero?.backgroundImage,
+          background_image: content?.hero?.backgroundImage ? undefined : '/images/concept-hero.jpg',
           cta_primary: content?.hero?.ctaPrimary,
         }} 
       />
