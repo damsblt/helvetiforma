@@ -21,7 +21,7 @@ export default async function PostPage({
   params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = await params;
-  const post = await sanityClient.fetch<SanityDocument>(POST_QUERY, resolvedParams, options);
+  const post = await sanityClient.fetch(POST_QUERY, resolvedParams, options) as SanityDocument | null;
   
   if (!post) {
     notFound();

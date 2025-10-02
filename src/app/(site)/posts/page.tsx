@@ -10,7 +10,7 @@ const POSTS_QUERY = `*[
 const options = { next: { revalidate: 30 } };
 
 export default async function PostsPage() {
-  const posts = await sanityClient.fetch<SanityDocument[]>(POSTS_QUERY, {}, options);
+  const posts = await sanityClient.fetch(POSTS_QUERY, {}, options) as SanityDocument[];
 
   return (
     <main className="container mx-auto min-h-screen max-w-3xl p-8">

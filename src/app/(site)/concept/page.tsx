@@ -3,61 +3,68 @@ import type { Metadata } from 'next'
 import HeroSection from '@/components/sections/HeroSection'
 import FeatureCardsSection from '@/components/sections/FeatureCardsSection'
 import ListIconSection from '@/components/sections/ListIconSection'
-import PortableText from '@/components/ui/PortableText'
+import AnimatedRichTextSection from '@/components/sections/AnimatedRichTextSection'
 import Link from 'next/link'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const content = await getPageBySlug('concept')
-  
-  if (!content) {
+  try {
+    const content = await getPageBySlug('concept')
+    
+    if (!content) {
+      return {
+        title: 'Notre Concept - HelvetiForma',
+        description: 'Découvrez notre approche unique de la formation professionnelle en Suisse.',
+      }
+    }
+
+    return {
+      title: content.seo?.title || content.title,
+      description: content.seo?.description || content.description,
+      keywords: content.seo?.keywords,
+      openGraph: {
+        title: content.seo?.title || content.title,
+        description: content.seo?.description || content.description,
+        type: 'website',
+      },
+    }
+  } catch (error) {
+    console.error('Error generating metadata for concept page:', error)
     return {
       title: 'Notre Concept - HelvetiForma',
       description: 'Découvrez notre approche unique de la formation professionnelle en Suisse.',
     }
   }
-
-  return {
-    title: content.seo?.title || content.title,
-    description: content.seo?.description || content.description,
-    keywords: content.seo?.keywords,
-    openGraph: {
-      title: content.seo?.title || content.title,
-      description: content.seo?.description || content.description,
-      type: 'website',
-    },
-  }
 }
 
 export default async function ConceptPage() {
-  const content = await getPageBySlug('concept')
+  try {
+    const content = await getPageBySlug('concept')
 
-  if (!content) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Page non trouvée</h1>
-          <p className="text-gray-600 mb-6">Le contenu de cette page n'a pas encore été créé dans Sanity CMS.</p>
-          <Link href="/" className="text-blue-600 hover:underline">
-            Retour à l'accueil
-          </Link>
+    if (!content) {
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Page non trouvée</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">Le contenu de cette page n'a pas encore été créé dans Sanity CMS.</p>
+            <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
+              Retour à l'accueil
+            </Link>
+          </div>
         </div>
-      </div>
-    )
-  }
+      )
+    }
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      {content?.hero && (
-        <HeroSection 
-          hero={{
-            title: content.hero.title || '',
-            subtitle: content.hero.subtitle || '',
-            backgroundImage: content.hero.backgroundImage,
-            cta_primary: content.hero.ctaPrimary,
-          }} 
-        />
-      )}
+      <HeroSection 
+        hero={{
+          title: content?.hero?.title || 'Notre Concept',
+          subtitle: content?.hero?.subtitle || 'Découvrez notre approche unique de la formation professionnelle',
+          backgroundImage: content?.hero?.backgroundImage || '/images/concept-hero.jpg',
+          cta_primary: content?.hero?.ctaPrimary,
+        }} 
+      />
 
       {/* Dynamic Sections from Sanity CMS */}
       {content?.sections?.map((section, index) => {
@@ -93,23 +100,8 @@ export default async function ConceptPage() {
 
         // Rich Text Section
         if (section._type === 'richTextSection' && section.content) {
-          const bgColor = section.backgroundColor === 'gray' ? 'bg-gray-50' :
-                         section.backgroundColor === 'lightblue' ? 'bg-blue-50' : 'bg-white'
-          
           return (
-            <section key={section._key} className={`${bgColor} py-16 mb-16`}>
-              <div className="container mx-auto px-4 max-w-6xl">
-                {section.title && (
-                  <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">{section.title}</h2>
-                )}
-                {section.subtitle && (
-                  <p className="text-xl text-center text-gray-600 mb-8">{section.subtitle}</p>
-                )}
-                <div className="prose prose-lg max-w-4xl mx-auto">
-                  <PortableText content={section.content} />
-                </div>
-              </div>
-            </section>
+            <AnimatedRichTextSection key={section._key} section={section} />
           )
         }
         
@@ -143,4 +135,18 @@ export default async function ConceptPage() {
       )}
     </div>
   )
+  } catch (error) {
+    console.error('Error rendering concept page:', error)
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Erreur de chargement</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">Une erreur s'est produite lors du chargement de la page.</p>
+          <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
+            Retour à l'accueil
+          </Link>
+        </div>
+      </div>
+    )
+  }
 }

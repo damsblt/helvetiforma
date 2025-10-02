@@ -6,16 +6,42 @@ import { PortableTextBlock } from '@portabletext/types'
 const rawProjectId = (process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh').trim()
 const projectId = rawProjectId.toLowerCase()
 
-// Sanity client configuration
+// Get dataset and ensure it's valid
+const rawDataset = (process.env.NEXT_PUBLIC_SANITY_DATASET || 'production').trim()
+// Validate dataset name according to Sanity requirements: lowercase, numbers, underscores, dashes, max 64 chars
+const dataset = rawDataset.toLowerCase().replace(/[^a-z0-9_-]/g, '').substring(0, 64)
 
+// Validate dataset name
+if (!dataset || dataset.length === 0) {
+  throw new Error('Invalid Sanity dataset name. Must contain only lowercase letters, numbers, underscores, and dashes.')
+}
+
+console.log('Sanity configuration:', { projectId, dataset })
+
+// Sanity client configuration
 export const sanityConfig = {
   projectId,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+  dataset,
   apiVersion: '2024-01-01',
   useCdn: false, // Disable CDN during build to avoid validation issues
 }
 
-export const sanityClient = createClient(sanityConfig)
+// Create Sanity client with error handling
+let sanityClient: any = null
+try {
+  sanityClient = createClient(sanityConfig)
+} catch (error) {
+  console.error('Failed to create Sanity client:', error)
+  // Fallback to a minimal client configuration
+  sanityClient = createClient({
+    projectId: 'xzzyyelh',
+    dataset: 'production',
+    apiVersion: '2024-01-01',
+    useCdn: false,
+  })
+}
+
+export { sanityClient }
 
 // Image URL builder
 const builder = imageUrlBuilder(sanityClient)
@@ -41,7 +67,7 @@ export interface SanityPage {
   }
   sections?: Array<{
     _key: string
-    _type: 'featureCards' | 'listSection' | 'richTextSection'
+    _type: 'featureCards' | 'listSection' | 'richTextSection' | 'contactInfoSection'
     title?: string
     subtitle?: string
     content?: PortableTextBlock[]
@@ -62,6 +88,14 @@ export interface SanityPage {
       icon?: string
       iconColor?: 'blue' | 'green' | 'purple' | 'orange'
     }>
+    // Contact Info Section fields
+    contactItems?: Array<{
+      icon: string
+      title: string
+      content: string[]
+      link?: string
+      linkText?: string
+    }>
     ctaText?: string
     ctaLink?: string
   }>
@@ -75,6 +109,11 @@ export interface SanityPage {
 // Helper to fetch pages
 export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
   try {
+    if (!sanityClient) {
+      console.error('Sanity client not available')
+      return null
+    }
+
     const query = `*[_type == "page" && slug.current == $slug][0]{
       _id,
       title,
@@ -119,6 +158,7 @@ export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
     return page
   } catch (error) {
     console.error('Error fetching page from Sanity:', error)
+    // Return null instead of throwing to prevent build failures
     return null
   }
 }
@@ -126,6 +166,11 @@ export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
 // Helper to fetch all pages
 export async function getAllPages() {
   try {
+    if (!sanityClient) {
+      console.error('Sanity client not available')
+      return []
+    }
+
     const query = `*[_type == "page"]{
       _id,
       title,
