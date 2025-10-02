@@ -40,7 +40,19 @@ export default defineType({
           title: 'Primary CTA',
           fields: [
             {name: 'text', type: 'string', title: 'Button Text'},
-            {name: 'link', type: 'string', title: 'Button Link'},
+            {
+              name: 'link',
+              type: 'string',
+              title: 'Button Link',
+              description: 'Enter just the URL path (e.g., /formations, #contact) without href= or quotes',
+              validation: (Rule: any) => Rule.custom((link: string) => {
+                if (!link) return true
+                if (link.includes('href=')) {
+                  return 'Please enter only the URL path without "href=". Example: /formations'
+                }
+                return true
+              })
+            },
           ],
         },
       ],
