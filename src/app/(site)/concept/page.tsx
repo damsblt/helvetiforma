@@ -6,6 +6,10 @@ import ListIconSection from '@/components/sections/ListIconSection'
 import AnimatedRichTextSection from '@/components/sections/AnimatedRichTextSection'
 import Link from 'next/link'
 
+// Force dynamic rendering to ensure fresh Sanity content
+export const dynamic = 'force-dynamic'
+export const revalidate = 60 // Revalidate every 60 seconds
+
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const content = await getPageBySlug('concept')

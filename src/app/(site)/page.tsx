@@ -3,9 +3,13 @@ import type { Metadata } from 'next'
 import HeroSection from '@/components/sections/HeroSection'
 import PopularCoursesSection from '@/components/sections/PopularCoursesSection'
 import PromoBand from '@/components/sections/PromoBand'
-import PortableText from '@/components/ui/PortableText'
 import FeatureCardsSection from '@/components/sections/FeatureCardsSection'
 import ListIconSection from '@/components/sections/ListIconSection'
+import AnimatedRichTextSection from '@/components/sections/AnimatedRichTextSection'
+
+// Force dynamic rendering to ensure fresh Sanity content
+export const dynamic = 'force-dynamic'
+export const revalidate = 60 // Revalidate every 60 seconds
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getPageBySlug('home')
@@ -81,26 +85,8 @@ export default async function HomePage() {
         
         // Rich Text Section
         if (section._type === 'richTextSection' && section.content) {
-          const bgColor = section.backgroundColor === 'gray' 
-            ? 'bg-gray-50' 
-            : section.backgroundColor === 'lightblue' 
-            ? 'bg-blue-50' 
-            : 'bg-white'
-          
           return (
-            <section key={section._key} className={`py-16 ${bgColor}`}>
-              <div className="container mx-auto px-4">
-                {section.title && (
-                  <h2 className="text-3xl font-bold text-center mb-4">{section.title}</h2>
-                )}
-                {section.subtitle && (
-                  <p className="text-xl text-center text-gray-600 mb-8">{section.subtitle}</p>
-                )}
-                <div className="prose prose-lg max-w-4xl mx-auto">
-                  <PortableText content={section.content} />
-                </div>
-              </div>
-            </section>
+            <AnimatedRichTextSection key={section._key} section={section} />
           )
         }
         

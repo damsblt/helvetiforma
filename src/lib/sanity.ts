@@ -154,7 +154,10 @@ export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
       }
     }`
     
-    const page = await sanityClient.fetch(query, { slug })
+    // Add revalidation to ensure fresh content
+    const page = await sanityClient.fetch(query, { slug }, {
+      next: { revalidate: 60 } // Revalidate every 60 seconds
+    })
     return page
   } catch (error) {
     console.error('Error fetching page from Sanity:', error)
@@ -177,7 +180,10 @@ export async function getAllPages() {
       "slug": slug.current
     }`
     
-    const pages = await sanityClient.fetch(query)
+    // Add revalidation to ensure fresh content
+    const pages = await sanityClient.fetch(query, {}, {
+      next: { revalidate: 60 } // Revalidate every 60 seconds
+    })
     return pages
   } catch (error) {
     console.error('Error fetching pages from Sanity:', error)
