@@ -25,17 +25,21 @@ export default function ContactForm() {
     message: '',
     interest: '',
   })
+  const [isWebinarRegistration, setIsWebinarRegistration] = useState(false)
 
   // Handle webinar parameters from URL
   useEffect(() => {
     const webinar = searchParams.get('webinar')
     const webinarId = searchParams.get('webinarId')
+    const webinarDateTime = searchParams.get('webinarDateTime')
+    const webinarLocation = searchParams.get('webinarLocation')
     
     if (webinar) {
+      setIsWebinarRegistration(true)
       setFormData(prev => ({
         ...prev,
-        subject: `Demande d'accès au webinaire: ${webinar}`,
-        message: `Bonjour,\n\nJe souhaite participer au webinaire "${webinar}" organisé par HelvetiForma.\n\nPouvez-vous m'envoyer une invitation pour rejoindre la session Microsoft Teams ?\n\nCordialement`,
+        subject: `Inscription au webinaire: ${webinar}`,
+        message: `Bonjour,\n\nJe souhaite m'inscrire au webinaire "${webinar}" organisé par HelvetiForma.\n\nPouvez-vous m'envoyer une invitation par email ?\n\nInformations sur la session :\n- Titre: ${webinar}\n- Date et heure : ${webinarDateTime || '[date and time]'}\n- Emplacement : ${webinarLocation || '[location]'}\n\nCordialement`,
         interest: 'webinaire'
       }))
     }
@@ -55,11 +59,18 @@ export default function ContactForm() {
     setSubmitStatus('idle')
 
     try {
-      // Simuler l'envoi du formulaire
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // En production, remplacer par un vrai appel API
-      console.log('Form data:', formData)
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to send message')
+      }
       
       setSubmitStatus('success')
       setFormData({
@@ -81,6 +92,7 @@ export default function ContactForm() {
 
   const interestOptions = [
     { value: '', label: 'Sélectionnez un domaine' },
+    { value: 'webinaire', label: 'Webinaire' },
     { value: 'comptabilite', label: 'Comptabilité générale' },
     { value: 'salaires', label: 'Gestion des salaires' },
     { value: 'charges-sociales', label: 'Charges sociales' },
@@ -102,7 +114,7 @@ export default function ContactForm() {
           Message envoyé !
         </h3>
         <p className="text-green-700 dark:text-green-300 mb-6">
-          Merci pour votre message. Nous vous répondrons dans les 24 heures.
+          Votre message a été envoyé avec succès à contact@helvetiforma.ch. Nous vous répondrons dans les 24 heures.
         </p>
         <button
           onClick={() => setSubmitStatus('idle')}
@@ -115,7 +127,29 @@ export default function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <>
+      {/* Webinar Registration Notice */}
+      {isWebinarRegistration && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-blue-500 text-xl">📅</span>
+            <div>
+              <h3 className="text-blue-800 dark:text-blue-400 font-semibold">
+                Inscription à un webinaire
+              </h3>
+              <p className="text-blue-700 dark:text-blue-300 text-sm">
+                Le formulaire a été pré-rempli pour votre inscription. Remplissez vos informations personnelles et envoyez votre demande.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
       {/* Nom et Email */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -284,5 +318,6 @@ export default function ContactForm() {
         . Nous nous engageons à protéger vos données personnelles.
       </p>
     </form>
+    </>
   )
 }

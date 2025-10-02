@@ -9,6 +9,7 @@ import TeamSection from '@/components/sections/TeamSection'
 import FAQSection from '@/components/sections/FAQSection'
 import AnimatedRichTextSection from '@/components/sections/AnimatedRichTextSection'
 import AnimatedContactForm from '@/components/sections/AnimatedContactForm'
+import ContactPageScrollHandler from '@/components/ContactPageScrollHandler'
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getPageBySlug('contact')
@@ -64,6 +65,9 @@ export default async function ContactPage() {
 
   return (
     <div className="min-h-screen">
+      {/* Scroll Handler */}
+      <ContactPageScrollHandler />
+      
       {/* Hero Section */}
       <HeroSection 
         hero={{

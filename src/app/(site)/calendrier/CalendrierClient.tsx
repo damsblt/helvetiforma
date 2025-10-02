@@ -52,37 +52,32 @@ export default function CalendrierClient() {
     return personalMicrosoftDomains.includes(domain)
   }
 
-  const handleRegister = async (webinarId: string, webinarTitle: string) => {
+  const handleRegister = async (webinar: TeamsWebinar) => {
     try {
-      setRegistering(webinarId)
+      setRegistering(webinar.id)
       
-      // Demander l'email et le nom pour tous les utilisateurs
-      const email = prompt('Veuillez entrer votre adresse email pour recevoir l\'invitation Teams:')
-      if (!email) {
-        setRegistering(null)
-        return
-      }
-
-      const name = prompt('Veuillez entrer votre nom complet:')
-      if (!name) {
-        setRegistering(null)
-        return
-      }
-
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(email)) {
-        alert('Veuillez entrer une adresse email valide')
-        setRegistering(null)
-        return
-      }
-
+      // Format date and time for the contact form
+      const startDate = new Date(webinar.startDate)
+      const endDate = new Date(webinar.endDate)
+      const formattedDateTime = formatDate(startDate)
+      
+      // Determine location based on meeting type
+      const location = getEventType(webinar) === 'Réunion Teams' 
+        ? 'Réunion Microsoft Teams (en ligne)'
+        : 'Événement en personne (lieu à confirmer)'
+      
       // Redirection directe vers le formulaire de contact avec pré-remplissage
       // L'API Microsoft Graph ne peut pas ajouter automatiquement des utilisateurs
       // à des événements avec notifications, donc on utilise le formulaire de contact
-      alert('Redirection vers le formulaire de contact...\n\nNotre équipe vous enverra l\'invitation Teams manuellement.')
+      const params = new URLSearchParams({
+        webinar: webinar.title,
+        webinarId: webinar.id,
+        webinarDateTime: formattedDateTime,
+        webinarLocation: location,
+        webinarMeetingUrl: webinar.meetingUrl || ''
+      })
       
-      window.location.href = `/contact?webinar=${encodeURIComponent(webinarTitle)}&webinarId=${encodeURIComponent(webinarId)}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}#contact-form`
+      window.location.href = `/contact?${params.toString()}#contact-form`
       
     } catch (err) {
       alert('Une erreur est survenue lors de la redirection')
@@ -276,7 +271,7 @@ export default function CalendrierClient() {
                 {/* Section 4: Bouton d'inscription */}
                 <div className="p-4">
                   <button
-                    onClick={() => handleRegister(webinar.id, webinar.title)}
+                    onClick={() => handleRegister(webinar)}
                     disabled={registering === webinar.id}
                     className={`w-full py-3 bg-gradient-to-r ${colorScheme.button} disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60`}
                   >
