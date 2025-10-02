@@ -281,7 +281,7 @@ Then **Grant admin consent**!
 ### Calendar Access
 
 The app will fetch calendar events from:
-- **User:** `info@helvetiforma.onmicrosoft.com` (or configured user)
+- **User:** `damien@helvetiforma.onmicrosoft.com` (or configured user)
 - **Or:** Shared calendar in the tenant
 
 Make sure the calendar you want to display is accessible with application permissions!

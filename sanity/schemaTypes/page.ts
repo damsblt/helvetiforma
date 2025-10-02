@@ -297,7 +297,17 @@ export default defineType({
                       title: 'Content Lines',
                       of: [{type: 'string'}],
                     },
-                    {name: 'link', type: 'url', title: 'Action Link (optional)'},
+                    {
+                      name: 'link', 
+                      type: 'string', 
+                      title: 'Action Link (optional)',
+                      description: 'URL ou mailto:email@example.com',
+                      validation: (Rule) => Rule.custom((value) => {
+                        if (!value) return true; // Optional field
+                        // Accept any string for now - very permissive
+                        return true;
+                      })
+                    },
                     {name: 'linkText', type: 'string', title: 'Link Text (optional)'},
                   ],
                   preview: {

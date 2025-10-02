@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 
@@ -13,13 +13,30 @@ export default function ConstructionPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  // Auto-authenticate in development/localhost
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      sessionStorage.setItem('dev-auth', 'true')
+      router.push('/')
+    }
+  }, [router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
 
-    // Check credentials
-    if (credentials.email === 'damien@helvetiforma.ch' && credentials.password === 'damien123') {
+    // Check credentials for authorized users
+    const validCredentials = [
+      { email: 'damien@helvetiforma.ch', password: 'damien123' },
+      { email: 'admin@helvetiforma.ch', password: 'admin123' }
+    ]
+
+    const isValidUser = validCredentials.some(
+      user => user.email === credentials.email && user.password === credentials.password
+    )
+
+    if (isValidUser) {
       // Store authentication in sessionStorage
       sessionStorage.setItem('dev-auth', 'true')
       // Redirect to home page

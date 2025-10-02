@@ -20,7 +20,6 @@ export const navigationConfig: NavigationConfig = {
     { name: 'Accueil', href: '/' },
     { name: 'Concept', href: '/concept' },
     { name: 'Calendrier', href: '/calendrier' },
-    { name: 'Contact', href: '/contact' },
   ],
   footer: [
     {

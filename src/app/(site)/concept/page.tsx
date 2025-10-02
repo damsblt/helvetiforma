@@ -75,7 +75,7 @@ export default async function ConceptPage() {
         // Feature Cards Section
         if (section._type === 'featureCards' && section.cards) {
           return (
-            <div key={section._key} className="mb-16">
+            <div key={section._key} className="mb-8">
               <FeatureCardsSection
                 title={section.title || ''}
                 subtitle={section.subtitle}
@@ -89,7 +89,7 @@ export default async function ConceptPage() {
         // List Section with Icons
         if (section._type === 'listSection' && section.items) {
           return (
-            <div key={section._key} className="mb-16">
+            <div key={section._key} className="mb-8">
               <ListIconSection
                 title={section.title || ''}
                 subtitle={section.subtitle}

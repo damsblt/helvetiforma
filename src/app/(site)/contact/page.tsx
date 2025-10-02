@@ -74,27 +74,28 @@ export default async function ContactPage() {
         }} 
       />
       
-      {/* Contact Form Section */}
-      <section id="contact-form" className="py-24 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Information from Sanity CMS - First column */}
-            <div>
-              {pageContent.sections?.find(section => section._type === 'contactInfoSection') && (() => {
-                const contactSection = pageContent.sections.find(section => section._type === 'contactInfoSection')
-                return contactSection && contactSection.contactItems ? (
-                  <ContactInfoSection
-                    title={contactSection.title}
-                    subtitle={contactSection.subtitle}
-                    contactItems={contactSection.contactItems}
-                  />
-                ) : null
-              })()}
-            </div>
-            
-            {/* Contact Form - Second column */}
-            <AnimatedContactForm />
+      {/* Contact Information Section */}
+      {pageContent.sections?.find(section => section._type === 'contactInfoSection') && (
+        <section id="contact-info" className="py-16 px-4 bg-muted/30">
+          <div className="max-w-7xl mx-auto">
+            {(() => {
+              const contactSection = pageContent.sections.find(section => section._type === 'contactInfoSection')
+              return contactSection && contactSection.contactItems ? (
+                <ContactInfoSection
+                  title={contactSection.title}
+                  subtitle={contactSection.subtitle}
+                  contactItems={contactSection.contactItems}
+                />
+              ) : null
+            })()}
           </div>
+        </section>
+      )}
+
+      {/* Contact Form Section - Centered Full Width */}
+      <section id="contact-form" className="py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <AnimatedContactForm />
         </div>
       </section>
       
@@ -115,7 +116,7 @@ export default async function ContactPage() {
         // Feature Cards Section
         if (section._type === 'featureCards' && section.cards) {
           return (
-            <div key={section._key} className="mb-16">
+            <div key={section._key} className="mb-8">
               <FeatureCardsSection
                 title={section.title || ''}
                 subtitle={section.subtitle}

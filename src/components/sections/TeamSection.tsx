@@ -22,10 +22,10 @@ export default function TeamSection({ title, subtitle, items }: TeamSectionProps
   if (!items || items.length === 0) return null
 
   return (
-    <section className="py-24 px-4 bg-secondary/30">
+    <section className="py-16 px-4 bg-secondary/30">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           {title && (
             <motion.h2
               initial={{ opacity: 0, y: 20 }}

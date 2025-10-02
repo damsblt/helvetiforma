@@ -76,7 +76,7 @@ export default function StatsSection({ title, items, markdownHtml }: StatsSectio
   if (!items || items.length === 0) return null
 
   return (
-    <section className="py-24 px-4">
+    <section className="py-16 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Title */}
         {title && (
@@ -85,7 +85,7 @@ export default function StatsSection({ title, items, markdownHtml }: StatsSectio
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold text-foreground text-center mb-16"
+            className="text-3xl md:text-4xl font-bold text-foreground text-center mb-12"
           >
             {title}
           </motion.h2>

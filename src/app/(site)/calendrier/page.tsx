@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     if (!content) {
       return {
         title: 'Calendrier - HelvetiForma',
-        description: 'Participez à nos webinaires gratuits en direct via Microsoft Teams.',
+        description: 'Participez à nos webinaires en direct via Microsoft Teams.',
       }
     }
 
@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
     console.error('Error generating metadata for calendrier page:', error)
     return {
       title: 'Calendrier - HelvetiForma',
-      description: 'Participez à nos webinaires gratuits en direct via Microsoft Teams.',
+      description: 'Participez à nos webinaires en direct via Microsoft Teams.',
     }
   }
 }
@@ -63,7 +63,7 @@ export default async function CalendrierPage() {
       {content?.hero && (
         <HeroSection 
           hero={{
-            title: content.hero.title || 'Webinaires Gratuits',
+            title: content.hero.title || 'Webinaires',
             subtitle: content.hero.subtitle || 'Participez à nos sessions interactives en direct',
             backgroundImage: content.hero.backgroundImage,
             cta_primary: content.hero.ctaPrimary,
@@ -83,7 +83,7 @@ export default async function CalendrierPage() {
         // Feature Cards Section
         if (section._type === 'featureCards' && section.cards) {
           return (
-            <div key={section._key} className="mb-16">
+            <div key={section._key} className="mb-8">
               <FeatureCardsSection
                 title={section.title || ''}
                 subtitle={section.subtitle}

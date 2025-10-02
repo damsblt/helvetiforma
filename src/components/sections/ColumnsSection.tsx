@@ -24,7 +24,7 @@ export default function ColumnsSection({ title, subtitle, columns = 3, columnsCo
   const gridCols = columns === 1 ? 'grid-cols-1' : columns === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-3'
 
   return (
-    <section className="py-24 px-4">
+    <section className="py-16 px-4">
       <div className="max-w-7xl mx-auto">
         {(title || subtitle) && (
           <div className="text-center mb-14">

@@ -80,7 +80,10 @@ export async function getTeamsWebinars(params?: {
 
     const graphClient = createGraphClient(params.accessToken)
 
-    const startTime = params?.startDate?.toISOString() || new Date().toISOString()
+    // Start from beginning of today to include events that might have already started
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Start of today
+    const startTime = params?.startDate?.toISOString() || today.toISOString()
     const endTime = params?.endDate?.toISOString() || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
     // Use specific user's calendar (damien@helvetiforma.onmicrosoft.com)
@@ -367,7 +370,7 @@ function getMockWebinars(params?: { startDate?: Date; endDate?: Date; limit?: nu
     {
       id: 'webinar1',
       title: 'Introduction à la Comptabilité Suisse',
-      description: 'Découvrez les bases de la comptabilité selon les normes suisses. Ce webinaire gratuit vous donnera un aperçu complet des principes fondamentaux.',
+      description: 'Découvrez les bases de la comptabilité selon les normes suisses. Ce webinaire vous donnera un aperçu complet des principes fondamentaux.',
       startDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // Dans 7 jours
       endDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000), // 2h plus tard
       meetingUrl: 'https://teams.microsoft.com/l/meetup-join/example1',
@@ -376,7 +379,7 @@ function getMockWebinars(params?: { startDate?: Date; endDate?: Date; limit?: nu
       registrationCount: 23,
       status: 'scheduled',
       isPublic: true,
-      tags: ['comptabilité', 'débutant', 'gratuit'],
+      tags: ['comptabilité', 'débutant'],
     },
     {
       id: 'webinar2',
@@ -423,6 +426,22 @@ function getMockWebinars(params?: { startDate?: Date; endDate?: Date; limit?: nu
   }
 
   return filteredWebinars
+}
+
+/**
+ * Détecte si un email est un compte Microsoft personnel
+ */
+export function isPersonalMicrosoftAccount(email: string): boolean {
+  const personalMicrosoftDomains = [
+    'outlook.com',
+    'hotmail.com',
+    'live.com',
+    'msn.com',
+    'passport.com'
+  ]
+  
+  const domain = email.toLowerCase().split('@')[1]
+  return personalMicrosoftDomains.includes(domain)
 }
 
 /**
@@ -507,6 +526,90 @@ export async function inviteGuestUser(
     return {
       success: false,
       message: 'Erreur lors de l\'envoi de l\'invitation'
+    }
+  }
+}
+
+/**
+ * Auto-inscrit un utilisateur Microsoft authentifié à un événement
+ */
+export async function autoRegisterMicrosoftUser(
+  eventId: string,
+  userEmail: string,
+  userName: string,
+  accessToken: string
+): Promise<{ success: boolean; message: string; meetingUrl?: string }> {
+  try {
+    const graphClient = createGraphClient(accessToken)
+    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'damien@helvetiforma.onmicrosoft.com'
+
+    // Get current event
+    const event = await graphClient
+      .api(`/users/${calendarUser}/calendar/events/${eventId}`)
+      .get()
+
+    if (!event) {
+      return {
+        success: false,
+        message: 'Événement non trouvé'
+      }
+    }
+
+    // Check if user is already registered
+    const existingAttendees = event.attendees || []
+    const isAlreadyRegistered = existingAttendees.some(
+      (attendee: any) => attendee.emailAddress.address.toLowerCase() === userEmail.toLowerCase()
+    )
+
+    if (isAlreadyRegistered) {
+      return {
+        success: true,
+        message: 'Vous êtes déjà inscrit à cet événement',
+        meetingUrl: event.onlineMeeting?.joinUrl || event.webLink
+      }
+    }
+
+    // Add user as attendee
+    const attendees = [...existingAttendees, {
+      emailAddress: {
+        address: userEmail,
+        name: userName
+      },
+      type: 'required'
+    }]
+
+    // Update event with new attendee
+    await graphClient
+      .api(`/users/${calendarUser}/calendar/events/${eventId}`)
+      .patch({
+        attendees: attendees
+      })
+
+    // Send calendar invitation to user
+    await graphClient
+      .api(`/users/${calendarUser}/calendar/events/${eventId}/microsoft.graph.forward`)
+      .post({
+        toRecipients: [
+          {
+            emailAddress: {
+              address: userEmail,
+              name: userName
+            }
+          }
+        ],
+        comment: `Bonjour ${userName},\n\nVous avez été automatiquement inscrit à l'événement "${event.subject}" organisé par HelvetiForma.\n\nVous recevrez une invitation Teams dans votre calendrier.\n\nCordialement,\nL'équipe HelvetiForma`
+      })
+
+    return {
+      success: true,
+      message: 'Inscription automatique réussie ! Vous recevrez une invitation Teams.',
+      meetingUrl: event.onlineMeeting?.joinUrl || event.webLink
+    }
+  } catch (error) {
+    console.error('Error auto-registering Microsoft user:', error)
+    return {
+      success: false,
+      message: 'Erreur lors de l\'inscription automatique'
     }
   }
 }

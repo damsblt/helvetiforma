@@ -90,14 +90,8 @@ export default function Header() {
             })}
           </nav>
 
-          {/* CTA Buttons */}
-          <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Se connecter
-            </Link>
+          {/* CTA Button */}
+          <div className="hidden md:flex items-center">
             <Link
               href="/contact"
               className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
@@ -160,13 +154,7 @@ export default function Header() {
                 })}
                 
                 {/* Mobile CTA */}
-                <div className="pt-4 border-t border-border space-y-2">
-                  <Link
-                    href="/login"
-                    className="block px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  >
-                    Se connecter
-                  </Link>
+                <div className="pt-4 border-t border-border">
                   <Link
                     href="/contact"
                     className="block bg-primary text-primary-foreground px-4 py-3 rounded-lg text-base font-medium hover:bg-primary/90 transition-colors text-center"

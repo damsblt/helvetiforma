@@ -95,7 +95,7 @@ export default function PopularCoursesSection({ title, subtitle, limit = 3 }: Po
 
   if (loading) {
     return (
-      <section className="py-24 px-4">
+      <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <div className="h-8 bg-muted animate-pulse rounded mb-4 max-w-md mx-auto" />
@@ -119,7 +119,7 @@ export default function PopularCoursesSection({ title, subtitle, limit = 3 }: Po
   if (courses.length === 0) return null
 
   return (
-    <section className="py-24 px-4">
+    <section className="py-16 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">

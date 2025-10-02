@@ -17,14 +17,14 @@ const calendrierPageData = {
     _type: 'slug',
     current: 'calendrier',
   },
-  description: 'Participez à nos webinaires gratuits en direct via Microsoft Teams. Sessions interactives et formation professionnelle.',
+  description: 'Participez à nos webinaires en direct via Microsoft Teams. Sessions interactives et formation professionnelle.',
   seo: {
     title: 'Calendrier des Webinaires - HelvetiForma',
-    description: 'Découvrez nos webinaires gratuits en direct. Formation professionnelle via Microsoft Teams.',
-    keywords: 'webinaires, formation, Microsoft Teams, gratuit, calendrier, HelvetiForma',
+    description: 'Découvrez nos webinaires en direct. Formation professionnelle via Microsoft Teams.',
+    keywords: 'webinaires, formation, Microsoft Teams, calendrier, HelvetiForma',
   },
   hero: {
-    title: 'Webinaires Gratuits',
+    title: 'Webinaires',
     subtitle: 'Participez à nos sessions interactives en direct via Microsoft Teams',
     backgroundImage: null,
     ctaPrimary: {
@@ -77,7 +77,7 @@ const calendrierPageData = {
             {
               _type: 'span',
               _key: 'span3',
-              text: 'Recevez votre invitation Teams par email automatiquement',
+              text: 'Remplissez le formulaire de contact pré-rempli',
               marks: ['strong'],
             },
           ],
@@ -91,6 +91,20 @@ const calendrierPageData = {
             {
               _type: 'span',
               _key: 'span4',
+              text: 'Notre équipe vous enverra l\'invitation Teams par email',
+              marks: ['strong'],
+            },
+          ],
+        },
+        {
+          _type: 'block',
+          _key: 'step5',
+          style: 'normal',
+          listItem: 'number',
+          children: [
+            {
+              _type: 'span',
+              _key: 'span5',
               text: 'Rejoignez le webinaire via Microsoft Teams le jour J',
               marks: ['strong'],
             },
@@ -103,8 +117,8 @@ const calendrierPageData = {
           children: [
             {
               _type: 'span',
-              _key: 'span5',
-              text: 'Note : Les webinaires sont 100% gratuits. Vous aurez besoin d\'un compte Microsoft pour y participer. L\'inscription se fait via le système d\'invitation Microsoft pour garantir la sécurité et la qualité des sessions.',
+              _key: 'span6',
+              text: 'Note : Notre équipe traite chaque demande d\'inscription manuellement pour garantir la qualité et la sécurité des sessions. Vous recevrez votre invitation Teams par email dans les 24 heures.',
               marks: [],
             },
           ],
@@ -119,9 +133,9 @@ const calendrierPageData = {
       columns: 3,
       cards: [
         {
-          title: '100% Gratuit',
-          description: 'Accès libre à tous nos webinaires sans frais cachés',
-          icon: '💰',
+          title: 'Formation Professionnelle',
+          description: 'Sessions de qualité animées par nos experts certifiés',
+          icon: '🎓',
           iconColor: 'green',
         },
         {
@@ -199,7 +213,7 @@ const calendrierPageData = {
             {
               _type: 'span',
               _key: 'span3',
-              text: 'Un compte Microsoft (gratuit)',
+              text: 'Un compte Microsoft',
               marks: [],
             },
           ],
@@ -213,7 +227,7 @@ const calendrierPageData = {
             {
               _type: 'span',
               _key: 'span4',
-              text: 'Application Microsoft Teams (téléchargeable gratuitement)',
+              text: 'Application Microsoft Teams (téléchargeable)',
               marks: [],
             },
           ],
