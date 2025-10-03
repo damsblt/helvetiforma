@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { loadStripe } from '@stripe/stripe-js'
 
 interface PaymentButtonProps {
   postId: string
@@ -10,17 +9,11 @@ interface PaymentButtonProps {
   className?: string
 }
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 export default function PaymentButton({ postId, postTitle, price, className = '' }: PaymentButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   const handlePayment = async () => {
-    if (!stripePromise) {
-      console.error('Stripe n\'est pas configuré')
-      return
-    }
-
     setIsLoading(true)
 
     try {
@@ -42,14 +35,11 @@ export default function PaymentButton({ postId, postTitle, price, className = ''
       }
 
       // Rediriger vers Stripe Checkout
-      const stripe = await stripePromise
-      const { error: stripeError } = await stripe!.redirectToCheckout({
-        sessionId,
-      })
-
-      if (stripeError) {
-        console.error('Erreur Stripe:', stripeError)
-        alert('Erreur lors de la redirection: ' + stripeError.message)
+      if (url) {
+        window.location.href = url
+      } else {
+        console.error('URL de checkout non fournie')
+        alert('Erreur: URL de paiement non disponible')
       }
     } catch (error) {
       console.error('Erreur:', error)
