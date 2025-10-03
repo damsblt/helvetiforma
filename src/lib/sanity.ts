@@ -67,7 +67,7 @@ export interface SanityPage {
   }
   sections?: Array<{
     _key: string
-    _type: 'featureCards' | 'listSection' | 'richTextSection' | 'contactInfoSection'
+    _type: 'featureCards' | 'listSection' | 'richTextSection' | 'contactInfoSection' | 'threeCardsWithCta'
     title?: string
     subtitle?: string
     content?: PortableTextBlock[]
@@ -80,6 +80,9 @@ export interface SanityPage {
       description: string
       icon?: string
       iconColor?: 'blue' | 'green' | 'purple' | 'orange'
+      detailText?: string
+      detailIcon?: string
+      detailColor?: 'blue' | 'green' | 'purple' | 'orange'
     }>
     // List Section fields
     items?: Array<{
@@ -96,6 +99,25 @@ export interface SanityPage {
       link?: string
       linkText?: string
     }>
+    // Three Cards With CTA fields
+    ctaCard?: {
+      title: string
+      subtitle?: string
+      primaryButton: {
+        text: string
+        link: string
+        icon?: string
+      }
+      secondaryButton?: {
+        text: string
+        link: string
+      }
+      features?: Array<{
+        text: string
+        icon?: string
+        color?: 'blue' | 'green' | 'purple'
+      }>
+    }
     ctaText?: string
     ctaLink?: string
   }>
@@ -141,13 +163,41 @@ export async function getPageBySlug(slug: string): Promise<SanityPage | null> {
           title,
           description,
           icon,
-          iconColor
+          iconColor,
+          detailText,
+          detailIcon,
+          detailColor
         },
         items[] {
           title,
           description,
           icon,
           iconColor
+        },
+        contactItems[] {
+          icon,
+          title,
+          content,
+          link,
+          linkText
+        },
+        ctaCard {
+          title,
+          subtitle,
+          primaryButton {
+            text,
+            link,
+            icon
+          },
+          secondaryButton {
+            text,
+            link
+          },
+          features[] {
+            text,
+            icon,
+            color
+          }
         },
         ctaText,
         ctaLink

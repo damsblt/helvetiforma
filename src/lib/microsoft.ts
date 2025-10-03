@@ -63,19 +63,7 @@ async function getApplicationAccessToken(): Promise<string> {
 }
 
 /**
- * Valide si un événement respecte la convention de naming HF
- * Seuls les événements contenant "HF" dans le titre sont autorisés
- */
-function isValidHFEvent(title: string): boolean {
-  if (!title) return false
-  
-  // Vérifier si le titre contient "HF" (insensible à la casse)
-  return title.toLowerCase().includes('hf')
-}
-
-/**
  * Récupère les événements de calendrier (webinaires) avec le token utilisateur
- * Filtre automatiquement pour ne montrer que les événements avec le préfixe "HF"
  */
 export async function getTeamsWebinars(params?: {
   startDate?: Date
@@ -109,50 +97,38 @@ export async function getTeamsWebinars(params?: {
       .top(params?.limit || 50)
       .get()
 
-    // Filtrer et mapper les événements - seuls ceux avec "HF" dans le titre sont conservés
-    const filteredEvents = events.value
-      .filter((event: any) => {
-        const title = event.subject || ''
-        const isValid = isValidHFEvent(title)
-        
-        if (!isValid) {
-          console.log(`Événement filtré (pas de préfixe HF): "${title}"`)
-        }
-        
-        return isValid
-      })
-      .map((event: any): TeamsWebinar => {
-        // Strip HTML from description
-        const description = event.body?.content || ''
-        const cleanDescription = description
-          .replace(/<[^>]*>/g, '') // Remove HTML tags
-          .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
-          .replace(/&amp;/g, '&') // Replace &amp; with &
-          .replace(/&lt;/g, '<') // Replace &lt; with <
-          .replace(/&gt;/g, '>') // Replace &gt; with >
-          .replace(/&quot;/g, '"') // Replace &quot; with "
-          .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-          .trim()
-        
-        return {
-          id: event.id,
-          title: event.subject || 'Événement sans titre',
-          description: cleanDescription || 'Aucune description disponible',
-          startDate: new Date(event.start.dateTime),
-          endDate: new Date(event.end.dateTime),
-          meetingUrl: event.onlineMeeting?.joinUrl || event.webLink || '',
-          attendees: event.attendees?.map((attendee: any) => attendee.emailAddress.address) || [],
-          maxAttendees: 100, // Valeur par défaut
-          registrationCount: event.attendees?.length || 0,
-          status: 'scheduled',
-          isPublic: true,
-          tags: ['webinaire', 'formation'],
-        }
-      })
-
-    console.log(`Filtrage HF: ${events.value.length} événements trouvés, ${filteredEvents.length} événements avec préfixe HF conservés`)
-    
-    return filteredEvents
+    return events.value.map((event: any): TeamsWebinar => {
+      // Strip HTML from description
+      const description = event.body?.content || ''
+      const cleanDescription = description
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+        .replace(/&amp;/g, '&') // Replace &amp; with &
+        .replace(/&lt;/g, '<') // Replace &lt; with <
+        .replace(/&gt;/g, '>') // Replace &gt; with >
+        .replace(/&quot;/g, '"') // Replace &quot; with "
+        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .trim()
+      
+      return {
+        id: event.id,
+        title: event.subject || 'Événement sans titre',
+        description: cleanDescription || 'Aucune description disponible',
+        startDate: new Date(event.start.dateTime),
+        endDate: new Date(event.end.dateTime),
+        meetingUrl: event.onlineMeeting?.joinUrl || event.webLink || '',
+        location: event.location ? {
+          displayName: event.location.displayName,
+          address: event.location.address
+        } : undefined,
+        attendees: event.attendees?.map((attendee: any) => attendee.emailAddress.address) || [],
+        maxAttendees: 100, // Valeur par défaut
+        registrationCount: event.attendees?.length || 0,
+        status: 'scheduled',
+        isPublic: true,
+        tags: ['webinaire', 'formation'],
+      }
+    })
   } catch (error) {
     console.error('Error fetching Teams webinars:', error)
     return getMockWebinars(params)
@@ -181,13 +157,6 @@ export async function getTeamsWebinar(id: string, accessToken?: string): Promise
       .select('id,subject,body,start,end,location,attendees,onlineMeeting,webLink')
       .get()
 
-    // Vérifier si l'événement respecte la convention de naming HF
-    const title = event.subject || ''
-    if (!isValidHFEvent(title)) {
-      console.log(`Événement individuel filtré (pas de préfixe HF): "${title}"`)
-      return null
-    }
-
     // Strip HTML from description
     const description = event.body?.content || ''
     const cleanDescription = description
@@ -207,6 +176,10 @@ export async function getTeamsWebinar(id: string, accessToken?: string): Promise
       startDate: new Date(event.start.dateTime),
       endDate: new Date(event.end.dateTime),
       meetingUrl: event.onlineMeeting?.joinUrl || event.webLink || '',
+      location: event.location ? {
+        displayName: event.location.displayName,
+        address: event.location.address
+      } : undefined,
       attendees: event.attendees?.map((attendee: any) => attendee.emailAddress.address) || [],
       maxAttendees: 100,
       registrationCount: event.attendees?.length || 0,
@@ -234,13 +207,8 @@ export async function createTeamsWebinar(webinarData: {
     const accessToken = await getApplicationAccessToken()
     const graphClient = createGraphClient(accessToken)
 
-    // S'assurer que le titre contient le préfixe HF
-    const titleWithHF = webinarData.title.toLowerCase().includes('hf') 
-      ? webinarData.title 
-      : `HF - ${webinarData.title}`
-
     const event = {
-      subject: titleWithHF,
+      subject: webinarData.title,
       body: {
         contentType: 'HTML',
         content: webinarData.description,
@@ -409,7 +377,7 @@ function getMockWebinars(params?: { startDate?: Date; endDate?: Date; limit?: nu
   const webinars: TeamsWebinar[] = [
     {
       id: 'webinar1',
-      title: 'HF - Introduction à la Comptabilité Suisse',
+      title: 'Introduction à la Comptabilité Suisse',
       description: 'Découvrez les bases de la comptabilité selon les normes suisses. Ce webinaire vous donnera un aperçu complet des principes fondamentaux.',
       startDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // Dans 7 jours
       endDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000), // 2h plus tard
@@ -423,7 +391,7 @@ function getMockWebinars(params?: { startDate?: Date; endDate?: Date; limit?: nu
     },
     {
       id: 'webinar2',
-      title: 'HF - Gestion des Salaires : Nouveautés 2024',
+      title: 'Gestion des Salaires : Nouveautés 2024',
       description: 'Webinaire spécialisé sur les dernières évolutions en matière de gestion des salaires en Suisse. Idéal pour les professionnels RH.',
       startDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000), // Dans 14 jours
       endDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000 + 1.5 * 60 * 60 * 1000), // 1.5h plus tard
@@ -437,7 +405,7 @@ function getMockWebinars(params?: { startDate?: Date; endDate?: Date; limit?: nu
     },
     {
       id: 'webinar3',
-      title: 'HF - Session Q&A avec les Experts',
+      title: 'Session Q&A avec les Experts',
       description: 'Session interactive de questions-réponses avec nos formateurs experts. Apportez vos questions sur la comptabilité et la gestion d\'entreprise.',
       startDate: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000), // Dans 21 jours
       endDate: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000 + 1 * 60 * 60 * 1000), // 1h plus tard

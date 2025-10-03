@@ -1,5 +1,5 @@
 // WordPress/TutorLMS API Integration
-import { TutorCourse, TutorEnrollment, WordPressUser } from '@/types/wordpress'
+import { TutorCourse, TutorEnrollment, WordPressUser, WordPressPost } from '@/types/wordpress'
 
 const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://cms.helvetiforma.ch'
 const WORDPRESS_APP_USER = process.env.WORDPRESS_APP_USER || 'service-account'
@@ -45,6 +45,7 @@ export async function getTutorCourses(params?: {
   status?: 'publish' | 'draft' | 'private'
 }): Promise<TutorCourse[]> {
   try {
+    // First try to get TutorLMS courses
     const queryParams = new URLSearchParams({
       per_page: params?.per_page?.toString() || '10',
       page: params?.page?.toString() || '1',
@@ -52,34 +53,66 @@ export async function getTutorCourses(params?: {
       ...(params?.search && { search: params.search }),
     })
 
-    const courses = await wordpressApi<any[]>(`/tutor/v1/courses?${queryParams}`)
-    
-    return courses.map(course => ({
-      id: course.id,
-      title: course.title?.rendered || course.title,
-      description: course.excerpt?.rendered || course.content?.rendered || '',
-      content: course.content?.rendered || '',
-      price: course.price || 0,
-      instructor: course.instructor?.display_name || 'Instructeur',
-      instructor_id: course.instructor?.ID || course.author,
-      thumbnail: course.featured_image || course.thumbnail || '',
-      duration: course.duration || '',
-      level: course.level || 'beginner',
-      category: course.course_category?.[0]?.name || '',
-      enrollment_url: `${WORDPRESS_URL}/courses/${course.slug}`,
-      purchase_url: `${WORDPRESS_URL}/checkout?course=${course.id}`,
-      slug: course.slug,
-      status: course.status,
-      created_at: course.date,
-      updated_at: course.modified,
-      enrolled_count: course.enrolled || 0,
-      max_students: course.max_students || 0,
-      prerequisites: course.prerequisites || [],
-      objectives: course.objectives || [],
-      features: course.features || [],
-    }))
+    try {
+      const courses = await wordpressApi<any[]>(`/tutor/v1/courses?${queryParams}`)
+      
+      return courses.map(course => ({
+        id: course.id,
+        title: course.title?.rendered || course.title,
+        description: course.excerpt?.rendered || course.content?.rendered || '',
+        content: course.content?.rendered || '',
+        price: course.price || 0,
+        instructor: course.instructor?.display_name || 'Instructeur',
+        instructor_id: course.instructor?.ID || course.author,
+        thumbnail: course.featured_image || course.thumbnail || '',
+        duration: course.duration || '',
+        level: course.level || 'beginner',
+        category: course.course_category?.[0]?.name || '',
+        enrollment_url: `${WORDPRESS_URL}/courses/${course.slug}`,
+        purchase_url: `${WORDPRESS_URL}/checkout?course=${course.id}`,
+        slug: course.slug,
+        status: course.status,
+        created_at: course.date,
+        updated_at: course.modified,
+        enrolled_count: course.enrolled || 0,
+        max_students: course.max_students || 0,
+        prerequisites: course.prerequisites || [],
+        objectives: course.objectives || [],
+        features: course.features || [],
+      }))
+    } catch (tutorError) {
+      console.log('TutorLMS API not accessible, trying WordPress posts as courses...')
+      
+      // Fallback to WordPress posts as courses
+      const posts = await wordpressApi<any[]>(`/wp/v2/posts?${queryParams}`)
+      
+      return posts.map(post => ({
+        id: post.id,
+        title: post.title?.rendered || post.title,
+        description: post.excerpt?.rendered || post.content?.rendered?.substring(0, 200) + '...' || '',
+        content: post.content?.rendered || '',
+        price: 0, // Free for now
+        instructor: 'HelvetiForma',
+        instructor_id: post.author,
+        thumbnail: post.featured_media ? `${WORDPRESS_URL}/wp-json/wp/v2/media/${post.featured_media}` : '',
+        duration: 'À déterminer',
+        level: 'beginner' as const,
+        category: post.categories?.[0] || 'Formation',
+        enrollment_url: `${WORDPRESS_URL}/${post.slug}`,
+        purchase_url: `${WORDPRESS_URL}/${post.slug}`,
+        slug: post.slug,
+        status: post.status,
+        created_at: post.date,
+        updated_at: post.modified,
+        enrolled_count: 0,
+        max_students: 100,
+        prerequisites: [],
+        objectives: ['Comprendre les concepts de base'],
+        features: ['Contenu accessible', 'Formation gratuite'],
+      }))
+    }
   } catch (error) {
-    console.error('Error fetching Tutor courses:', error)
+    console.error('Error fetching courses:', error)
     
     // Fallback avec des données simulées en cas d'erreur
     return [
@@ -362,5 +395,94 @@ export async function resetUserPassword(email: string): Promise<{ success: boole
       success: false,
       error: 'Erreur lors de la réinitialisation du mot de passe',
     }
+  }
+}
+
+// === WORDPRESS POSTS FUNCTIONS ===
+
+/**
+ * Récupère tous les posts WordPress
+ */
+export async function getWordPressPosts(params?: {
+  per_page?: number
+  page?: number
+  search?: string
+  status?: 'publish' | 'draft' | 'private'
+  categories?: string
+}): Promise<WordPressPost[]> {
+  try {
+    const queryParams = new URLSearchParams({
+      per_page: params?.per_page?.toString() || '10',
+      page: params?.page?.toString() || '1',
+      status: params?.status || 'publish',
+      ...(params?.search && { search: params.search }),
+      ...(params?.categories && { categories: params.categories }),
+    })
+
+    const posts = await wordpressApi<any[]>(`/wp/v2/posts?${queryParams}`)
+    
+    return posts.map(post => ({
+      id: post.id,
+      title: post.title?.rendered || post.title,
+      content: post.content?.rendered || '',
+      excerpt: post.excerpt?.rendered || '',
+      slug: post.slug,
+      status: post.status,
+      author_id: post.author,
+      featured_image: post.featured_media ? `${WORDPRESS_URL}/wp-content/uploads/${post.featured_media}` : undefined,
+      categories: post.categories || [],
+      tags: post.tags || [],
+      created_at: post.date,
+      updated_at: post.modified,
+    }))
+  } catch (error) {
+    console.error('Error fetching WordPress posts:', error)
+    return []
+  }
+}
+
+/**
+ * Récupère un post WordPress par son slug
+ */
+export async function getWordPressPostBySlug(slug: string): Promise<WordPressPost | null> {
+  try {
+    const posts = await wordpressApi<any[]>(`/wp/v2/posts?slug=${slug}`)
+    
+    if (posts.length === 0) {
+      return null
+    }
+    
+    const post = posts[0]
+    
+    return {
+      id: post.id,
+      title: post.title?.rendered || post.title,
+      content: post.content?.rendered || '',
+      excerpt: post.excerpt?.rendered || '',
+      slug: post.slug,
+      status: post.status,
+      author_id: post.author,
+      featured_image: post.featured_media ? await getFeaturedImageUrl(post.featured_media) : undefined,
+      categories: post.categories || [],
+      tags: post.tags || [],
+      created_at: post.date,
+      updated_at: post.modified,
+    }
+  } catch (error) {
+    console.error('Error fetching WordPress post by slug:', error)
+    return null
+  }
+}
+
+/**
+ * Récupère l'URL de l'image mise en avant
+ */
+async function getFeaturedImageUrl(mediaId: number): Promise<string | undefined> {
+  try {
+    const media = await wordpressApi<any>(`/wp/v2/media/${mediaId}`)
+    return media.source_url || undefined
+  } catch (error) {
+    console.error('Error fetching featured image:', error)
+    return undefined
   }
 }

@@ -61,10 +61,28 @@ export default function CalendrierClient() {
       const endDate = new Date(webinar.endDate)
       const formattedDateTime = formatDate(startDate)
       
-      // Determine location based on meeting type
-      const location = getEventType(webinar) === 'Réunion Teams' 
-        ? 'Réunion Microsoft Teams (en ligne)'
-        : 'Événement en personne (lieu à confirmer)'
+      // Determine location based on meeting type and location data
+      let location = ''
+      if (getEventType(webinar) === 'Réunion Teams') {
+        location = 'Réunion Microsoft Teams (en ligne)'
+      } else if (webinar.location) {
+        // Format location from Microsoft data
+        const locationParts: string[] = []
+        if (webinar.location.displayName) {
+          locationParts.push(webinar.location.displayName)
+        }
+        if (webinar.location.address) {
+          const addr = webinar.location.address
+          if (addr.street) locationParts.push(addr.street)
+          if (addr.postalCode || addr.city) {
+            locationParts.push(`${addr.postalCode || ''} ${addr.city || ''}`.trim())
+          }
+          if (addr.countryOrRegion) locationParts.push(addr.countryOrRegion)
+        }
+        location = locationParts.length > 0 ? locationParts.join(', ') : 'Événement en personne (lieu à confirmer)'
+      } else {
+        location = 'Événement en personne (lieu à confirmer)'
+      }
       
       // Redirection directe vers le formulaire de contact avec pré-remplissage
       // L'API Microsoft Graph ne peut pas ajouter automatiquement des utilisateurs
@@ -204,28 +222,6 @@ export default function CalendrierClient() {
 
   return (
     <>
-      {/* Data Source Indicator */}
-      {dataSource !== 'unknown' && (
-        <div className="mb-8">
-          <div className="flex items-center justify-center gap-2 text-sm">
-            {dataSource === 'microsoft-graph-public' ? (
-              <>
-                <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-green-700 dark:text-green-400 font-medium">Données en temps réel depuis Microsoft Graph</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-blue-700 dark:text-blue-400 font-medium">Aucun événement dans votre calendrier Microsoft</span>
-              </>
-            )}
-          </div>
-        </div>
-      )}
 
       {loading && (
         <div className="text-center py-12">
@@ -297,6 +293,38 @@ export default function CalendrierClient() {
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 ml-8">{getEventType(webinar)}</p>
                 </div>
 
+                {/* Section 3.5: Lieu (si disponible) */}
+                {webinar.location && (webinar.location.displayName || webinar.location.address) && (
+                  <div className="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                    <div className="flex items-center gap-3">
+                      <svg className={`w-5 h-5 ${colorScheme.icon} flex-shrink-0`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">Lieu</span>
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 ml-8">
+                      {webinar.location.address && (
+                        <div>
+                          {webinar.location.address.street && <p>{webinar.location.address.street}</p>}
+                          {(webinar.location.address.postalCode || webinar.location.address.city) && (
+                            <p>
+                              {webinar.location.address.postalCode && `${webinar.location.address.postalCode} `}
+                              {webinar.location.address.city}
+                            </p>
+                          )}
+                          {webinar.location.address.countryOrRegion && (
+                            <p>{webinar.location.address.countryOrRegion}</p>
+                          )}
+                        </div>
+                      )}
+                      {webinar.location.displayName && !webinar.location.address && (
+                        <p className="font-medium">{webinar.location.displayName}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Section 4: Description */}
                 <div className="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                   <div className="flex items-center gap-3">
@@ -352,3 +380,4 @@ export default function CalendrierClient() {
     </>
   )
 }
+

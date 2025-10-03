@@ -5,7 +5,7 @@ import HeroSection from '@/components/sections/HeroSection'
 import FeatureCardsSection from '@/components/sections/FeatureCardsSection'
 import AnimatedRichTextSection from '@/components/sections/AnimatedRichTextSection'
 import AnimatedWebinarsHeader from '@/components/sections/AnimatedWebinarsHeader'
-import CalendrierClient from './CalendrierClient'
+import SessionsClient from './SessionsClient'
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -107,7 +107,7 @@ export default async function CalendrierPage() {
               <p className="mt-4 text-gray-600 dark:text-gray-300">Chargement des webinaires...</p>
             </div>
           }>
-            <CalendrierClient />
+            <SessionsClient />
           </Suspense>
         </div>
       </section>

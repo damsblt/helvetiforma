@@ -338,6 +338,151 @@ export default defineType({
             },
           },
         },
+        // Three Cards Column + Horizontal Card CTA Section
+        {
+          type: 'object',
+          name: 'threeCardsWithCta',
+          title: 'Three Cards Column + Horizontal Card',
+          fields: [
+            {name: 'title', type: 'string', title: 'Section Title'},
+            {name: 'subtitle', type: 'text', title: 'Section Subtitle', rows: 3},
+            {
+              name: 'cards',
+              type: 'array',
+              title: 'Three Cards',
+              of: [
+                {
+                  type: 'object',
+                  fields: [
+                    {name: 'title', type: 'string', title: 'Card Title'},
+                    {name: 'description', type: 'text', title: 'Card Description', rows: 4},
+                    {
+                      name: 'icon',
+                      type: 'string',
+                      title: 'Icon',
+                      description: 'Emoji ou icône (e.g., 📅, 📍, 👥)',
+                    },
+                    {
+                      name: 'iconColor',
+                      type: 'string',
+                      title: 'Icon Background Color',
+                      options: {
+                        list: [
+                          {title: 'Blue', value: 'blue'},
+                          {title: 'Green', value: 'green'},
+                          {title: 'Purple', value: 'purple'},
+                          {title: 'Orange', value: 'orange'},
+                        ],
+                      },
+                    },
+                    {
+                      name: 'detailText',
+                      type: 'string',
+                      title: 'Detail Text',
+                      description: 'Petit texte en bas (e.g., "Sessions de 60-90 minutes")',
+                    },
+                    {
+                      name: 'detailIcon',
+                      type: 'string',
+                      title: 'Detail Icon',
+                      description: 'Emoji pour le détail (e.g., ⏰, 👥)',
+                    },
+                    {
+                      name: 'detailColor',
+                      type: 'string',
+                      title: 'Detail Text Color',
+                      options: {
+                        list: [
+                          {title: 'Blue', value: 'blue'},
+                          {title: 'Green', value: 'green'},
+                          {title: 'Purple', value: 'purple'},
+                        ],
+                      },
+                    },
+                  ],
+                  preview: {
+                    select: {
+                      title: 'title',
+                      icon: 'icon',
+                    },
+                    prepare({title, icon}) {
+                      return {
+                        title: `${icon || '•'} ${title}`,
+                      }
+                    },
+                  },
+                },
+              ],
+              validation: (Rule) => Rule.min(3).max(3),
+            },
+            {
+              name: 'ctaCard',
+              type: 'object',
+              title: 'Horizontal CTA Card',
+              fields: [
+                {name: 'title', type: 'string', title: 'CTA Title'},
+                {name: 'subtitle', type: 'text', title: 'CTA Subtitle', rows: 2},
+                {
+                  name: 'primaryButton',
+                  type: 'object',
+                  title: 'Primary Button',
+                  fields: [
+                    {name: 'text', type: 'string', title: 'Button Text'},
+                    {name: 'link', type: 'string', title: 'Button Link'},
+                    {name: 'icon', type: 'string', title: 'Button Icon (optional)', description: 'Emoji (e.g., 📅)'},
+                  ],
+                },
+                {
+                  name: 'secondaryButton',
+                  type: 'object',
+                  title: 'Secondary Button',
+                  fields: [
+                    {name: 'text', type: 'string', title: 'Button Text'},
+                    {name: 'link', type: 'string', title: 'Button Link'},
+                  ],
+                },
+                {
+                  name: 'features',
+                  type: 'array',
+                  title: 'Feature List',
+                  of: [
+                    {
+                      type: 'object',
+                      fields: [
+                        {name: 'text', type: 'string', title: 'Feature Text'},
+                        {name: 'icon', type: 'string', title: 'Icon', description: 'Emoji (e.g., 📅, 👥)'},
+                        {
+                          name: 'color',
+                          type: 'string',
+                          title: 'Icon Color',
+                          options: {
+                            list: [
+                              {title: 'Blue', value: 'blue'},
+                              {title: 'Green', value: 'green'},
+                              {title: 'Purple', value: 'purple'},
+                            ],
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          preview: {
+            select: {
+              title: 'title',
+              cards: 'cards',
+            },
+            prepare({title, cards}) {
+              return {
+                title: title || 'Three Cards + CTA',
+                subtitle: `${cards?.length || 0} cards`,
+              }
+            },
+          },
+        },
       ],
     }),
   ],

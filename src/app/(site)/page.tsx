@@ -1,7 +1,7 @@
 import { getPageBySlug } from '@/lib/sanity'
 import type { Metadata } from 'next'
 import HeroSection from '@/components/sections/HeroSection'
-import PopularCoursesSection from '@/components/sections/PopularCoursesSection'
+import ThreeCardsWithCtaSection from '@/components/sections/ThreeCardsWithCtaSection'
 import PromoBand from '@/components/sections/PromoBand'
 import FeatureCardsSection from '@/components/sections/FeatureCardsSection'
 import ListIconSection from '@/components/sections/ListIconSection'
@@ -89,15 +89,21 @@ export default async function HomePage() {
           )
         }
         
+        // Three Cards With CTA Section
+        if (section._type === 'threeCardsWithCta') {
+          return (
+            <ThreeCardsWithCtaSection
+              key={section._key}
+              title={section.title}
+              subtitle={section.subtitle}
+              cards={section.cards || []}
+              ctaCard={section.ctaCard}
+            />
+          )
+        }
+        
         return null
       })}
-      
-      {/* Popular Courses Section - Always show */}
-      <PopularCoursesSection
-        title="Nos formations populaires"
-        subtitle="Découvrez nos formations les plus demandées"
-        limit={6}
-      />
     </div>
   )
 }

@@ -19,7 +19,8 @@ export const navigationConfig: NavigationConfig = {
   main: [
     { name: 'Accueil', href: '/' },
     { name: 'Concept', href: '/concept' },
-    { name: 'Calendrier', href: '/calendrier' },
+    { name: 'Coin des docs', href: '/coins-des-docs' },
+    { name: 'Sessions', href: '/sessions' },
   ],
   footer: [
     {
@@ -27,7 +28,7 @@ export const navigationConfig: NavigationConfig = {
       links: [
         { name: 'Nos formations', href: '/formations' },
         { name: 'Cours en ligne', href: '/courses' },
-        { name: 'Webinaires', href: '/calendrier' },
+        { name: 'Sessions', href: '/sessions' },
       ],
     },
     {
@@ -35,7 +36,7 @@ export const navigationConfig: NavigationConfig = {
       links: [
         { name: 'Contact', href: '/contact' },
         { name: 'FAQ', href: '/faq' },
-        { name: 'Documentation', href: '/docs' },
+        { name: 'Coin des docs', href: '/coins-des-docs' },
       ],
     },
     {

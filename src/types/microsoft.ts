@@ -13,6 +13,16 @@ export interface TeamsWebinar {
   status: 'scheduled' | 'live' | 'completed' | 'cancelled'
   isPublic: boolean
   tags: string[]
+  location?: {
+    displayName?: string
+    address?: {
+      street?: string
+      city?: string
+      state?: string
+      countryOrRegion?: string
+      postalCode?: string
+    }
+  }
   instructor?: {
     name: string
     email: string
