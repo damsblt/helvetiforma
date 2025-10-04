@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         postId: testPostId,
         hasPurchased,
         userId: session.user.id,
-        allPurchases: allUserPurchases.map(p => ({
+        allPurchases: allUserPurchases.map((p: any) => ({
           id: p._id,
           postId: p.postId,
           postTitle: p.postTitle,
