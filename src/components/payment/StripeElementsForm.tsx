@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { CreditCard, Lock, CheckCircle, AlertCircle } from 'lucide-react'
-import { getSupabaseClient } from '@/lib/supabase'
+import { useSession } from 'next-auth/react'
 import PaymentErrorBoundary from './PaymentErrorBoundary'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
@@ -21,16 +21,8 @@ function PaymentForm({ postId, postTitle, price, onSuccess }: StripeElementsForm
   const elements = useElements()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [user, setUser] = useState<any>(null)
-  const supabase = getSupabaseClient()
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user || null)
-    }
-    getUser()
-  }, [supabase.auth])
+  const { data: session } = useSession()
+  const user = session?.user
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -58,7 +50,7 @@ function PaymentForm({ postId, postTitle, price, onSuccess }: StripeElementsForm
         body: JSON.stringify({
           postId,
           user: {
-            id: user.id,
+            id: (user as any).id,
             email: user.email
           }
         }),

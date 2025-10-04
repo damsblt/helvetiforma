@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowLeft, Lock, CreditCard, Shield, CheckCircle } from 'lucide-react'
-import { getSupabaseClient } from '@/lib/supabase'
+import { useSession } from 'next-auth/react'
 import StripeElementsForm from '@/components/payment/StripeElementsForm'
 
 interface Post {
@@ -23,25 +23,9 @@ interface CheckoutPageProps {
 }
 
 export default function CheckoutPage({ post }: CheckoutPageProps) {
-  const [user, setUser] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const supabase = getSupabaseClient()
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user || null)
-      setIsLoading(false)
-    }
-
-    getUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  const { data: session, status } = useSession()
+  const isLoading = status === 'loading'
+  const user = session?.user
 
   const handlePaymentSuccess = () => {
     // Rediriger vers l'article après paiement réussi

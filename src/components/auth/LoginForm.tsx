@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getSupabaseClient } from '@/lib/supabase'
+import { signIn } from 'next-auth/react'
 
 interface LoginFormProps {
   onSuccess?: () => void
@@ -13,7 +13,6 @@ interface LoginFormProps {
 export default function LoginForm({ onSuccess }: LoginFormProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = getSupabaseClient()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -39,14 +38,15 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setError('')
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
+        redirect: false,
       })
 
-      if (error) {
-        setError(error.message)
-      } else if (data.user) {
+      if (result?.error) {
+        setError('Email ou mot de passe incorrect')
+      } else if (result?.ok) {
         if (onSuccess) {
           onSuccess()
         } else {
@@ -68,18 +68,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setResetMessage('')
 
     try {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'
-      console.log('🔧 LoginForm - Site URL utilisée:', siteUrl)
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${siteUrl}/reset-password`,
-      })
-
-      if (error) {
-        setResetMessage(error.message)
-      } else {
-        setResetMessage('Email de réinitialisation envoyé ! Vérifiez votre boîte de réception.')
-      }
+      // For now, just show a message since we're using credentials
+      setResetMessage('Fonctionnalité de réinitialisation non disponible avec l\'authentification par identifiants. Contactez l\'administrateur.')
     } catch (error) {
       setResetMessage('Une erreur est survenue')
     } finally {

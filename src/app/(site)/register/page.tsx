@@ -3,11 +3,9 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import RegisterForm from '@/components/auth/RegisterForm'
-import AuthProvider from '@/components/auth/AuthProvider'
 
 export default function RegisterPage() {
   return (
-    <AuthProvider>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -41,6 +39,5 @@ export default function RegisterPage() {
           </div>
         </motion.div>
       </div>
-    </AuthProvider>
   )
 }

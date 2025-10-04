@@ -7,9 +7,8 @@ import { notFound } from "next/navigation";
 import { portableTextComponents } from "@/components/ui/PortableTextComponents";
 import { checkUserPurchaseWithSession } from "@/lib/purchases";
 import PaymentButton from "@/components/PaymentButton";
-import DebugInfo from '@/components/DebugInfo';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { noEmailAuthOptions } from '@/lib/auth-no-email';
 import type { Metadata } from "next";
 
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
@@ -77,15 +76,8 @@ export default async function PostPage({
   const post = await sanityClient.fetch(POST_QUERY, resolvedParams, options) as SanityDocument | null;
   
   // Récupérer la session utilisateur avec NextAuth
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(noEmailAuthOptions);
   
-  // Debug server-side session
-  console.log('🔍 SERVER-SIDE SESSION DEBUG (NextAuth):', {
-    hasSession: !!session,
-    userId: (session?.user as any)?.id,
-    userEmail: session?.user?.email,
-    timestamp: new Date().toISOString()
-  });
   
   if (!post) {
     notFound();
@@ -104,26 +96,7 @@ export default async function PostPage({
     (accessLevel === 'members' && session?.user) ||
     (accessLevel === 'premium' && hasPurchased);
 
-  // Debug logging
-  console.log('🔍 DEBUG POST ACCESS:', {
-    postTitle: post.title,
-    accessLevel,
-    userEmail: session?.user?.email,
-    userId: (session?.user as any)?.id,
-    hasPurchased,
-    hasAccess,
-    postId: post._id,
-    timestamp: new Date().toISOString()
-  });
 
-  // Additional debugging for production
-  if (process.env.NODE_ENV === 'production') {
-    console.log('🚀 PRODUCTION DEBUG - User session exists:', !!session?.user);
-    console.log('🚀 PRODUCTION DEBUG - User ID:', (session?.user as any)?.id);
-    console.log('🚀 PRODUCTION DEBUG - Post ID:', post._id);
-    console.log('🚀 PRODUCTION DEBUG - Has purchased:', hasPurchased);
-    console.log('🚀 PRODUCTION DEBUG - Has access:', hasAccess);
-  }
 
   // Determine what content to show
   const contentToShow = hasAccess ? post.body : (post.previewContent || post.body);
@@ -233,8 +206,6 @@ export default async function PostPage({
 
       {/* Content Section */}
       <div className="container mx-auto max-w-4xl px-4 py-16">
-        {/* Debug Info - Remove in production */}
-        <DebugInfo postId={post._id} />
         
         <article className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 p-8 md:p-12">
           <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white">

@@ -1,15 +1,5 @@
 import { NextAuthOptions } from "next-auth"
 import EmailProvider from "next-auth/providers/email"
-import { createClient } from '@sanity/client'
-
-// Sanity client for user management
-const sanityClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  token: process.env.SANITY_API_TOKEN!,
-  useCdn: false,
-  apiVersion: '2023-05-03'
-})
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -23,15 +13,23 @@ export const authOptions: NextAuthOptions = {
         },
       },
       from: process.env.EMAIL_FROM,
+      // Add these options to help with debugging
+      maxAge: 24 * 60 * 60, // 24 hours
     }),
   ],
   debug: process.env.NODE_ENV === 'development',
-  callbacks: {
-    async signIn({ user, account, profile }) {
-      console.log('🔍 NextAuth signIn callback:', { user, account, profile })
-      // Allow all sign-ins for now
-      return true
+  logger: {
+    error: (code, metadata) => {
+      console.error('NextAuth Error:', code, metadata)
     },
+    warn: (code) => {
+      console.warn('NextAuth Warning:', code)
+    },
+    debug: (code, metadata) => {
+      console.log('NextAuth Debug:', code, metadata)
+    }
+  },
+  callbacks: {
     async session({ session, token }) {
       // Add user ID to session
       if (token?.sub && session.user) {
