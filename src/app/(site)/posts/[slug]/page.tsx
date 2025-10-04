@@ -92,23 +92,9 @@ export default async function PostPage({
     (accessLevel === 'premium' && hasPurchased);
 
   // Determine what content to show
-  const contentToShow = hasAccess ? post.body : post.previewContent;
+  const contentToShow = hasAccess ? post.body : (post.previewContent || post.body);
   const isPremium = accessLevel === 'premium';
   const isMembers = accessLevel === 'members';
-
-  // Debug logging
-  console.log('Article Debug:', {
-    slug: resolvedParams.slug,
-    hasAccess,
-    accessLevel,
-    hasPurchased,
-    user: user ? { id: user.id, email: user.email } : null,
-    body: post.body,
-    previewContent: post.previewContent,
-    contentToShow,
-    contentToShowIsArray: Array.isArray(contentToShow),
-    contentToShowLength: Array.isArray(contentToShow) ? contentToShow.length : 'not array'
-  });
 
   // Access level badge
   const getAccessBadge = () => {
@@ -215,8 +201,13 @@ export default async function PostPage({
       <div className="container mx-auto max-w-4xl px-4 py-16">
         <article className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 p-8 md:p-12">
           <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white">
-            {Array.isArray(contentToShow) && contentToShow.length > 0 ? (
-              <PortableText value={contentToShow} components={portableTextComponents} />
+            {Array.isArray(post.body) && post.body.length > 0 ? (
+              <div className={!hasAccess && (isPremium || isMembers) ? 'relative' : ''}>
+                <PortableText value={post.body} components={portableTextComponents} />
+                {!hasAccess && (isPremium || isMembers) && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-gray-800/90 dark:via-gray-800/50 dark:to-transparent pointer-events-none"></div>
+                )}
+              </div>
             ) : (
               <p className="text-gray-600 dark:text-gray-400">
                 Aucun contenu disponible pour cet article.
