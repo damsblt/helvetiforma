@@ -1,10 +1,13 @@
 'use client'
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@sanity/client'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const sanityClient = createClient({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+  useCdn: false,
+  apiVersion: '2023-05-03'
+})
 
 /**
  * Vérifier si un utilisateur a acheté un article (côté client)
@@ -14,22 +17,22 @@ export async function checkUserPurchaseClient(
   postId: string
 ): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('purchases')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('post_id', postId)
-      .eq('status', 'completed')
-      .single()
-
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
-      console.error('Erreur lors de la vérification de l\'achat:', error)
-      return false
-    }
-
-    return !!data
+    console.log('🔍 checkUserPurchaseClient called with:', { userId, postId })
+    
+    const purchases = await sanityClient.fetch(
+      `*[_type == "purchase" && userId == $userId && postId == $postId && status == "completed"]`,
+      { userId, postId }
+    )
+    
+    console.log('🔍 checkUserPurchaseClient result:', { 
+      found: purchases.length > 0, 
+      count: purchases.length,
+      purchases: purchases.map((p: any) => ({ id: p._id, status: p.status, postId: p.postId, userId: p.userId }))
+    })
+    
+    return purchases.length > 0
   } catch (error) {
-    console.error('Erreur lors de la vérification de l\'achat:', error)
+    console.error('Erreur lors de la vérification des achats:', error)
     return false
   }
 }
@@ -39,19 +42,12 @@ export async function checkUserPurchaseClient(
  */
 export async function getUserPurchasesClient(userId: string) {
   try {
-    const { data, error } = await supabase
-      .from('purchases')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('status', 'completed')
-      .order('purchased_at', { ascending: false })
-
-    if (error) {
-      console.error('Erreur lors de la récupération des achats:', error)
-      return []
-    }
-
-    return data || []
+    const purchases = await sanityClient.fetch(
+      `*[_type == "purchase" && userId == $userId && status == "completed"] | order(purchasedAt desc)`,
+      { userId }
+    )
+    
+    return purchases
   } catch (error) {
     console.error('Erreur lors de la récupération des achats:', error)
     return []
