@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { getSupabaseClient } from '@/lib/supabase'
 
 interface PaymentButtonProps {
   postId: string
@@ -13,34 +14,26 @@ interface PaymentButtonProps {
 
 export default function PaymentButton({ postId, postTitle, price, className = '', onSuccess }: PaymentButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const supabase = getSupabaseClient()
 
   const handlePayment = async () => {
     setIsLoading(true)
 
     try {
-      // Créer la session de paiement
-      const response = await fetch('/api/payment/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ postId }),
-      })
-
-      const { sessionId, url, error } = await response.json()
-
-      if (error) {
-        console.error('Erreur:', error)
-        alert('Erreur lors de la création du paiement: ' + error)
+      // Récupérer l'utilisateur actuel
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user) {
+        alert('Vous devez être connecté pour effectuer un achat')
+        setIsLoading(false)
         return
       }
 
-      // Rediriger vers Stripe Checkout
-      if (url) {
-        window.location.href = url
-      } else {
-        console.error('URL de checkout non fournie')
-        alert('Erreur: URL de paiement non disponible')
+      // Rediriger vers la page de paiement native
+      window.location.href = `/payment/${postId}`
+      
+      if (onSuccess) {
+        onSuccess()
       }
     } catch (error) {
       console.error('Erreur:', error)

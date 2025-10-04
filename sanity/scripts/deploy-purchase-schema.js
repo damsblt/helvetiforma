@@ -1,30 +1,29 @@
-import {createClient} from '@sanity/client'
+const { createClient } = require('@sanity/client')
+require('dotenv').config({ path: '../.env.local' })
 
 const client = createClient({
-  projectId: 'xzzyyelh',
-  dataset: 'production',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
+  token: process.env.SANITY_API_TOKEN,
   useCdn: false,
-  token: 'skmiJarNN166nU3tRkyPztViWBQGTMP6MLVL5YEKjfjvm7g4lieOyReZjMm7shQ3Nzh3377LptGgzD6b3SBuooQYLHKEoLsHBliO4GW0XlASaEBWzPlzqGiyIq7stUCh1OU9kQalsvtXPBtBY431VvPDa72lEG1S1Cs6ySQ8TOGZ7xu8hJ0x',
-  apiVersion: '2024-01-01',
+  apiVersion: '2023-05-03'
 })
 
 async function deployPurchaseSchema() {
   try {
-    console.log('🚀 Déploiement du schéma Purchase...')
+    console.log('🚀 Déploiement du schéma purchase...')
     
-    // Le schéma est déjà défini dans schemaTypes/purchase.ts
-    // Il sera automatiquement déployé lors du prochain build de Sanity Studio
+    // Vérifier si le schéma existe déjà
+    const existingSchemas = await client.fetch('*[_type == "sanity.documentType" && name == "purchase"]')
     
-    console.log('✅ Schéma Purchase prêt!')
-    console.log('💡 Redémarrez Sanity Studio pour voir le nouveau schéma')
-    console.log('📋 Le schéma inclut:')
-    console.log('   - userId: ID de l\'utilisateur')
-    console.log('   - postId: ID de l\'article')
-    console.log('   - postTitle: Titre de l\'article')
-    console.log('   - amount: Montant en CHF')
-    console.log('   - stripeSessionId: ID de session Stripe')
-    console.log('   - purchasedAt: Date d\'achat')
-    console.log('   - status: Statut de l\'achat')
+    if (existingSchemas.length > 0) {
+      console.log('✅ Le schéma purchase existe déjà')
+      return
+    }
+
+    // Le schéma sera automatiquement déployé via la configuration Sanity
+    console.log('✅ Le schéma purchase est prêt à être déployé')
+    console.log('📝 Assurez-vous que le schéma est déployé via: npm run dev dans le dossier sanity/')
     
   } catch (error) {
     console.error('❌ Erreur lors du déploiement:', error)

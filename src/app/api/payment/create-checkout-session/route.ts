@@ -5,16 +5,14 @@ import { sanityClient } from '@/lib/sanity'
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser()
+    const { postId, user } = await request.json()
     
-    if (!user) {
+    if (!user || !user.id || !user.email) {
       return NextResponse.json(
         { error: 'Vous devez être connecté pour effectuer un achat' },
         { status: 401 }
       )
     }
-
-    const { postId } = await request.json()
     
     if (!postId) {
       return NextResponse.json(

@@ -14,7 +14,7 @@ export interface Purchase {
 export async function checkUserPurchase(userId: string, postId: string): Promise<boolean> {
   try {
     const purchases = await sanityClient.fetch(
-      `*[_type == "purchase" && userRef == $userId && postRef._ref == $postId]`,
+      `*[_type == "purchase" && userRef == $userId && postRef == $postId]`,
       { userId, postId }
     )
     
