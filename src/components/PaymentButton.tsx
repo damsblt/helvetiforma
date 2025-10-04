@@ -7,10 +7,11 @@ interface PaymentButtonProps {
   postTitle: string
   price: number
   className?: string
+  onSuccess?: () => void
 }
 
 
-export default function PaymentButton({ postId, postTitle, price, className = '' }: PaymentButtonProps) {
+export default function PaymentButton({ postId, postTitle, price, className = '', onSuccess }: PaymentButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   const handlePayment = async () => {
