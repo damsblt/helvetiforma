@@ -11,6 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@auth/prisma-adapter": "^2.10.0",
     "@azure/msal-node": "^3.8.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@next/mdx": "^15.5.4",
@@ -30,6 +31,7 @@
     "isomorphic-fetch": "^3.0.0",
     "lucide-react": "^0.469.0",
     "next": "15.5.4",
+    "next-auth": "^4.24.11",
     "next-sanity": "^11.4.2",
     "nodemailer": "^6.10.1",
     "react": "19.1.0",

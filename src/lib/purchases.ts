@@ -1,4 +1,6 @@
 import { sanityClient } from './sanity'
+import { getServerSession } from 'next-auth'
+import { authOptions } from './auth'
 
 export interface Purchase {
   _id: string
@@ -29,6 +31,30 @@ export async function checkUserPurchase(userId: string, postId: string): Promise
     return purchases.length > 0
   } catch (error) {
     console.error('Erreur lors de la vérification des achats:', error)
+    return false
+  }
+}
+
+// New function that gets session and checks purchase
+export async function checkUserPurchaseWithSession(postId: string): Promise<boolean> {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    const userId = (session?.user as any)?.id
+    if (!userId) {
+      console.log('🔍 No session found for purchase check')
+      return false
+    }
+    
+    console.log('🔍 checkUserPurchaseWithSession called with:', { 
+      userId, 
+      postId,
+      userEmail: session?.user?.email 
+    })
+    
+    return await checkUserPurchase(userId, postId)
+  } catch (error) {
+    console.error('Erreur lors de la vérification de session et achat:', error)
     return false
   }
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getSupabaseClient } from '@/lib/supabase'
+import { useSession } from 'next-auth/react'
 
 interface DebugInfoProps {
   postId: string
@@ -11,31 +11,32 @@ export default function DebugInfo({ postId }: DebugInfoProps) {
   const [debugInfo, setDebugInfo] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
+  const { data: session, status } = useSession()
+
   useEffect(() => {
     async function getDebugInfo() {
       try {
-        const supabase = getSupabaseClient()
-        const { data: { session } } = await supabase.auth.getSession()
-        
         const info: any = {
           hasSession: !!session,
           user: session?.user ? {
-            id: session.user.id,
+            id: (session.user as any)?.id,
             email: session.user.email,
-            created_at: session.user.created_at
+            name: session.user.name
           } : null,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          status
         }
 
         if (session?.user) {
           // Use server-side API to check purchase
-          const response = await fetch(`/api/check-purchase?userId=${session.user.id}&postId=${postId}`)
+          const userId = (session.user as any)?.id
+          const response = await fetch(`/api/check-purchase?userId=${userId}&postId=${postId}`)
           const purchaseData = await response.json()
           
           info.purchaseCheck = {
             postId,
             hasPurchased: purchaseData.hasPurchased,
-            userId: session.user.id,
+            userId: userId,
             apiResponse: purchaseData
           }
         }
@@ -48,8 +49,10 @@ export default function DebugInfo({ postId }: DebugInfoProps) {
       }
     }
 
-    getDebugInfo()
-  }, [postId])
+    if (status !== 'loading') {
+      getDebugInfo()
+    }
+  }, [session, status, postId])
 
   if (loading) {
     return <div className="p-4 bg-gray-100 rounded">Loading debug info...</div>

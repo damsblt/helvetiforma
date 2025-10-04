@@ -5,10 +5,11 @@ import { sanityClient } from "@/lib/sanity";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { portableTextComponents } from "@/components/ui/PortableTextComponents";
-import { checkUserPurchase } from "@/lib/purchases";
+import { checkUserPurchaseWithSession } from "@/lib/purchases";
 import PaymentButton from "@/components/PaymentButton";
-import { createServerSupabaseClient } from '@/lib/supabase-server';
 import DebugInfo from '@/components/DebugInfo';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import type { Metadata } from "next";
 
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
@@ -75,16 +76,13 @@ export default async function PostPage({
   const resolvedParams = await params;
   const post = await sanityClient.fetch(POST_QUERY, resolvedParams, options) as SanityDocument | null;
   
-  // Initialiser Supabase (server-side)
-  const supabase = await createServerSupabaseClient();
-  
-  // Récupérer la session utilisateur
-  const { data: { session } } = await supabase.auth.getSession();
+  // Récupérer la session utilisateur avec NextAuth
+  const session = await getServerSession(authOptions);
   
   // Debug server-side session
-  console.log('🔍 SERVER-SIDE SESSION DEBUG:', {
+  console.log('🔍 SERVER-SIDE SESSION DEBUG (NextAuth):', {
     hasSession: !!session,
-    userId: session?.user?.id,
+    userId: (session?.user as any)?.id,
     userEmail: session?.user?.email,
     timestamp: new Date().toISOString()
   });
@@ -99,7 +97,7 @@ export default async function PostPage({
 
   // Access control logic
   const accessLevel = post.accessLevel || 'public';
-  const hasPurchased = session?.user ? await checkUserPurchase(session.user.id, post._id) : false;
+  const hasPurchased = await checkUserPurchaseWithSession(post._id);
   
   const hasAccess = 
     accessLevel === 'public' || 
@@ -111,7 +109,7 @@ export default async function PostPage({
     postTitle: post.title,
     accessLevel,
     userEmail: session?.user?.email,
-    userId: session?.user?.id,
+    userId: (session?.user as any)?.id,
     hasPurchased,
     hasAccess,
     postId: post._id,
@@ -121,7 +119,7 @@ export default async function PostPage({
   // Additional debugging for production
   if (process.env.NODE_ENV === 'production') {
     console.log('🚀 PRODUCTION DEBUG - User session exists:', !!session?.user);
-    console.log('🚀 PRODUCTION DEBUG - User ID:', session?.user?.id);
+    console.log('🚀 PRODUCTION DEBUG - User ID:', (session?.user as any)?.id);
     console.log('🚀 PRODUCTION DEBUG - Post ID:', post._id);
     console.log('🚀 PRODUCTION DEBUG - Has purchased:', hasPurchased);
     console.log('🚀 PRODUCTION DEBUG - Has access:', hasAccess);
