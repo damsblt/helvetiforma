@@ -81,6 +81,14 @@ export default async function PostPage({
   // Récupérer la session utilisateur
   const { data: { session } } = await supabase.auth.getSession();
   
+  // Debug server-side session
+  console.log('🔍 SERVER-SIDE SESSION DEBUG:', {
+    hasSession: !!session,
+    userId: session?.user?.id,
+    userEmail: session?.user?.email,
+    timestamp: new Date().toISOString()
+  });
+  
   if (!post) {
     notFound();
   }
