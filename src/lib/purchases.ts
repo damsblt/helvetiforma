@@ -23,7 +23,7 @@ export async function checkUserPurchase(userId: string, postId: string): Promise
     console.log('🔍 checkUserPurchase result:', { 
       found: purchases.length > 0, 
       count: purchases.length,
-      purchases: purchases.map(p => ({ id: p._id, status: p.status, postId: p.postId, userId: p.userId }))
+      purchases: purchases.map((p: any) => ({ id: p._id, status: p.status, postId: p.postId, userId: p.userId }))
     })
     
     return purchases.length > 0

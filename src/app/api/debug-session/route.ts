@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabaseClient()
     const { data: { session } } = await supabase.auth.getSession()
     
-    const debugInfo = {
+    const debugInfo: any = {
       hasSession: !!session,
       user: session?.user ? {
         id: session.user.id,
