@@ -14,6 +14,10 @@ const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
   ...,
   "author": author->{name, image},
   "categoryTitle": category,
+  body,
+  previewContent,
+  accessLevel,
+  price,
   pdfAttachments[]{
     ...,
     file{
@@ -91,6 +95,20 @@ export default async function PostPage({
   const contentToShow = hasAccess ? post.body : post.previewContent;
   const isPremium = accessLevel === 'premium';
   const isMembers = accessLevel === 'members';
+
+  // Debug logging
+  console.log('Article Debug:', {
+    slug: resolvedParams.slug,
+    hasAccess,
+    accessLevel,
+    hasPurchased,
+    user: user ? { id: user.id, email: user.email } : null,
+    body: post.body,
+    previewContent: post.previewContent,
+    contentToShow,
+    contentToShowIsArray: Array.isArray(contentToShow),
+    contentToShowLength: Array.isArray(contentToShow) ? contentToShow.length : 'not array'
+  });
 
   // Access level badge
   const getAccessBadge = () => {
