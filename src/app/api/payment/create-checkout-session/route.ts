@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe, formatAmountForStripe } from '@/lib/stripe'
-import { auth } from '@/auth'
+import { getCurrentUser } from '@/lib/auth-supabase'
 import { sanityClient } from '@/lib/sanity'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
+    const user = await getCurrentUser()
     
-    if (!session?.user?.email) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Vous devez être connecté pour effectuer un achat' },
         { status: 401 }
@@ -68,10 +68,10 @@ export async function POST(request: NextRequest) {
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/posts/${post.slug.current}?payment=success`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/posts/${post.slug.current}?payment=cancelled`,
-      customer_email: session.user.email,
+      customer_email: user.email,
       metadata: {
         postId: post._id,
-        userId: session.user.id || session.user.email,
+        userId: user.id,
         postTitle: post.title,
       },
     })

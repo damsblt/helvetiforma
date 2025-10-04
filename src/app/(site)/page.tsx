@@ -6,6 +6,7 @@ import PromoBand from '@/components/sections/PromoBand'
 import FeatureCardsSection from '@/components/sections/FeatureCardsSection'
 import ListIconSection from '@/components/sections/ListIconSection'
 import AnimatedRichTextSection from '@/components/sections/AnimatedRichTextSection'
+import SystemStatus from '@/components/SystemStatus'
 
 // Revalidate every 10 seconds for fresh Sanity content
 export const revalidate = 10
@@ -37,6 +38,8 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
+      {/* System Status (only in development) */}
+      {process.env.NODE_ENV === 'development' && <SystemStatus />}
       {/* Hero Section */}
       {content?.hero && (
         <HeroSection 

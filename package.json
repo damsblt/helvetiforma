@@ -18,6 +18,8 @@
     "@portabletext/react": "^4.0.3",
     "@sanity/image-url": "^1.2.0",
     "@stripe/stripe-js": "^8.0.0",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.58.0",
     "@types/nodemailer": "^7.0.2",
     "@vercel/blob": "2.0.0",
     "axios": "^1.11.0",

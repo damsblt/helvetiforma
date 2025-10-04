@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { sanityClient } from '@/lib/sanity'
+import { recordPurchase, updatePurchaseStatus } from '@/lib/purchases-supabase'
 import Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
@@ -43,17 +43,63 @@ export async function POST(request: NextRequest) {
             break
           }
 
-          // Enregistrer l'achat dans Sanity
-          await recordPurchase({
+          // Enregistrer l'achat dans Supabase
+          const result = await recordPurchase({
             userId,
             postId,
             postTitle: postTitle || 'Article inconnu',
-            amount: session.amount_total ? session.amount_total / 100 : 0,
+            amount: session.amount_total || 0,
             stripeSessionId: session.id,
-            purchasedAt: new Date().toISOString(),
+            stripePaymentIntentId: session.payment_intent as string,
           })
 
-          console.log(`Achat enregistré: ${postTitle} pour ${userId}`)
+          if (!result.success) {
+            console.error('Erreur lors de l\'enregistrement de l\'achat:', result.error)
+          } else {
+            console.log(`Achat enregistré: ${postTitle} pour ${userId}`)
+          }
+        }
+        break
+      }
+
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+        
+        try {
+          const result = await updatePurchaseStatus(
+            paymentIntent.metadata.stripeSessionId,
+            'completed',
+            paymentIntent.id
+          )
+
+          if (!result.success) {
+            console.error('Erreur lors de la mise à jour du statut:', result.error)
+          } else {
+            console.log('Statut de l\'achat mis à jour avec succès')
+          }
+        } catch (error) {
+          console.error('Erreur lors de la mise à jour du statut:', error)
+        }
+        break
+      }
+
+      case 'payment_intent.payment_failed': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+        
+        try {
+          const result = await updatePurchaseStatus(
+            paymentIntent.metadata.stripeSessionId,
+            'failed',
+            paymentIntent.id
+          )
+
+          if (!result.success) {
+            console.error('Erreur lors de la mise à jour du statut:', result.error)
+          } else {
+            console.log('Statut de l\'achat mis à jour en échec')
+          }
+        } catch (error) {
+          console.error('Erreur lors de la mise à jour du statut:', error)
         }
         break
       }
@@ -69,38 +115,5 @@ export async function POST(request: NextRequest) {
       { error: 'Erreur de traitement' },
       { status: 500 }
     )
-  }
-}
-
-async function recordPurchase({
-  userId,
-  postId,
-  postTitle,
-  amount,
-  stripeSessionId,
-  purchasedAt,
-}: {
-  userId: string
-  postId: string
-  postTitle: string
-  amount: number
-  stripeSessionId: string
-  purchasedAt: string
-}) {
-  try {
-    // Créer un document d'achat dans Sanity
-    await sanityClient.create({
-      _type: 'purchase',
-      userId,
-      postId,
-      postTitle,
-      amount,
-      stripeSessionId,
-      purchasedAt,
-      status: 'completed',
-    })
-  } catch (error) {
-    console.error('Erreur lors de l\'enregistrement de l\'achat:', error)
-    throw error
   }
 }

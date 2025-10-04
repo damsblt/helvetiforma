@@ -4,9 +4,9 @@ import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { sanityClient } from "@/lib/sanity";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { auth } from "@/auth";
+import { getCurrentUser } from "@/lib/auth-supabase";
 import { portableTextComponents } from "@/components/ui/PortableTextComponents";
-import { checkUserPurchase } from "@/lib/purchases";
+import { checkUserPurchase } from "@/lib/purchases-supabase";
 import PaymentButton from "@/components/PaymentButton";
 import type { Metadata } from "next";
 
@@ -69,7 +69,7 @@ export default async function PostPage({
 }) {
   const resolvedParams = await params;
   const post = await sanityClient.fetch(POST_QUERY, resolvedParams, options) as SanityDocument | null;
-  const session = await auth();
+  const user = await getCurrentUser();
   
   if (!post) {
     notFound();
@@ -81,10 +81,10 @@ export default async function PostPage({
 
   // Access control logic
   const accessLevel = post.accessLevel || 'public';
-  const hasPurchased = session?.user ? await checkUserPurchase(session.user.id || session.user.email!, post._id) : false;
+  const hasPurchased = user ? await checkUserPurchase(user.id, post._id) : false;
   const hasAccess = 
     accessLevel === 'public' || 
-    (accessLevel === 'members' && session?.user) ||
+    (accessLevel === 'members' && user) ||
     (accessLevel === 'premium' && hasPurchased);
 
   // Determine what content to show
@@ -118,39 +118,45 @@ export default async function PostPage({
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-primary-600 to-primary-800 text-white">
-        <div className="container mx-auto max-w-4xl px-4 py-16">
+      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-indigo-800/90"></div>
+        <div className="relative container mx-auto max-w-4xl px-4 py-20">
           <Link 
             href="/posts" 
-            className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-6 transition-colors"
+            className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-8 transition-all duration-200 hover:translate-x-1"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Retour aux articles
-      </Link>
+          </Link>
           
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-6">
             {getAccessBadge()}
             {post.categoryTitle && (
-              <span className="text-sm text-white/80 bg-white/10 px-3 py-1 rounded-full">
+              <span className="text-sm text-white/90 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
                 {post.categoryTitle}
               </span>
             )}
           </div>
           
-          <h1 className="text-5xl font-bold mb-4 leading-tight">{post.title}</h1>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight tracking-tight">
+            {post.title}
+          </h1>
           
           {post.excerpt && (
-            <p className="text-xl text-white/90 mb-6 leading-relaxed">
+            <p className="text-xl md:text-2xl text-white/95 mb-8 leading-relaxed max-w-3xl">
               {post.excerpt}
             </p>
           )}
           
-          <div className="flex items-center gap-4 text-sm text-white/80">
-            <time dateTime={post.publishedAt}>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-white/85">
+            <time dateTime={post.publishedAt} className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
               {new Date(post.publishedAt).toLocaleDateString('fr-FR', {
                 day: 'numeric',
                 month: 'long',
@@ -159,10 +165,12 @@ export default async function PostPage({
             </time>
             {post.tags && post.tags.length > 0 && (
               <>
-                <span>•</span>
-                <div className="flex gap-2">
+                <span className="text-white/60">•</span>
+                <div className="flex flex-wrap gap-2">
                   {post.tags.slice(0, 3).map((tag: string, i: number) => (
-                    <span key={i} className="text-white/70">#{tag}</span>
+                    <span key={i} className="text-white/80 bg-white/10 px-2 py-1 rounded-md text-xs font-medium">
+                      #{tag}
+                    </span>
                   ))}
                 </div>
               </>
@@ -173,21 +181,22 @@ export default async function PostPage({
 
       {/* Featured Image */}
       {postImageUrl && (
-        <div className="container mx-auto max-w-4xl px-4 -mt-12">
-          <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl">
-        <img
-          src={postImageUrl}
+        <div className="container mx-auto max-w-4xl px-4 -mt-16">
+          <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl ring-4 ring-white/20 dark:ring-gray-800/20">
+            <img
+              src={postImageUrl}
               alt={post.image?.alt || post.title}
               className="w-full h-full object-cover"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
           </div>
         </div>
       )}
 
       {/* Content Section */}
-      <div className="container mx-auto max-w-4xl px-4 py-12">
-        <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 md:p-12">
-          <div className="prose prose-lg dark:prose-invert max-w-none">
+      <div className="container mx-auto max-w-4xl px-4 py-16">
+        <article className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 p-8 md:p-12">
+          <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white">
             {Array.isArray(contentToShow) && contentToShow.length > 0 ? (
               <PortableText value={contentToShow} components={portableTextComponents} />
             ) : (
@@ -199,24 +208,24 @@ export default async function PostPage({
 
           {/* Premium/Members Gate */}
           {!hasAccess && (isPremium || isMembers) && (
-            <div className="mt-12 p-8 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-xl border-2 border-primary-200 dark:border-primary-700">
+            <div className="mt-16 p-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-2xl border-2 border-blue-200/50 dark:border-blue-700/50 shadow-lg">
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-full mb-4">
-                  <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-lg">
+                  <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
                   {isPremium ? 'Contenu Premium' : 'Contenu Réservé aux Membres'}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
+                <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-lg mx-auto leading-relaxed">
                   {isPremium 
                     ? `Pour accéder à l'intégralité de cet article premium${post.price ? ` (${post.price} CHF)` : ''}, effectuez votre achat ci-dessous.`
                     : 'Pour accéder à ce contenu réservé aux membres, veuillez vous connecter.'
                   }
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  {isPremium && session?.user && (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  {isPremium && user && (
                     <PaymentButton
                       postId={post._id}
                       postTitle={post.title}
@@ -224,26 +233,35 @@ export default async function PostPage({
                       className="mb-4"
                     />
                   )}
-                  {!session?.user ? (
+                  {!user ? (
                     <>
                       <Link
                         href="/login"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                       >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
                         Se connecter
                       </Link>
                       <Link
                         href="/contact"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-primary-600 dark:text-primary-400 font-semibold rounded-lg border-2 border-primary-600 dark:border-primary-400 transition-colors"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 text-blue-600 dark:text-blue-400 font-semibold rounded-xl border-2 border-blue-200 dark:border-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 backdrop-blur-sm"
                       >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
                         Nous contacter
                       </Link>
                     </>
                   ) : (
                     <Link
                       href="/contact"
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors"
+                      className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
                       Demander l'accès
                     </Link>
                   )}
@@ -254,14 +272,16 @@ export default async function PostPage({
 
           {/* PDF Attachments Section */}
           {post.pdfAttachments && post.pdfAttachments.length > 0 && (
-            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-              <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                </svg>
+            <div className="mt-12 pt-8 border-t border-slate-200/60 dark:border-gray-700/60">
+              <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                  </svg>
+                </div>
                 Documents PDF joints
               </h4>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {post.pdfAttachments.map((pdf: any, index: number) => {
                   const isPdfPremium = pdf.isPremium && !hasAccess;
                   const fileUrl = pdf.file?.asset?.url;
@@ -269,46 +289,46 @@ export default async function PostPage({
                   return (
                     <div
                       key={index}
-                      className={`p-4 rounded-lg border-2 transition-all ${
+                      className={`p-6 rounded-2xl border-2 transition-all duration-200 hover:shadow-lg ${
                         isPdfPremium
-                          ? 'border-yellow-300 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/10'
-                          : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-primary-300 dark:hover:border-primary-600'
+                          ? 'border-amber-200 dark:border-amber-700 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10'
+                          : 'border-slate-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60 hover:border-blue-300 dark:hover:border-blue-600 backdrop-blur-sm'
                       }`}
                     >
-                      <div className="flex items-start gap-4">
-                        <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center ${
+                      <div className="flex items-start gap-5">
+                        <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center shadow-sm ${
                           isPdfPremium 
-                            ? 'bg-yellow-200 dark:bg-yellow-800' 
-                            : 'bg-red-100 dark:bg-red-900/30'
+                            ? 'bg-gradient-to-br from-amber-200 to-yellow-200 dark:from-amber-800 dark:to-yellow-800' 
+                            : 'bg-gradient-to-br from-red-100 to-pink-100 dark:from-red-900/30 dark:to-pink-900/30'
                         }`}>
                           {isPdfPremium ? (
-                            <svg className="w-6 h-6 text-yellow-700 dark:text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-7 h-7 text-amber-700 dark:text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
                           ) : (
-                            <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-7 h-7 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                             </svg>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
-                              <h5 className="text-base font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                              <h5 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
                                 {pdf.title}
                                 {pdf.isPremium && (
-                                  <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded">
+                                  <span className="inline-flex items-center px-3 py-1 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded-full">
                                     Premium
                                   </span>
                                 )}
                               </h5>
                               {pdf.description && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
                                   {pdf.description}
                                 </p>
                               )}
                               {pdf.fileSize && (
-                                <p className="text-xs text-gray-500 dark:text-gray-500">
+                                <p className="text-xs text-slate-500 dark:text-slate-500 font-medium">
                                   Taille: {pdf.fileSize}
                                 </p>
                               )}
@@ -316,7 +336,7 @@ export default async function PostPage({
                             {isPdfPremium ? (
                               <button
                                 disabled
-                                className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg text-sm font-medium cursor-not-allowed flex items-center gap-2"
+                                className="px-5 py-3 bg-slate-200 dark:bg-gray-700 text-slate-500 dark:text-slate-400 rounded-xl text-sm font-medium cursor-not-allowed flex items-center gap-2 shadow-sm"
                               >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -329,7 +349,7 @@ export default async function PostPage({
                                 download
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 flex-shrink-0"
+                                className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 flex-shrink-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                               >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -349,15 +369,18 @@ export default async function PostPage({
 
           {/* Tags Section */}
           {post.tags && post.tags.length > 0 && (
-            <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+            <div className="mt-12 pt-8 border-t border-slate-200/60 dark:border-gray-700/60">
+              <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
                 Tags
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {post.tags.map((tag: string, i: number) => (
                   <span
                     key={i}
-                    className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                    className="px-4 py-2 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-full hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
                   >
                     #{tag}
                   </span>

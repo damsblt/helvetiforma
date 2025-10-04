@@ -58,11 +58,11 @@ function VideoEmbed({ value }: { value: any }) {
   const padding = aspectRatioPadding[aspectRatio] || '56.25%'
   
   return (
-    <figure className="my-8">
-      <div className="relative w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800" style={{ paddingBottom: padding }}>
+    <figure className="my-10">
+      <div className="relative w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 shadow-lg ring-1 ring-slate-200/50 dark:ring-gray-700/50" style={{ paddingBottom: padding }}>
         {!isLoaded && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         )}
         
@@ -90,7 +90,7 @@ function VideoEmbed({ value }: { value: any }) {
         )}
       </div>
       {caption && (
-        <figcaption className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400 italic">
+        <figcaption className="mt-4 text-center text-sm text-slate-600 dark:text-slate-400 italic leading-relaxed">
           {caption}
         </figcaption>
       )}
@@ -105,26 +105,26 @@ function FileDownload({ value }: { value: any }) {
   if (!file?.asset) return null
   
   return (
-    <div className="my-6 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-primary-500 dark:hover:border-primary-500 transition-colors">
-      <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
-          <svg className="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="my-8 p-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 bg-gradient-to-r from-slate-50 to-blue-50/30 dark:from-slate-800/50 dark:to-blue-900/10">
+      <div className="flex items-start gap-5">
+        <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex items-center justify-center shadow-sm">
+          <svg className="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+          <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
             {title}
           </h4>
           {description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
               {description}
             </p>
           )}
           <a
             href={file.asset.url}
             download
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -144,8 +144,8 @@ function CustomImage({ value }: { value: any }) {
   const imageUrl = urlFor(value)?.width(800).url()
   
   return (
-    <figure className="my-8">
-      <div className="relative w-full overflow-hidden rounded-lg">
+    <figure className="my-10">
+      <div className="relative w-full overflow-hidden rounded-2xl shadow-lg ring-1 ring-slate-200/50 dark:ring-gray-700/50">
         {imageUrl && (
           <img
             src={imageUrl}
@@ -155,7 +155,7 @@ function CustomImage({ value }: { value: any }) {
         )}
       </div>
       {value.caption && (
-        <figcaption className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400 italic">
+        <figcaption className="mt-4 text-center text-sm text-slate-600 dark:text-slate-400 italic leading-relaxed">
           {value.caption}
         </figcaption>
       )}
@@ -172,44 +172,44 @@ export const portableTextComponents: PortableTextComponents = {
   },
   block: {
     h1: ({ children }) => (
-      <h1 className="text-4xl font-bold mt-8 mb-4 text-gray-900 dark:text-white">
+      <h1 className="text-4xl font-bold mt-10 mb-6 text-slate-900 dark:text-white leading-tight tracking-tight">
         {children}
       </h1>
     ),
     h2: ({ children }) => (
-      <h2 className="text-3xl font-bold mt-8 mb-4 text-gray-900 dark:text-white">
+      <h2 className="text-3xl font-bold mt-10 mb-5 text-slate-900 dark:text-white leading-tight tracking-tight">
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className="text-2xl font-bold mt-6 mb-3 text-gray-900 dark:text-white">
+      <h3 className="text-2xl font-bold mt-8 mb-4 text-slate-900 dark:text-white leading-tight">
         {children}
       </h3>
     ),
     h4: ({ children }) => (
-      <h4 className="text-xl font-bold mt-6 mb-3 text-gray-900 dark:text-white">
+      <h4 className="text-xl font-bold mt-8 mb-4 text-slate-900 dark:text-white leading-tight">
         {children}
       </h4>
     ),
     normal: ({ children }) => (
-      <p className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">
+      <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
         {children}
       </p>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="border-l-4 border-primary-600 pl-4 py-2 my-6 italic text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/50">
+      <blockquote className="border-l-4 border-blue-500 pl-6 py-4 my-8 italic text-slate-700 dark:text-slate-300 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-r-xl shadow-sm">
         {children}
       </blockquote>
     ),
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="list-disc list-inside mb-4 space-y-2 text-gray-700 dark:text-gray-300">
+      <ul className="list-disc list-inside mb-6 space-y-3 text-slate-700 dark:text-slate-300 text-lg leading-relaxed">
         {children}
       </ul>
     ),
     number: ({ children }) => (
-      <ol className="list-decimal list-inside mb-4 space-y-2 text-gray-700 dark:text-gray-300">
+      <ol className="list-decimal list-inside mb-6 space-y-3 text-slate-700 dark:text-slate-300 text-lg leading-relaxed">
         {children}
       </ol>
     ),
@@ -221,20 +221,20 @@ export const portableTextComponents: PortableTextComponents = {
         <a
           href={value.href}
           rel={rel}
-          className="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+          className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline font-medium transition-colors duration-200"
         >
           {children}
         </a>
       )
     },
     strong: ({ children }) => (
-      <strong className="font-bold text-gray-900 dark:text-white">{children}</strong>
+      <strong className="font-bold text-slate-900 dark:text-white">{children}</strong>
     ),
     em: ({ children }) => (
-      <em className="italic">{children}</em>
+      <em className="italic text-slate-800 dark:text-slate-200">{children}</em>
     ),
     code: ({ children }) => (
-      <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono text-primary-600 dark:text-primary-400">
+      <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-sm font-mono text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">
         {children}
       </code>
     ),
