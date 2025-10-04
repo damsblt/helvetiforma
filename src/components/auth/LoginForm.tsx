@@ -67,8 +67,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setResetMessage('')
 
     try {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'
+      console.log('🔧 LoginForm - Site URL utilisée:', siteUrl)
+      
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'}/reset-password`,
+        redirectTo: `${siteUrl}/reset-password`,
       })
 
       if (error) {
