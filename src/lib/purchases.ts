@@ -13,10 +13,18 @@ export interface Purchase {
 
 export async function checkUserPurchase(userId: string, postId: string): Promise<boolean> {
   try {
+    console.log('🔍 checkUserPurchase called with:', { userId, postId })
+    
     const purchases = await sanityClient.fetch(
       `*[_type == "purchase" && userId == $userId && postId == $postId && status == "completed"]`,
       { userId, postId }
     )
+    
+    console.log('🔍 checkUserPurchase result:', { 
+      found: purchases.length > 0, 
+      count: purchases.length,
+      purchases: purchases.map(p => ({ id: p._id, status: p.status, postId: p.postId, userId: p.userId }))
+    })
     
     return purchases.length > 0
   } catch (error) {

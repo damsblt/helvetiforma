@@ -105,8 +105,18 @@ export default async function PostPage({
     userId: session?.user?.id,
     hasPurchased,
     hasAccess,
-    postId: post._id
+    postId: post._id,
+    timestamp: new Date().toISOString()
   });
+
+  // Additional debugging for production
+  if (process.env.NODE_ENV === 'production') {
+    console.log('🚀 PRODUCTION DEBUG - User session exists:', !!session?.user);
+    console.log('🚀 PRODUCTION DEBUG - User ID:', session?.user?.id);
+    console.log('🚀 PRODUCTION DEBUG - Post ID:', post._id);
+    console.log('🚀 PRODUCTION DEBUG - Has purchased:', hasPurchased);
+    console.log('🚀 PRODUCTION DEBUG - Has access:', hasAccess);
+  }
 
   // Determine what content to show
   const contentToShow = hasAccess ? post.body : (post.previewContent || post.body);
