@@ -25,8 +25,10 @@ export const authOptions: NextAuthOptions = {
       from: process.env.EMAIL_FROM,
     }),
   ],
+  debug: process.env.NODE_ENV === 'development',
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log('🔍 NextAuth signIn callback:', { user, account, profile })
       // Allow all sign-ins for now
       return true
     },
