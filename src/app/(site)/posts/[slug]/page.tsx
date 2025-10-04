@@ -4,10 +4,11 @@ import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { sanityClient } from "@/lib/sanity";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth-supabase";
 import { portableTextComponents } from "@/components/ui/PortableTextComponents";
-import { checkUserPurchase } from "@/lib/purchases-supabase";
+import { checkUserPurchase } from "@/lib/purchases";
 import PaymentButton from "@/components/PaymentButton";
+import ClientAuthWrapper from "@/components/ClientAuthWrapper";
+import { getSupabaseClient } from '@/lib/supabase';
 import type { Metadata } from "next";
 
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
@@ -73,7 +74,12 @@ export default async function PostPage({
 }) {
   const resolvedParams = await params;
   const post = await sanityClient.fetch(POST_QUERY, resolvedParams, options) as SanityDocument | null;
-  const user = await getCurrentUser();
+  
+  // Initialiser Supabase
+  const supabase = getSupabaseClient();
+  
+  // Récupérer la session utilisateur
+  const { data: { session } } = await supabase.auth.getSession();
   
   if (!post) {
     notFound();
@@ -85,11 +91,23 @@ export default async function PostPage({
 
   // Access control logic
   const accessLevel = post.accessLevel || 'public';
-  const hasPurchased = user ? await checkUserPurchase(user.id, post._id) : false;
+  const hasPurchased = session?.user ? await checkUserPurchase(session.user.id, post._id) : false;
+  
   const hasAccess = 
     accessLevel === 'public' || 
-    (accessLevel === 'members' && user) ||
+    (accessLevel === 'members' && session?.user) ||
     (accessLevel === 'premium' && hasPurchased);
+
+  // Debug logging
+  console.log('🔍 DEBUG POST ACCESS:', {
+    postTitle: post.title,
+    accessLevel,
+    userEmail: session?.user?.email,
+    userId: session?.user?.id,
+    hasPurchased,
+    hasAccess,
+    postId: post._id
+  });
 
   // Determine what content to show
   const contentToShow = hasAccess ? post.body : (post.previewContent || post.body);
@@ -233,48 +251,48 @@ export default async function PostPage({
                     : 'Pour accéder à ce contenu réservé aux membres, veuillez vous connecter.'
                   }
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  {isPremium && user && (
-                    <PaymentButton
-                      postId={post._id}
-                      postTitle={post.title}
-                      price={post.price || 0}
-                      className="mb-4"
-                    />
-                  )}
-                  {!user ? (
-                    <>
-                      <Link
-                        href="/login"
-                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                      >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                        </svg>
-                        Se connecter
-                      </Link>
+                <ClientAuthWrapper
+                  postId={post._id}
+                  postTitle={post.title}
+                  price={post.price || 0}
+                  accessLevel={accessLevel}
+                  isPremium={isPremium}
+                >
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    {!session?.user ? (
+                      <>
+                        <Link
+                          href={`/login?callbackUrl=${encodeURIComponent(`/posts/${post.slug.current}`)}`}
+                          className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                          </svg>
+                          Se connecter
+                        </Link>
+                        <Link
+                          href="/contact"
+                          className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 text-blue-600 dark:text-blue-400 font-semibold rounded-xl border-2 border-blue-200 dark:border-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 backdrop-blur-sm"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          Nous contacter
+                        </Link>
+                      </>
+                    ) : (
                       <Link
                         href="/contact"
-                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 text-blue-600 dark:text-blue-400 font-semibold rounded-xl border-2 border-blue-200 dark:border-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 backdrop-blur-sm"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        Nous contacter
+                        Demander l'accès
                       </Link>
-                    </>
-                  ) : (
-                    <Link
-                      href="/contact"
-                      className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      Demander l'accès
-                    </Link>
-                  )}
-                </div>
+                    )}
+                  </div>
+                </ClientAuthWrapper>
               </div>
             </div>
           )}

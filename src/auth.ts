@@ -1,18 +1,32 @@
 import NextAuth from "next-auth"
-import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id"
+import Credentials from "next-auth/providers/credentials"
 import type { NextAuthConfig } from "next-auth"
 
 export const authConfig = {
   providers: [
-    MicrosoftEntraID({
-      clientId: process.env.MICROSOFT_CLIENT_ID!,
-      clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: "openid profile email User.Read Calendars.ReadWrite OnlineMeetings.ReadWrite",
-          tenant: process.env.MICROSOFT_TENANT_ID!,
-        },
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
       },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        // Ici vous pouvez ajouter votre logique de vérification des identifiants
+        // Pour l'instant, on accepte n'importe quel email/mot de passe pour les tests
+        if (credentials.email && credentials.password) {
+          return {
+            id: credentials.email,
+            email: credentials.email,
+            name: credentials.email.split('@')[0],
+          }
+        }
+
+        return null
+      }
     }),
   ],
   pages: {

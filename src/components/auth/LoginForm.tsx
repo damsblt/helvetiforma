@@ -3,17 +3,17 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+import { useRouter, useSearchParams } from 'next/navigation'
+import { getSupabaseClient } from '@/lib/supabase'
 
 interface LoginFormProps {
   onSuccess?: () => void
 }
 
 export default function LoginForm({ onSuccess }: LoginFormProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const supabase = getSupabaseClient()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -50,8 +50,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         if (onSuccess) {
           onSuccess()
         } else {
-          // Rediriger vers la page des articles
-          window.location.href = '/posts'
+          // Rediriger vers l'URL de callback ou vers la page des articles
+          const callbackUrl = searchParams.get('callbackUrl') || '/posts'
+          router.push(callbackUrl)
         }
       }
     } catch (error) {
