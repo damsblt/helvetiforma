@@ -229,8 +229,9 @@ export async function resetPassword(email: string): Promise<{
   error?: string
 }> {
   try {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://helvetiforma.ch'
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+      redirectTo: `${siteUrl}/reset-password`,
     })
 
     if (error) {
