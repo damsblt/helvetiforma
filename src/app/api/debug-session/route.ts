@@ -5,6 +5,11 @@ import { checkUserPurchase } from '@/lib/purchases'
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabaseClient()
+    
+    // Try to get session from cookies first
+    const authHeader = request.headers.get('authorization')
+    const cookieHeader = request.headers.get('cookie')
+    
     const { data: { session } } = await supabase.auth.getSession()
     
     const debugInfo: any = {
@@ -16,6 +21,11 @@ export async function GET(request: NextRequest) {
         raw_user_meta_data: session.user.user_metadata,
         app_metadata: session.user.app_metadata
       } : null,
+      headers: {
+        authorization: authHeader ? 'present' : 'missing',
+        cookie: cookieHeader ? 'present' : 'missing',
+        cookieValue: cookieHeader
+      },
       timestamp: new Date().toISOString()
     }
 
