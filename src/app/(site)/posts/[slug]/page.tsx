@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 import { portableTextComponents } from "@/components/ui/PortableTextComponents";
 import { checkUserPurchase } from "@/lib/purchases";
 import PaymentButton from "@/components/PaymentButton";
-import { getSupabaseClient } from '@/lib/supabase';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import DebugInfo from '@/components/DebugInfo';
 import type { Metadata } from "next";
 
@@ -75,8 +75,8 @@ export default async function PostPage({
   const resolvedParams = await params;
   const post = await sanityClient.fetch(POST_QUERY, resolvedParams, options) as SanityDocument | null;
   
-  // Initialiser Supabase
-  const supabase = getSupabaseClient();
+  // Initialiser Supabase (server-side)
+  const supabase = createServerSupabaseClient();
   
   // Récupérer la session utilisateur
   const { data: { session } } = await supabase.auth.getSession();
