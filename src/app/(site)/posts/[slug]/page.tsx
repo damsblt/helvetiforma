@@ -76,7 +76,7 @@ export default async function PostPage({
   const post = await sanityClient.fetch(POST_QUERY, resolvedParams, options) as SanityDocument | null;
   
   // Initialiser Supabase (server-side)
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   
   // Récupérer la session utilisateur
   const { data: { session } } = await supabase.auth.getSession();
