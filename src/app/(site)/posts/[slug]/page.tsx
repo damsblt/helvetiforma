@@ -8,6 +8,7 @@ import { portableTextComponents } from "@/components/ui/PortableTextComponents";
 import { checkUserPurchase } from "@/lib/purchases";
 import PaymentButton from "@/components/PaymentButton";
 import { getSupabaseClient } from '@/lib/supabase';
+import DebugInfo from '@/components/DebugInfo';
 import type { Metadata } from "next";
 
 const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
@@ -226,6 +227,9 @@ export default async function PostPage({
 
       {/* Content Section */}
       <div className="container mx-auto max-w-4xl px-4 py-16">
+        {/* Debug Info - Remove in production */}
+        <DebugInfo postId={post._id} />
+        
         <article className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 p-8 md:p-12">
           <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white">
             {Array.isArray(post.body) && post.body.length > 0 ? (
