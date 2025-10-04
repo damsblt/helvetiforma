@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
+
 import { getTeamsWebinar } from '@/lib/microsoft'
 
 /**
@@ -14,8 +14,8 @@ export async function GET(
     const { id } = await params
     
     // Get user's access token from session
-    const session = await auth()
-    const accessToken = session?.accessToken
+    // const session = null // Disabled for Supabase // Disabled for Supabase
+    const accessToken = undefined // Disabled for Supabase
     
     const webinar = await getTeamsWebinar(id, accessToken)
 

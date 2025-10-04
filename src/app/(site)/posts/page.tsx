@@ -4,7 +4,7 @@ import { sanityClient } from "@/lib/sanity";
 import imageUrlBuilder from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 import { getCurrentUser } from "@/lib/auth-supabase";
-import { checkUserPurchase } from "@/lib/purchases-supabase";
+import { checkUserPurchase } from '@/lib/purchases'
 
 const POSTS_QUERY = `*[
   _type == "post"

@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Profile } from './supabase'
+// import type { Profile } from './supabase' // Removed Profile type
 
 // Créer une instance Supabase pour l'authentification côté client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
@@ -196,7 +196,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
  */
 export async function updateProfile(
   userId: string,
-  updates: Partial<Pick<Profile, 'first_name' | 'last_name' | 'avatar_url'>>
+  updates: Partial<Pick<AuthUser, 'first_name' | 'last_name' | 'avatar_url'>>
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabase

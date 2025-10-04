@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { PortableText } from 'next-sanity'
 import { portableTextComponents } from '@/components/ui/PortableTextComponents'
 import { getCurrentUser } from '@/lib/auth-supabase'
-import { checkUserPurchase } from '@/lib/purchases-supabase'
+import { checkUserPurchase } from '@/lib/purchases'
 import PaymentButton from '@/components/PaymentButton'
 import Link from 'next/link'
 

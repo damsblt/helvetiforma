@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useSession } from 'next-auth/react'
+import { getSupabaseClient } from '@/lib/supabase'
 import { TeamsWebinar } from '@/types/microsoft'
 
 export default function CalendrierClient() {
-  const { data: session, status } = useSession()
+  const supabase = getSupabaseClient()
+  const [session, setSession] = useState<any>(null)
   const [webinars, setWebinars] = useState<TeamsWebinar[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -15,7 +16,13 @@ export default function CalendrierClient() {
 
   useEffect(() => {
     fetchWebinars()
+    getSession()
   }, [])
+
+  const getSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    setSession(session)
+  }
 
   const fetchWebinars = async () => {
     try {

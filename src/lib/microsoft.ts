@@ -1,7 +1,7 @@
 // Microsoft Graph API Integration pour Teams
 import { Client } from '@microsoft/microsoft-graph-client'
 import { TeamsWebinar, WebinarRegistration, CalendarEvent } from '@/types/microsoft'
-import { auth } from '@/auth'
+// import { auth } from '@/auth' // Removed NextAuth dependency
 
 // Configuration Microsoft Graph
 const CLIENT_ID = process.env.MICROSOFT_CLIENT_ID || ''
@@ -23,11 +23,8 @@ function createGraphClient(accessToken: string): Client {
  * Obtient le client Graph avec le token de la session utilisateur
  */
 export async function getAuthenticatedGraphClient(): Promise<Client | null> {
-  const session = await auth()
-  if (!session?.accessToken) {
-    return null
-  }
-  return createGraphClient(session.accessToken)
+  // Disabled for Supabase - return null for now
+  return null
 }
 
 /**

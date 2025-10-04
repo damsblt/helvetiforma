@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
+
 import { autoRegisterMicrosoftUser, isPersonalMicrosoftAccount } from '@/lib/microsoft'
 
 export async function POST(
@@ -11,9 +11,9 @@ export async function POST(
     const body = await request.json()
     const { email: providedEmail, name: providedName } = body
     
-    // Utiliser les paramètres fournis ou la session
-    const userEmail = providedEmail || (await auth())?.user?.email
-    const userName = providedName || (await auth())?.user?.name || userEmail?.split('@')[0]
+    // Utiliser les paramètres fournis
+    const userEmail = providedEmail
+    const userName = providedName || userEmail?.split('@')[0]
     
     if (!userEmail) {
       return NextResponse.json(
