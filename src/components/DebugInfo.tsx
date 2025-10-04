@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
-import { checkUserPurchaseClient } from '@/lib/purchases-client'
 
 interface DebugInfoProps {
   postId: string
@@ -29,11 +28,15 @@ export default function DebugInfo({ postId }: DebugInfoProps) {
         }
 
         if (session?.user) {
-          const hasPurchased = await checkUserPurchaseClient(session.user.id, postId)
+          // Use server-side API to check purchase
+          const response = await fetch(`/api/check-purchase?userId=${session.user.id}&postId=${postId}`)
+          const purchaseData = await response.json()
+          
           info.purchaseCheck = {
             postId,
-            hasPurchased,
-            userId: session.user.id
+            hasPurchased: purchaseData.hasPurchased,
+            userId: session.user.id,
+            apiResponse: purchaseData
           }
         }
 
