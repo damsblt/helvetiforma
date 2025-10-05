@@ -1,11 +1,12 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { getSupabaseClient } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import type { User } from '@supabase/supabase-js'
 
-// Use the singleton Supabase client to avoid multiple instances
-const supabase = getSupabaseClient()
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 interface AuthUser {
   id: string

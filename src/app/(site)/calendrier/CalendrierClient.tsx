@@ -73,8 +73,9 @@ export default function CalendrierClient() {
         ? 'Réunion Microsoft Teams (en ligne)'
         : 'Événement en personne (lieu à confirmer)'
       
-      // Redirection vers la page de confirmation avec les détails du webinaire
-      // L'utilisateur sera informé de son inscription et recevra un email de confirmation
+      // Redirection directe vers le formulaire de contact avec pré-remplissage
+      // L'API Microsoft Graph ne peut pas ajouter automatiquement des utilisateurs
+      // à des événements avec notifications, donc on utilise le formulaire de contact
       const params = new URLSearchParams({
         webinar: webinar.title,
         webinarId: webinar.id,
@@ -83,7 +84,7 @@ export default function CalendrierClient() {
         webinarMeetingUrl: webinar.meetingUrl || ''
       })
       
-      window.location.href = `/inscription-confirmee?${params.toString()}`
+      window.location.href = `/contact?${params.toString()}#contact-form`
       
     } catch (err) {
       alert('Une erreur est survenue lors de la redirection')

@@ -26,16 +26,12 @@ export const navigationConfig: NavigationConfig = {
     {
       title: 'Formation',
       links: [
-        { name: 'Nos formations', href: '/formations' },
-        { name: 'Cours en ligne', href: '/courses' },
         { name: 'Sessions', href: '/sessions' },
       ],
     },
     {
-      title: 'Support',
+      title: 'Articles',
       links: [
-        { name: 'Contact', href: '/contact' },
-        { name: 'FAQ', href: '/faq' },
         { name: 'Coin des docs', href: '/coins-des-docs' },
       ],
     },
@@ -43,7 +39,6 @@ export const navigationConfig: NavigationConfig = {
       title: 'Légal',
       links: [
         { name: 'Mentions légales', href: '/mentions' },
-        { name: 'CGU', href: '/cgu' },
         { name: 'Politique de confidentialité', href: '/privacy' },
       ],
     },

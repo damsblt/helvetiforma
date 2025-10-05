@@ -11,6 +11,7 @@ interface FormData {
   company: string
   subject: string
   message: string
+  interest: string
 }
 
 export default function ContactForm() {
@@ -22,6 +23,7 @@ export default function ContactForm() {
     company: '',
     subject: '',
     message: '',
+    interest: '',
   })
   const [isWebinarRegistration, setIsWebinarRegistration] = useState(false)
 
@@ -31,13 +33,16 @@ export default function ContactForm() {
     const webinarId = searchParams.get('webinarId')
     const webinarDateTime = searchParams.get('webinarDateTime')
     const webinarLocation = searchParams.get('webinarLocation')
+    const webinarPrice = searchParams.get('webinarPrice')
     
     if (webinar) {
       setIsWebinarRegistration(true)
+      const priceInfo = webinarPrice ? `\n- Prix : ${webinarPrice}` : ''
       setFormData(prev => ({
         ...prev,
         subject: `Inscription au webinaire: ${webinar}`,
-        message: `Bonjour,\n\nJe souhaite m'inscrire au webinaire "${webinar}" organisé par HelvetiForma.\n\nPouvez-vous m'envoyer une invitation par email ?\n\nInformations sur la session :\n- Titre: ${webinar}\n- Date et heure : ${webinarDateTime || '[date and time]'}\n- Emplacement : ${webinarLocation || '[location]'}\n\nCordialement`
+        message: `Bonjour,\n\nJe souhaite m'inscrire au webinaire "${webinar}" organisé par HelvetiForma.\n\nPouvez-vous m'envoyer une invitation par email ?\n\nInformations sur la session :\n- Titre: ${webinar}\n- Date et heure : ${webinarDateTime || '[date and time]'}\n- Emplacement : ${webinarLocation || '[location]'}${priceInfo}\n\nCordialement`,
+        interest: 'sessions'
       }))
     }
   }, [searchParams])
@@ -69,6 +74,24 @@ export default function ContactForm() {
         throw new Error(errorData.error || 'Failed to send message')
       }
       
+      // If it's a session registration, redirect to confirmation page
+      if (isWebinarRegistration) {
+        // Store registration data for the confirmation page
+        const registrationData = {
+          webinar: searchParams.get('webinar'),
+          date: searchParams.get('webinarDateTime'),
+          location: searchParams.get('webinarLocation'),
+          price: searchParams.get('webinarPrice'),
+          name: formData.name,
+          email: formData.email
+        }
+        localStorage.setItem('registrationData', JSON.stringify(registrationData))
+        
+        // Redirect to confirmation page
+        window.location.href = '/demande-inscription'
+        return
+      }
+      
       setSubmitStatus('success')
       setFormData({
         name: '',
@@ -87,11 +110,40 @@ export default function ContactForm() {
     }
   }
 
+  const interestOptions = [
+    { value: '', label: 'Sélectionnez un domaine' },
+    { value: 'sessions', label: 'Sessions' },
+    { value: 'comptabilite', label: 'Comptabilité générale' },
+    { value: 'salaires', label: 'Gestion des salaires' },
+    { value: 'charges-sociales', label: 'Charges sociales' },
+    { value: 'impot-source', label: 'Impôt à la source' },
+    { value: 'tva', label: 'TVA et fiscalité' },
+    { value: 'formation-entreprise', label: 'Formation en entreprise' },
+    { value: 'autre', label: 'Autre' },
+  ]
 
   if (submitStatus === 'success') {
-    // Redirect to confirmation page instead of showing success message
-    window.location.href = '/inscription-confirmee'
-    return null
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-8 text-center"
+      >
+        <div className="text-6xl mb-4">✅</div>
+        <h3 className="text-2xl font-bold text-green-800 dark:text-green-400 mb-2">
+          Message envoyé !
+        </h3>
+        <p className="text-green-700 dark:text-green-300 mb-6">
+          Votre message a été envoyé avec succès à contact@helvetiforma.ch. Nous vous répondrons dans les 24 heures.
+        </p>
+        <button
+          onClick={() => setSubmitStatus('idle')}
+          className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Envoyer un autre message
+        </button>
+      </motion.div>
+    )
   }
 
   return (
@@ -107,7 +159,7 @@ export default function ContactForm() {
             <span className="text-blue-500 text-xl">📅</span>
             <div>
               <h3 className="text-blue-800 dark:text-blue-400 font-semibold">
-                Inscription à un webinaire
+                Inscription à une session
               </h3>
               <p className="text-blue-700 dark:text-blue-300 text-sm">
                 Le formulaire a été pré-rempli pour votre inscription. Remplissez vos informations personnelles et envoyez votre demande.
@@ -186,6 +238,25 @@ export default function ContactForm() {
         </div>
       </div>
 
+      {/* Domaine d'intérêt */}
+      <div>
+        <label htmlFor="interest" className="block text-sm font-medium text-foreground mb-2">
+          Domaine d'intérêt
+        </label>
+        <select
+          id="interest"
+          name="interest"
+          value={formData.interest}
+          onChange={handleChange}
+          className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+        >
+          {interestOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* Sujet */}
       <div>

@@ -8,6 +8,7 @@ interface ContactFormData {
   company?: string
   subject: string
   message: string
+  interest?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -31,25 +32,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create transporter using the new email configuration
-    const emailConfig = {
-      host: process.env.EMAIL_SERVER_HOST || 'asmtp.mail.hostpoint.ch',
-      port: parseInt(process.env.EMAIL_SERVER_PORT || '465'),
-      secure: true, // true for 465, false for other ports
-      auth: {
-        user: process.env.EMAIL_SERVER_USER || 'contact@helvetiforma.ch',
-        pass: process.env.EMAIL_SERVER_PASSWORD || 'Contactformation2025*',
-      },
-    }
-
-    console.log('📧 Email configuration:', {
-      host: emailConfig.host,
-      port: emailConfig.port,
-      user: emailConfig.auth.user,
-      passwordSet: !!emailConfig.auth.pass
+    // Debug environment variables
+    console.log('Email config:', {
+      host: process.env.EMAIL_SERVER_HOST,
+      port: process.env.EMAIL_SERVER_PORT,
+      user: process.env.EMAIL_SERVER_USER,
+      from: process.env.EMAIL_FROM
     })
 
-    const transporter = nodemailer.createTransport(emailConfig)
+    // Create transporter
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_SERVER_HOST || process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.EMAIL_SERVER_PORT || process.env.SMTP_PORT || '587'),
+      secure: process.env.EMAIL_SERVER_PORT === '465' || process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      auth: {
+        user: process.env.EMAIL_SERVER_USER || process.env.SMTP_USER,
+        pass: process.env.EMAIL_SERVER_PASSWORD || process.env.SMTP_PASS,
+      },
+    })
 
     // Email content
     const htmlContent = `
@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
           <p><strong>Email:</strong> <a href="mailto:${formData.email}">${formData.email}</a></p>
           ${formData.phone ? `<p><strong>Téléphone:</strong> <a href="tel:${formData.phone}">${formData.phone}</a></p>` : ''}
           ${formData.company ? `<p><strong>Entreprise:</strong> ${formData.company}</p>` : ''}
+          ${formData.interest ? `<p><strong>Domaine d'intérêt:</strong> ${formData.interest}</p>` : ''}
         </div>
 
         <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
@@ -100,7 +101,7 @@ Date: ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Zurich' })}
 
     // Send email
     const mailOptions = {
-      from: `"HelvetiForma Contact Form" <${process.env.EMAIL_SERVER_USER || 'contact@helvetiforma.ch'}>`,
+      from: `"HelvetiForma Contact Form" <${process.env.EMAIL_SERVER_USER}>`,
       to: 'contact@helvetiforma.ch',
       replyTo: formData.email,
       subject: `[Contact Form] ${formData.subject}`,
@@ -108,39 +109,21 @@ Date: ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Zurich' })}
       html: htmlContent,
     }
 
-    // Test connection first
-    try {
-      await transporter.verify()
-      console.log('✅ Email server connection verified')
-    } catch (verifyError) {
-      console.error('❌ Email server connection failed:', verifyError)
-      return NextResponse.json(
-        { error: 'Email server connection failed' },
-        { status: 500 }
-      )
-    }
+    await transporter.sendMail(mailOptions)
 
-    // Send email
-    try {
-      const result = await transporter.sendMail(mailOptions)
-      console.log('✅ Email sent successfully:', result.messageId)
-      
-      return NextResponse.json(
-        { message: 'Email sent successfully' },
-        { status: 200 }
-      )
-    } catch (sendError) {
-      console.error('❌ Error sending email:', sendError)
-      return NextResponse.json(
-        { error: 'Failed to send email' },
-        { status: 500 }
-      )
-    }
+    return NextResponse.json(
+      { message: 'Email sent successfully' },
+      { status: 200 }
+    )
 
   } catch (error) {
     console.error('Error sending email:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    })
     return NextResponse.json(
-      { error: 'Failed to send email' },
+      { error: `Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     )
   }

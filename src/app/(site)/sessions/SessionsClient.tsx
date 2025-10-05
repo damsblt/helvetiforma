@@ -85,17 +85,28 @@ export default function CalendrierClient() {
         location = 'Événement en personne (lieu à confirmer)'
       }
       
-      // Redirection vers la page de confirmation avec les détails du webinaire
-      // L'utilisateur sera informé de son inscription et recevra un email de confirmation
+      // Extraire le prix depuis la description de l'événement
+      let price = ''
+      if (webinar.description) {
+        const priceMatch = webinar.description.match(/(\d+)\s*CHF/i)
+        if (priceMatch) {
+          price = `${priceMatch[1]} CHF`
+        }
+      }
+
+      // Redirection directe vers le formulaire de contact avec pré-remplissage
+      // L'API Microsoft Graph ne peut pas ajouter automatiquement des utilisateurs
+      // à des événements avec notifications, donc on utilise le formulaire de contact
       const params = new URLSearchParams({
         webinar: webinar.title,
         webinarId: webinar.id,
         webinarDateTime: formattedDateTime,
         webinarLocation: location,
-        webinarMeetingUrl: webinar.meetingUrl || ''
+        webinarMeetingUrl: webinar.meetingUrl || '',
+        ...(price && { webinarPrice: price })
       })
       
-      window.location.href = `/inscription-confirmee?${params.toString()}`
+      window.location.href = `/contact?${params.toString()}#contact-form`
       
     } catch (err) {
       alert('Une erreur est survenue lors de la redirection')
