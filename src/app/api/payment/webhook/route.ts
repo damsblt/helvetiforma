@@ -87,9 +87,38 @@ export async function POST(request: NextRequest) {
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         
-        // Pour l'instant, on ne met pas à jour le statut
-        // Dans une vraie implémentation, on mettrait à jour le statut dans Sanity
-        console.log('Paiement réussi:', paymentIntent.id)
+        if (paymentIntent.status === 'succeeded') {
+          const { postId, userId, postTitle } = paymentIntent.metadata || {}
+          
+          if (!postId || !userId) {
+            console.error('Métadonnées manquantes dans le PaymentIntent')
+            break
+          }
+
+          // Enregistrer l'achat dans Sanity (via l'API existante)
+          try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/payment/record-purchase`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId,
+                postId,
+                postTitle: postTitle || 'Article inconnu',
+                amount: paymentIntent.amount,
+                stripeSessionId: null,
+                stripePaymentIntentId: paymentIntent.id,
+              })
+            })
+            
+            if (response.ok) {
+              console.log(`Achat enregistré via PaymentIntent: ${postTitle} pour ${userId}`)
+            } else {
+              console.error('Erreur lors de l\'enregistrement de l\'achat via PaymentIntent')
+            }
+          } catch (error) {
+            console.error('Erreur lors de l\'enregistrement de l\'achat via PaymentIntent:', error)
+          }
+        }
         break
       }
 

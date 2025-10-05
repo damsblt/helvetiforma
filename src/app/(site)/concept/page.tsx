@@ -48,7 +48,7 @@ export default async function ConceptPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Page non trouvée</h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">Le contenu de cette page n'a pas encore été créé dans Sanity CMS.</p>
+            <p className="text-gray-600 dark:text-white mb-6">Le contenu de cette page n'a pas encore été créé dans Sanity CMS.</p>
             <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
               Retour à l'accueil
             </Link>
@@ -145,7 +145,7 @@ export default async function ConceptPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Erreur de chargement</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">Une erreur s'est produite lors du chargement de la page.</p>
+          <p className="text-gray-600 dark:text-white mb-6">Une erreur s'est produite lors du chargement de la page.</p>
           <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
             Retour à l'accueil
           </Link>

@@ -208,7 +208,7 @@ export default async function PostPage({
       <div className="container mx-auto max-w-4xl px-4 py-16">
         
         <article className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 p-8 md:p-12">
-          <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white">
+          <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-white prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white">
             {Array.isArray(post.body) && post.body.length > 0 ? (
               <div className={!hasAccess && (isPremium || isMembers) ? 'relative' : ''}>
                 <PortableText value={post.body} components={portableTextComponents} />
@@ -217,7 +217,7 @@ export default async function PostPage({
                 )}
               </div>
             ) : (
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600 dark:text-white">
                 Aucun contenu disponible pour cet article.
               </p>
             )}
@@ -235,7 +235,7 @@ export default async function PostPage({
                 <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
                   {isPremium ? 'Contenu Premium' : 'Contenu Réservé aux Membres'}
                 </h3>
-                <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-lg mx-auto leading-relaxed">
+                <p className="text-lg text-slate-600 dark:text-white mb-8 max-w-lg mx-auto leading-relaxed">
                   {isPremium 
                     ? `Pour accéder à l'intégralité de cet article premium${post.price ? ` (${post.price} CHF)` : ''}, effectuez votre achat ci-dessous.`
                     : 'Pour accéder à ce contenu réservé aux membres, veuillez vous connecter.'
@@ -243,15 +243,12 @@ export default async function PostPage({
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   {isPremium ? (
-                    <Link
-                      href={`/checkout/${post._id}`}
+                    <PaymentButton
+                      postId={post._id}
+                      postTitle={post.title}
+                      price={post.price}
                       className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                      </svg>
-                      Acheter pour {post.price} CHF
-                    </Link>
+                    />
                   ) : (
                     <Link
                       href={`/login?callbackUrl=${encodeURIComponent(`/posts/${post.slug.current}`)}`}
@@ -331,12 +328,12 @@ export default async function PostPage({
                                 )}
                               </h5>
                               {pdf.description && (
-                                <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
+                                <p className="text-sm text-slate-600 dark:text-white mb-3 leading-relaxed">
                                   {pdf.description}
                                 </p>
                               )}
                               {pdf.fileSize && (
-                                <p className="text-xs text-slate-500 dark:text-slate-500 font-medium">
+                                <p className="text-xs text-slate-500 dark:text-white font-medium">
                                   Taille: {pdf.fileSize}
                                 </p>
                               )}
@@ -344,7 +341,7 @@ export default async function PostPage({
                             {isPdfPremium ? (
                               <button
                                 disabled
-                                className="px-5 py-3 bg-slate-200 dark:bg-gray-700 text-slate-500 dark:text-slate-400 rounded-xl text-sm font-medium cursor-not-allowed flex items-center gap-2 shadow-sm"
+                                className="px-5 py-3 bg-slate-200 dark:bg-gray-700 text-slate-500 dark:text-white rounded-xl text-sm font-medium cursor-not-allowed flex items-center gap-2 shadow-sm"
                               >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -378,7 +375,7 @@ export default async function PostPage({
           {/* Tags Section */}
           {post.tags && post.tags.length > 0 && (
             <div className="mt-12 pt-8 border-t border-slate-200/60 dark:border-gray-700/60">
-              <h4 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-slate-500 dark:text-white uppercase tracking-wide mb-4 flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                 </svg>
@@ -388,7 +385,7 @@ export default async function PostPage({
                 {post.tags.map((tag: string, i: number) => (
                   <span
                     key={i}
-                    className="px-4 py-2 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-full hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+                    className="px-4 py-2 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-700 dark:text-white text-sm font-medium rounded-full hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
                   >
                     #{tag}
                   </span>

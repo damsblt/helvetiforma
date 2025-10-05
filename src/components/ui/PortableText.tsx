@@ -12,16 +12,16 @@ const components = {
     h2: ({ children }: any) => <h2 className="text-3xl font-bold mb-4">{children}</h2>,
     h3: ({ children }: any) => <h3 className="text-2xl font-bold mb-3">{children}</h3>,
     h4: ({ children }: any) => <h4 className="text-xl font-bold mb-2">{children}</h4>,
-    normal: ({ children }: any) => <p className="mb-4 text-gray-600">{children}</p>,
+    normal: ({ children }: any) => <p className="mb-4 text-gray-600 dark:text-white">{children}</p>,
     blockquote: ({ children }: any) => (
-      <blockquote className="border-l-4 border-blue-600 pl-4 italic my-4 text-gray-700">
+      <blockquote className="border-l-4 border-blue-600 pl-4 italic my-4 text-gray-700 dark:text-white">
         {children}
       </blockquote>
     ),
   },
   list: {
-    bullet: ({ children }: any) => <ul className="list-disc list-inside mb-4 text-gray-600">{children}</ul>,
-    number: ({ children }: any) => <ol className="list-decimal list-inside mb-4 text-gray-600">{children}</ol>,
+    bullet: ({ children }: any) => <ul className="list-disc list-inside mb-4 text-gray-600 dark:text-white">{children}</ul>,
+    number: ({ children }: any) => <ol className="list-decimal list-inside mb-4 text-gray-600 dark:text-white">{children}</ol>,
   },
   listItem: {
     bullet: ({ children }: any) => <li className="mb-2">{children}</li>,
@@ -54,7 +54,7 @@ const components = {
             className="rounded-lg w-full"
           />
           {value.caption && (
-            <p className="text-sm text-gray-500 mt-2 text-center">{value.caption}</p>
+            <p className="text-sm text-gray-500 dark:text-white mt-2 text-center">{value.caption}</p>
           )}
         </div>
       )

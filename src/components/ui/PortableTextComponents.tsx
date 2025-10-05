@@ -90,7 +90,7 @@ function VideoEmbed({ value }: { value: any }) {
         )}
       </div>
       {caption && (
-        <figcaption className="mt-4 text-center text-sm text-slate-600 dark:text-slate-400 italic leading-relaxed">
+        <figcaption className="mt-4 text-center text-sm text-slate-600 dark:text-white italic leading-relaxed">
           {caption}
         </figcaption>
       )}
@@ -117,7 +117,7 @@ function FileDownload({ value }: { value: any }) {
             {title}
           </h4>
           {description && (
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 leading-relaxed">
+            <p className="text-sm text-slate-600 dark:text-white mb-3 leading-relaxed">
               {description}
             </p>
           )}
@@ -155,7 +155,7 @@ function CustomImage({ value }: { value: any }) {
         )}
       </div>
       {value.caption && (
-        <figcaption className="mt-4 text-center text-sm text-slate-600 dark:text-slate-400 italic leading-relaxed">
+        <figcaption className="mt-4 text-center text-sm text-slate-600 dark:text-white italic leading-relaxed">
           {value.caption}
         </figcaption>
       )}
@@ -192,24 +192,24 @@ export const portableTextComponents: PortableTextComponents = {
       </h4>
     ),
     normal: ({ children }) => (
-      <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+      <p className="mb-6 text-slate-700 dark:text-white leading-relaxed text-lg">
         {children}
       </p>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="border-l-4 border-blue-500 pl-6 py-4 my-8 italic text-slate-700 dark:text-slate-300 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-r-xl shadow-sm">
+      <blockquote className="border-l-4 border-blue-500 pl-6 py-4 my-8 italic text-slate-700 dark:text-white bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-r-xl shadow-sm">
         {children}
       </blockquote>
     ),
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="list-disc list-inside mb-6 space-y-3 text-slate-700 dark:text-slate-300 text-lg leading-relaxed">
+      <ul className="list-disc list-inside mb-6 space-y-3 text-slate-700 dark:text-white text-lg leading-relaxed">
         {children}
       </ul>
     ),
     number: ({ children }) => (
-      <ol className="list-decimal list-inside mb-6 space-y-3 text-slate-700 dark:text-slate-300 text-lg leading-relaxed">
+      <ol className="list-decimal list-inside mb-6 space-y-3 text-slate-700 dark:text-white text-lg leading-relaxed">
         {children}
       </ol>
     ),
@@ -231,7 +231,7 @@ export const portableTextComponents: PortableTextComponents = {
       <strong className="font-bold text-slate-900 dark:text-white">{children}</strong>
     ),
     em: ({ children }) => (
-      <em className="italic text-slate-800 dark:text-slate-200">{children}</em>
+      <em className="italic text-slate-800 dark:text-white">{children}</em>
     ),
     code: ({ children }) => (
       <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-sm font-mono text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">

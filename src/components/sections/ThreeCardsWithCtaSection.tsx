@@ -82,7 +82,7 @@ export default function ThreeCardsWithCtaSection({
                 {title}
               </h2>
               {subtitle && (
-                <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                <p className="text-xl text-gray-600 dark:text-white max-w-3xl mx-auto">
                   {subtitle}
                 </p>
               )}
@@ -112,7 +112,7 @@ export default function ThreeCardsWithCtaSection({
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                     {card.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  <p className="text-gray-600 dark:text-white mb-6">
                     {card.description}
                   </p>
                   {card.detailText && (
@@ -141,7 +141,7 @@ export default function ThreeCardsWithCtaSection({
                 {ctaCard.title}
               </h3>
               {ctaCard.subtitle && (
-                <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+                <p className="text-lg text-gray-600 dark:text-white mb-8">
                   {ctaCard.subtitle}
                 </p>
               )}
@@ -170,11 +170,11 @@ export default function ThreeCardsWithCtaSection({
               {/* Features */}
               {ctaCard.features && ctaCard.features.length > 0 && (
                 <div className="pt-8 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 dark:text-white">
                     {ctaCard.features.map((feature, index) => {
                       const featureColorClass = feature.color
                         ? featureColorClasses[feature.color]
-                        : 'text-gray-500 dark:text-gray-400'
+                        : 'text-gray-500 dark:text-white'
 
                       return (
                         <div key={index} className="flex items-center">

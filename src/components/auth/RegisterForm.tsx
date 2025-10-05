@@ -113,7 +113,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
           Inscription réussie !
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
+        <p className="text-gray-600 dark:text-white mb-4">
           Vérifiez votre email pour confirmer votre compte.
         </p>
         <Link
@@ -138,7 +138,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Créer un compte
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600 dark:text-white">
           Accédez à nos articles premium et webinaires
         </p>
       </div>
@@ -151,7 +151,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             Prénom
           </label>
           <input
@@ -165,7 +165,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           />
         </div>
         <div>
-          <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             Nom
           </label>
           <input
@@ -181,7 +181,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       </div>
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
           Email *
         </label>
         <input
@@ -197,7 +197,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
           Mot de passe *
         </label>
         <input
@@ -214,7 +214,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       </div>
 
       <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
           Confirmer le mot de passe *
         </label>
         <input
@@ -248,7 +248,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       </button>
 
       <div className="text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600 dark:text-white">
           Déjà un compte ?{' '}
           <Link
             href="/login"

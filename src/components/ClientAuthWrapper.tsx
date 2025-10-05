@@ -76,7 +76,7 @@ export default function ClientAuthWrapper({
             <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
               Contenu Premium
             </h3>
-            <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-lg mx-auto leading-relaxed">
+            <p className="text-lg text-slate-600 dark:text-white mb-8 max-w-lg mx-auto leading-relaxed">
               Pour accéder à l'intégralité de cet article premium ({price} CHF), effectuez votre achat ci-dessous.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

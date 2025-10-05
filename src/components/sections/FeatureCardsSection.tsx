@@ -47,7 +47,7 @@ export default function FeatureCardsSection({
               {title}
             </h2>
             {subtitle && (
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 dark:text-white max-w-3xl mx-auto">
                 {subtitle}
               </p>
             )}
@@ -81,7 +81,7 @@ export default function FeatureCardsSection({
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 text-center">
                 {card.title}
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-center">
+              <p className="text-gray-600 dark:text-white leading-relaxed text-center">
                 {card.description}
               </p>
             </motion.div>

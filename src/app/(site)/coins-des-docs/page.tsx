@@ -119,7 +119,7 @@ export default async function CoinsDesDocsPage() {
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Articles disponibles
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              <p className="text-lg text-gray-600 dark:text-white max-w-2xl mx-auto">
                 Nos guides et ressources créés par nos experts et mis à jour selon les dernières réglementations suisses.
               </p>
             </div>
@@ -133,13 +133,13 @@ export default async function CoinsDesDocsPage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="text-gray-400 dark:text-gray-600 mb-4">
+                <div className="text-gray-400 dark:text-white mb-4">
                   <FileText className="w-16 h-16 mx-auto" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   Aucun article disponible
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-600 dark:text-white">
                   Nous ajoutons régulièrement de nouveaux guides et ressources.
                 </p>
               </div>
@@ -151,7 +151,7 @@ export default async function CoinsDesDocsPage() {
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                   Besoin d'aide personnalisée ?
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <p className="text-gray-600 dark:text-white mb-6">
                   Nos experts sont là pour vous accompagner dans vos projets comptables et RH.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -215,7 +215,7 @@ function FallbackCoinsDesDocsPage({ articles }: { articles: SanityArticle[] }) {
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Nos articles et guides
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              <p className="text-lg text-gray-600 dark:text-white max-w-2xl mx-auto">
                 Accédez à nos articles, guides et ressources pour maîtriser 
                 la comptabilité et la gestion RH en Suisse.
               </p>
@@ -230,13 +230,13 @@ function FallbackCoinsDesDocsPage({ articles }: { articles: SanityArticle[] }) {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="text-gray-400 dark:text-gray-600 mb-4">
+                <div className="text-gray-400 dark:text-white mb-4">
                   <FileText className="w-16 h-16 mx-auto" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   Aucun article disponible
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-600 dark:text-white">
                   Nous ajoutons régulièrement de nouveaux guides et ressources.
                 </p>
               </div>
@@ -248,7 +248,7 @@ function FallbackCoinsDesDocsPage({ articles }: { articles: SanityArticle[] }) {
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                   Besoin d'aide personnalisée ?
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <p className="text-gray-600 dark:text-white mb-6">
                   Nos experts sont là pour vous accompagner dans vos projets comptables et RH.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -343,7 +343,7 @@ function ArticleCard({ article }: ArticleCardProps) {
         
         {/* Excerpt */}
         {article.excerpt && (
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+          <p className="text-sm text-gray-600 dark:text-white mb-4 line-clamp-3">
             {article.excerpt}
           </p>
         )}
@@ -354,7 +354,7 @@ function ArticleCard({ article }: ArticleCardProps) {
             {article.tags.slice(0, 3).map((tag, i) => (
               <span
                 key={i}
-                className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded"
+                className="text-xs text-gray-500 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded"
               >
                 #{tag}
               </span>
@@ -364,7 +364,7 @@ function ArticleCard({ article }: ArticleCardProps) {
         
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+          <span className="text-xs text-gray-500 dark:text-white flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5" />
             {new Date(article.publishedAt).toLocaleDateString('fr-FR', {
               day: 'numeric',
@@ -384,7 +384,7 @@ function ArticleCard({ article }: ArticleCardProps) {
         {accessLevel === 'premium' && article.price && (
           <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500 dark:text-gray-400">Prix</span>
+              <span className="text-xs text-gray-500 dark:text-white">Prix</span>
               <span className="text-lg font-bold text-gray-900 dark:text-white">
                 {article.price} CHF
               </span>

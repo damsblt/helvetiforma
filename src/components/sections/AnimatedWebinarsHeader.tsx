@@ -14,7 +14,7 @@ export default function AnimatedWebinarsHeader() {
       <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
         Prochaines sessions
       </h2>
-      <p className="text-xl text-gray-600 dark:text-gray-300">
+      <p className="text-xl text-gray-600 dark:text-white">
         Découvrez nos prochaines sessions en direct
       </p>
     </motion.div>

@@ -30,7 +30,7 @@ export default function ContactInfoSection({
             {title}
           </h2>
           {subtitle && (
-            <p className="text-muted-foreground dark:text-gray-300">
+            <p className="text-muted-foreground dark:text-white">
               {subtitle}
             </p>
           )}
@@ -54,7 +54,7 @@ export default function ContactInfoSection({
               </h3>
               <div className="space-y-1">
                 {item.content.map((line, lineIndex) => (
-                  <p key={lineIndex} className="text-muted-foreground dark:text-gray-300">
+                  <p key={lineIndex} className="text-muted-foreground dark:text-white">
                     {line}
                   </p>
                 ))}

@@ -88,7 +88,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Mot de passe oublié
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-white">
             Entrez votre email pour recevoir un lien de réinitialisation
           </p>
         </div>
@@ -111,7 +111,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
         <form onSubmit={handleResetPassword} className="space-y-4">
           <div>
-            <label htmlFor="resetEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="resetEmail" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
               Email
             </label>
             <input
@@ -120,7 +120,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               value={resetEmail}
               onChange={(e) => setResetEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               placeholder="votre@email.com"
             />
           </div>
@@ -128,7 +128,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           <button
             type="submit"
             disabled={resetLoading}
-            className="w-full flex items-center justify-center px-4 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors"
+            className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors"
+            style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
           >
             {resetLoading ? (
               <>
@@ -168,7 +169,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Connexion
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600 dark:text-white">
           Accédez à vos articles premium et webinaires
         </p>
       </div>
@@ -180,7 +181,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       )}
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
           Email
         </label>
         <input
@@ -190,13 +191,13 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           value={formData.email}
           onChange={handleInputChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           placeholder="votre@email.com"
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
           Mot de passe
         </label>
         <input
@@ -206,7 +207,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           value={formData.password}
           onChange={handleInputChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           placeholder="Votre mot de passe"
         />
       </div>
@@ -224,7 +225,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full flex items-center justify-center px-4 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors"
+        className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors"
+        style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
       >
         {isLoading ? (
           <>
@@ -240,7 +242,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       </button>
 
       <div className="text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600 dark:text-white">
           Pas encore de compte ?{' '}
           <Link
             href="/register"

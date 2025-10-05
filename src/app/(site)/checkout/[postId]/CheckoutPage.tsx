@@ -5,7 +5,8 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowLeft, Lock, CreditCard, Shield, CheckCircle } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import StripeElementsForm from '@/components/payment/StripeElementsForm'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 
 interface Post {
   _id: string
@@ -20,6 +21,129 @@ interface Post {
 
 interface CheckoutPageProps {
   post: Post
+}
+
+// Initialize Stripe
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+
+function PaymentForm({ postId, postTitle, price, onSuccess }: { postId: string, postTitle: string, price: number, onSuccess?: () => void }) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { data: session } = useSession()
+  const user = session?.user
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+
+    if (!stripe || !elements) {
+      setError('Stripe n\'est pas encore chargé')
+      return
+    }
+
+    if (!user) {
+      setError('Vous devez être connecté pour effectuer un achat')
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // Créer un PaymentIntent directement
+      const response = await fetch('/api/payment/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          postId,
+          user: {
+            id: (user as any).id,
+            email: user.email
+          }
+        }),
+      })
+
+      const { clientSecret } = await response.json()
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la création du paiement')
+      }
+
+      // Confirmer le paiement
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement)!,
+        }
+      })
+
+      if (stripeError) {
+        setError(stripeError.message || 'Une erreur est survenue lors du paiement')
+      } else if (paymentIntent.status === 'succeeded') {
+        // Paiement réussi
+        onSuccess?.()
+        window.location.href = `/posts/${postTitle.toLowerCase().replace(/\s+/g, '-')}?payment=success`
+      }
+    } catch (err: any) {
+      console.error('Erreur de paiement:', err)
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
+            Informations de carte
+          </label>
+          <div className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
+            <CardElement
+              options={{
+                style: {
+                  base: {
+                    fontSize: '16px',
+                    color: '#424770',
+                    '::placeholder': {
+                      color: '#aab7c4',
+                    },
+                  },
+                },
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={!stripe || isLoading}
+        className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed"
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+            Traitement...
+          </div>
+        ) : (
+          <div className="flex items-center justify-center">
+            <CreditCard className="w-5 h-5 mr-2" />
+            Acheter pour {price} CHF
+          </div>
+        )}
+      </button>
+    </form>
+  )
 }
 
 export default function CheckoutPage({ post }: CheckoutPageProps) {
@@ -55,7 +179,7 @@ export default function CheckoutPage({ post }: CheckoutPageProps) {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Paiement sécurisé
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-white">
             Finalisez votre achat pour accéder à l'article premium
           </p>
         </div>
@@ -71,13 +195,13 @@ export default function CheckoutPage({ post }: CheckoutPageProps) {
                 <h3 className="font-medium text-gray-900 dark:text-white">
                   {post.title}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-sm text-gray-600 dark:text-white mt-1">
                   Article premium
                 </p>
               </div>
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Prix</span>
+                  <span className="text-gray-600 dark:text-white">Prix</span>
                   <span className="text-2xl font-bold text-gray-900 dark:text-white">
                     {post.price} CHF
                   </span>
@@ -93,19 +217,21 @@ export default function CheckoutPage({ post }: CheckoutPageProps) {
             </h2>
             
             {user ? (
-              <StripeElementsForm
-                postId={post._id}
-                postTitle={post.title}
-                price={post.price}
-                onSuccess={handlePaymentSuccess}
-              />
+              <Elements stripe={stripePromise}>
+                <PaymentForm
+                  postId={post._id}
+                  postTitle={post.title}
+                  price={post.price}
+                  onSuccess={handlePaymentSuccess}
+                />
+              </Elements>
             ) : (
               <div className="text-center py-8">
-                <Lock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <Lock className="w-12 h-12 text-gray-400 dark:text-white mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   Connexion requise
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-gray-600 dark:text-white mb-6">
                   Vous devez être connecté pour effectuer un achat
                 </p>
                 <Link

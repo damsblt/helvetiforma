@@ -40,7 +40,7 @@ export default function AnimatedRichTextSection({ section }: AnimatedRichTextSec
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-xl text-center text-gray-600 dark:text-gray-300 mb-8"
+            className="text-xl text-center text-gray-600 dark:text-white mb-8"
           >
             {section.subtitle}
           </motion.p>
@@ -51,7 +51,7 @@ export default function AnimatedRichTextSection({ section }: AnimatedRichTextSec
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="prose prose-lg max-w-4xl mx-auto dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-white"
+            className="prose prose-lg max-w-4xl mx-auto dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-700 dark:prose-p:text-white prose-li:text-gray-700 dark:prose-li:text-white prose-strong:text-gray-900 dark:prose-strong:text-white"
           >
             <PortableText content={section.content} />
           </motion.div>

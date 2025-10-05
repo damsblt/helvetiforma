@@ -16,7 +16,7 @@ export default function AnimatedContactForm() {
       <h2 className="text-4xl font-bold text-foreground dark:text-white mb-6">
         Envoyez-nous un message
       </h2>
-      <p className="text-lg text-muted-foreground dark:text-gray-300 mb-12 max-w-2xl mx-auto">
+      <p className="text-lg text-muted-foreground dark:text-white mb-12 max-w-2xl mx-auto">
         Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.
       </p>
       <div className="bg-background border border-border rounded-2xl p-8 shadow-lg">

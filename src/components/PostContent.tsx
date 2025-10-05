@@ -78,7 +78,7 @@ export default function PostContent({ post, postImageUrl }: PostContentProps) {
       {/* Content Section */}
       <div className="container mx-auto max-w-4xl px-4 py-16">
         <article className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 p-8 md:p-12">
-          <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white">
+          <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-white prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white">
             {Array.isArray(post.body) && post.body.length > 0 ? (
               <div className={!hasAccess && (isPremium || isMembers) ? 'relative' : ''}>
                 <PortableText value={post.body} components={portableTextComponents} />
@@ -87,7 +87,7 @@ export default function PostContent({ post, postImageUrl }: PostContentProps) {
                 )}
               </div>
             ) : (
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600 dark:text-white">
                 Aucun contenu disponible pour cet article.
               </p>
             )}
@@ -105,7 +105,7 @@ export default function PostContent({ post, postImageUrl }: PostContentProps) {
                 <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
                   {isPremium ? 'Contenu Premium' : 'Contenu Réservé aux Membres'}
                 </h3>
-                <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-lg mx-auto leading-relaxed">
+                <p className="text-lg text-slate-600 dark:text-white mb-8 max-w-lg mx-auto leading-relaxed">
                   {isPremium 
                     ? `Pour accéder à l'intégralité de cet article premium${post.price ? ` (${post.price} CHF)` : ''}, effectuez votre achat ci-dessous.`
                     : 'Pour accéder à ce contenu réservé aux membres, veuillez vous connecter.'

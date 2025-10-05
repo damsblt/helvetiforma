@@ -51,7 +51,7 @@ export default async function CalendrierPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Page non trouvée</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">Le contenu de cette page n'a pas encore été créé dans Sanity CMS.</p>
+          <p className="text-gray-600 dark:text-white mb-6">Le contenu de cette page n'a pas encore été créé dans Sanity CMS.</p>
         </div>
       </div>
     )
@@ -104,7 +104,7 @@ export default async function CalendrierPage() {
           <Suspense fallback={
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">Chargement des webinaires...</p>
+              <p className="mt-4 text-gray-600 dark:text-white">Chargement des webinaires...</p>
             </div>
           }>
             <SessionsClient />

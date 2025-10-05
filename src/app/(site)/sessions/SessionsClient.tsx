@@ -227,7 +227,7 @@ export default function CalendrierClient() {
       {loading && (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Chargement des webinaires...</p>
+          <p className="mt-4 text-gray-600 dark:text-white">Chargement des webinaires...</p>
         </div>
       )}
 
@@ -239,13 +239,13 @@ export default function CalendrierClient() {
 
       {!loading && !error && webinars.length === 0 && (
         <div className="max-w-2xl mx-auto text-center py-12">
-          <svg className="w-24 h-24 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-24 h-24 mx-auto text-gray-400 dark:text-white mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Aucun webinaire disponible
           </h3>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-gray-600 dark:text-white">
             De nouveaux webinaires seront bientôt disponibles. Revenez plus tard !
           </p>
         </div>
@@ -278,9 +278,9 @@ export default function CalendrierClient() {
                     <svg className={`w-5 h-5 ${colorScheme.icon} flex-shrink-0`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Date et heure du début</span>
+                    <span className="text-gray-700 dark:text-white font-medium">Date et heure du début</span>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 ml-8">{formatDate(webinar.startDate)}</p>
+                  <p className="text-sm text-gray-600 dark:text-white mt-1 ml-8">{formatDate(webinar.startDate)}</p>
                 </div>
 
                 {/* Section 3: Type d'événement */}
@@ -289,9 +289,9 @@ export default function CalendrierClient() {
                     <svg className={`w-5 h-5 ${colorScheme.icon} flex-shrink-0`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Type d'événement</span>
+                    <span className="text-gray-700 dark:text-white font-medium">Type d'événement</span>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 ml-8">{getEventType(webinar)}</p>
+                  <p className="text-sm text-gray-600 dark:text-white mt-1 ml-8">{getEventType(webinar)}</p>
                 </div>
 
                 {/* Section 3.5: Lieu (si disponible) */}
@@ -302,9 +302,9 @@ export default function CalendrierClient() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      <span className="text-gray-700 dark:text-gray-300 font-medium">Lieu</span>
+                      <span className="text-gray-700 dark:text-white font-medium">Lieu</span>
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 ml-8">
+                    <div className="text-sm text-gray-600 dark:text-white mt-1 ml-8">
                       {webinar.location.address && (
                         <div>
                           {webinar.location.address.street && <p>{webinar.location.address.street}</p>}
@@ -332,9 +332,9 @@ export default function CalendrierClient() {
                     <svg className={`w-5 h-5 ${colorScheme.icon} flex-shrink-0`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Description</span>
+                    <span className="text-gray-700 dark:text-white font-medium">Description</span>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 ml-8 line-clamp-3">
+                  <p className="text-sm text-gray-600 dark:text-white mt-1 ml-8 line-clamp-3">
                     {cleanDescription && cleanDescription !== 'Aucune description disponible' 
                       ? cleanDescription 
                       : 'Aucune description disponible'}
@@ -348,9 +348,9 @@ export default function CalendrierClient() {
                       <svg className={`w-5 h-5 ${colorScheme.icon} flex-shrink-0`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                       </svg>
-                      <span className="text-gray-700 dark:text-gray-300 font-medium">Prix</span>
+                      <span className="text-gray-700 dark:text-white font-medium">Prix</span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 ml-8 font-semibold">
+                    <p className="text-sm text-gray-600 dark:text-white mt-1 ml-8 font-semibold">
                       {price}
                     </p>
                   </div>

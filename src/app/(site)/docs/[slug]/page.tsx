@@ -109,11 +109,11 @@ export default async function WordPressPostPage({ params }: PageProps) {
               prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
               prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
               prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4
-              prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed prose-p:mb-6
+                prose-p:text-gray-700 dark:prose-p:text-white prose-p:leading-relaxed prose-p:mb-6
               prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
               prose-strong:text-gray-900 dark:prose-strong:text-white prose-strong:font-semibold
               prose-ul:my-6 prose-ul:space-y-2
-              prose-li:text-gray-700 dark:prose-li:text-gray-300
+                prose-li:text-gray-700 dark:prose-li:text-white
               prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:pl-6 prose-blockquote:italic
               prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm
               prose-pre:bg-gray-100 dark:prose-pre:bg-gray-800 prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-x-auto
@@ -127,7 +127,7 @@ export default async function WordPressPostPage({ params }: PageProps) {
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 Besoin de plus d'informations ?
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
+              <p className="text-gray-600 dark:text-white mb-6 max-w-2xl mx-auto">
                 Nos experts sont là pour répondre à vos questions sur la comptabilité et la gestion RH en Suisse.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

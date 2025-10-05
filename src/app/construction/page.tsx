@@ -100,7 +100,7 @@ export default function ConstructionPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="text-gray-600 dark:text-gray-300"
+            className="text-gray-600 dark:text-white"
           >
             Accès développeur uniquement
           </motion.p>
@@ -115,7 +115,7 @@ export default function ConstructionPage() {
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
                 Email
               </label>
               <input
@@ -131,7 +131,7 @@ export default function ConstructionPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
                 Mot de passe
               </label>
               <input
@@ -177,7 +177,7 @@ export default function ConstructionPage() {
 
           {/* Development Info */}
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            <p className="text-xs text-gray-500 dark:text-white text-center">
               Identifiants de développement fournis pour continuer le développement
             </p>
           </div>
@@ -190,7 +190,7 @@ export default function ConstructionPage() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="text-center mt-8"
         >
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-white">
             © 2024 HelvetiForma. Tous droits réservés.
           </p>
         </motion.div>

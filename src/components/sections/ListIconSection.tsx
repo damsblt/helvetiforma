@@ -54,13 +54,13 @@ export default function ListIconSection({
             )}
 
             {subtitle && (
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-xl text-gray-600 dark:text-white mb-6">
                 {subtitle}
               </p>
             )}
 
             {description && description.length > 0 && (
-              <div className="text-gray-600 dark:text-gray-300 mb-8 prose prose-lg max-w-none">
+              <div className="text-gray-600 dark:text-white mb-8 prose prose-lg max-w-none">
                 <PortableText content={description} />
               </div>
             )}
@@ -119,7 +119,7 @@ export default function ListIconSection({
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                     {item.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-600 dark:text-white">
                     {item.description}
                   </p>
                 </div>

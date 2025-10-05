@@ -3,8 +3,9 @@ import { type SanityDocument } from "next-sanity";
 import { sanityClient } from "@/lib/sanity";
 import imageUrlBuilder from "@sanity/image-url";
 import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import { getCurrentUser } from "@/lib/auth-supabase";
-import { checkUserPurchase } from '@/lib/purchases'
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { checkUserPurchaseWithSession } from '@/lib/purchases'
 
 const POSTS_QUERY = `*[
   _type == "post"
@@ -32,7 +33,8 @@ const options = { next: { revalidate: 30 } };
 
 export default async function PostsPage() {
   const posts = await sanityClient.fetch(POSTS_QUERY, {}, options) as SanityDocument[];
-  const user = await getCurrentUser();
+  const session = await getServerSession(authOptions);
+  const user = session?.user;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
@@ -42,7 +44,7 @@ export default async function PostsPage() {
           <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
             Articles & Actualités
           </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-slate-600 dark:text-white max-w-2xl mx-auto leading-relaxed">
             Découvrez nos derniers articles, analyses et actualités sur la formation professionnelle
           </p>
         </div>
@@ -57,7 +59,7 @@ export default async function PostsPage() {
             <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
               Aucun article publié pour le moment
             </h3>
-            <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+            <p className="text-slate-600 dark:text-white max-w-md mx-auto">
               Les articles seront affichés ici une fois publiés depuis le Sanity Studio.
             </p>
           </div>
@@ -69,7 +71,7 @@ export default async function PostsPage() {
                 : null;
               
               const accessLevel = post.accessLevel || 'public';
-              const hasPurchased = user ? await checkUserPurchase(user.id, post._id) : false;
+              const hasPurchased = await checkUserPurchaseWithSession(post._id);
               const hasAccess = 
                 accessLevel === 'public' || 
                 (accessLevel === 'members' && user) ||
@@ -156,7 +158,7 @@ export default async function PostsPage() {
 
                       {/* Excerpt */}
                       {post.excerpt && (
-                        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4 line-clamp-3">
+                        <p className="text-slate-600 dark:text-white text-sm leading-relaxed mb-4 line-clamp-3">
                           {post.excerpt}
                         </p>
                       )}
@@ -167,7 +169,7 @@ export default async function PostsPage() {
                           {post.tags.slice(0, 3).map((tag: string, i: number) => (
                             <span
                               key={i}
-                              className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs rounded-md"
+                              className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-white text-xs rounded-md"
                             >
                               #{tag}
                             </span>
@@ -179,7 +181,7 @@ export default async function PostsPage() {
                       <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-gray-700">
                         <time 
                           dateTime={post.publishedAt} 
-                          className="text-sm text-slate-500 dark:text-slate-400"
+                          className="text-sm text-slate-500 dark:text-white"
                         >
                           {new Date(post.publishedAt).toLocaleDateString('fr-FR', {
                             day: 'numeric',

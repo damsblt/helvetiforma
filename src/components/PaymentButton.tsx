@@ -29,8 +29,8 @@ export default function PaymentButton({ postId, postTitle, price, className = ''
         return
       }
 
-      // Rediriger vers la page de paiement native
-      window.location.href = `/payment/${postId}`
+      // Rediriger vers la page de checkout personnalisée
+      window.location.href = `/checkout/${postId}`
       
       if (onSuccess) {
         onSuccess()

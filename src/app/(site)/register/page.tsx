@@ -25,7 +25,7 @@ export default function RegisterPage() {
                 >
                   ← Retour à l'accueil
                 </Link>
-                <div className="text-xs text-gray-500 dark:text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-white">
                   Besoin d'aide ?{' '}
                   <Link
                     href="/contact"

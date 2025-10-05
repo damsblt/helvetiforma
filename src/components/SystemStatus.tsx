@@ -94,21 +94,21 @@ export default function SystemStatus() {
       
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-600 dark:text-gray-400">Supabase</span>
+          <span className="text-xs text-gray-600 dark:text-white">Supabase</span>
           <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(status.supabase)}`}>
             {getStatusIcon(status.supabase)} {status.supabase}
           </span>
         </div>
         
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-600 dark:text-gray-400">Stripe</span>
+          <span className="text-xs text-gray-600 dark:text-white">Stripe</span>
           <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(status.stripe)}`}>
             {getStatusIcon(status.stripe)} {status.stripe}
           </span>
         </div>
         
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-600 dark:text-gray-400">Sanity</span>
+          <span className="text-xs text-gray-600 dark:text-white">Sanity</span>
           <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(status.sanity)}`}>
             {getStatusIcon(status.sanity)} {status.sanity}
           </span>
@@ -116,7 +116,7 @@ export default function SystemStatus() {
       </div>
 
       <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-gray-500 dark:text-white">
           {status.supabase === 'demo'
             ? 'Mode démo actif 🎭'
             : status.supabase === 'connected' && status.stripe === 'configured' && status.sanity === 'configured'
