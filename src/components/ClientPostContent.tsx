@@ -150,7 +150,7 @@ export default function ClientPostContent({
                   )}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  {status === 'loading' ? (
+                  {loading ? (
                     <div className="flex items-center justify-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                       <span className="ml-2 text-gray-600">Chargement...</span>
