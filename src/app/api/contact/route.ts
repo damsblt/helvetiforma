@@ -32,14 +32,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create transporter
+    // Create transporter using the new email configuration
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      host: process.env.EMAIL_SERVER_HOST || 'asmtp.mail.hostpoint.ch',
+      port: parseInt(process.env.EMAIL_SERVER_PORT || '465'),
+      secure: true, // true for 465, false for other ports
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.EMAIL_SERVER_USER || 'contact@helvetiforma.ch',
+        pass: process.env.EMAIL_SERVER_PASSWORD || 'Contactformation2025*',
       },
     })
 
@@ -93,7 +93,7 @@ Date: ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Zurich' })}
 
     // Send email
     const mailOptions = {
-      from: `"HelvetiForma Contact Form" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      from: `"HelvetiForma Contact Form" <${process.env.EMAIL_FROM || 'contact@helvetiforma.ch'}>`,
       to: 'contact@helvetiforma.ch',
       replyTo: formData.email,
       subject: `[Contact Form] ${formData.subject}`,
