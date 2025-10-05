@@ -3,7 +3,7 @@ import { createClient } from '@sanity/client'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, postId, postTitle, amount, stripeSessionId, stripePaymentIntentId } = await request.json()
+    const { userId, postId, postTitle, postSlug, amount, stripeSessionId, stripePaymentIntentId } = await request.json()
 
     if (!userId || !postId) {
       return NextResponse.json(
@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
       _type: 'purchase',
       userId,
       postId,
+      postSlug: postSlug || 'unknown-slug',
       postTitle: postTitle || 'Article inconnu',
       amount: amount / 100, // Convertir de centimes en CHF
       purchasedAt: new Date().toISOString(),

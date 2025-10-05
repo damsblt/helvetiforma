@@ -18,6 +18,12 @@ export const purchaseType = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'postSlug',
+      title: 'Slug Article',
+      type: 'string',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: 'postTitle',
       title: 'Titre de l\'article',
       type: 'string',

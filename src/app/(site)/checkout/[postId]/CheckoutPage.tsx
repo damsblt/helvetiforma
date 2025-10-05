@@ -108,7 +108,7 @@ function PaymentForm({ postId, postTitle, price, postSlug, onSuccess }: { postId
                 style: {
                   base: {
                     fontSize: '16px',
-                    color: '#424770',
+                    color: '#ffffff',
                     '::placeholder': {
                       color: '#aab7c4',
                     },
@@ -154,13 +154,6 @@ export default function CheckoutPage({ post }: CheckoutPageProps) {
   const [isCheckingPurchase, setIsCheckingPurchase] = useState(true)
   const [hasAlreadyPurchased, setHasAlreadyPurchased] = useState(false)
 
-  // Debug logging
-  console.log('🔍 CheckoutPage Debug:', {
-    status,
-    hasSession: !!session,
-    user: user ? { id: (user as any).id, email: user.email, name: user.name } : null,
-    timestamp: new Date().toISOString()
-  })
 
   // Check if user has already purchased this article
   useEffect(() => {
@@ -176,7 +169,6 @@ export default function CheckoutPage({ post }: CheckoutPageProps) {
         const response = await fetch(`/api/check-purchase?postId=${post._id}`)
         const data = await response.json()
         
-        console.log('🔍 Purchase check result:', data)
         
         if (data.hasPurchased) {
           setHasAlreadyPurchased(true)
@@ -263,14 +255,6 @@ export default function CheckoutPage({ post }: CheckoutPageProps) {
               Informations de paiement
             </h2>
             
-            {/* Debug info */}
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-              <strong>Debug Info:</strong><br/>
-              Status: {status}<br/>
-              Has Session: {session ? 'Yes' : 'No'}<br/>
-              User: {user ? `${user.email} (${user.name})` : 'None'}<br/>
-              User ID: {(user as any)?.id || 'None'}
-            </div>
 
             {user ? (
               <Elements stripe={stripePromise}>

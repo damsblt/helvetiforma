@@ -30,7 +30,7 @@ export default function DebugInfo({ postId }: DebugInfoProps) {
         if (session?.user) {
           // Use server-side API to check purchase
           const userId = (session.user as any)?.id
-          const response = await fetch(`/api/check-purchase?userId=${userId}&postId=${postId}`)
+          const response = await fetch(`/api/check-purchase?postId=${postId}`)
           const purchaseData = await response.json()
           
           info.purchaseCheck = {

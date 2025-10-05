@@ -97,9 +97,12 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">
-                  Bonjour, {user.name || user.email}
-                </span>
+                <Link
+                  href="/dashboard"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm hover:shadow-md"
+                >
+                  Tableau de bord
+                </Link>
                 <button
                   onClick={() => signOut()}
                   className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm hover:shadow-md"
@@ -174,9 +177,12 @@ export default function Header() {
                 <div className="pt-4 border-t border-border">
                   {user ? (
                     <div className="space-y-2">
-                      <div className="text-center text-sm text-muted-foreground">
-                        Bonjour, {user.name || user.email}
-                      </div>
+                      <Link
+                        href="/dashboard"
+                        className="block bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-base font-medium transition-colors text-center"
+                      >
+                        Tableau de bord
+                      </Link>
                       <button
                         onClick={() => signOut()}
                         className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg text-sm font-medium transition-colors shadow-sm hover:shadow-md"

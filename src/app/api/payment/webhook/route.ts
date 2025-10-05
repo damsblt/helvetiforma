@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session
         
         if (session.payment_status === 'paid') {
-          const { postId, userId, postTitle } = session.metadata || {}
+          const { postId, postSlug, userId, postTitle } = session.metadata || {}
           
           if (!postId || !userId) {
             console.error('Métadonnées manquantes dans la session')
@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
               body: JSON.stringify({
                 userId,
                 postId,
+                postSlug: postSlug || 'unknown-slug',
                 postTitle: postTitle || 'Article inconnu',
                 amount: session.amount_total || 0,
                 stripeSessionId: session.id,
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         
         if (paymentIntent.status === 'succeeded') {
-          const { postId, userId, postTitle } = paymentIntent.metadata || {}
+          const { postId, postSlug, userId, postTitle } = paymentIntent.metadata || {}
           
           if (!postId || !userId) {
             console.error('Métadonnées manquantes dans le PaymentIntent')
@@ -103,6 +104,7 @@ export async function POST(request: NextRequest) {
               body: JSON.stringify({
                 userId,
                 postId,
+                postSlug: postSlug || 'unknown-slug',
                 postTitle: postTitle || 'Article inconnu',
                 amount: paymentIntent.amount,
                 stripeSessionId: null,

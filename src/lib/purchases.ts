@@ -6,6 +6,7 @@ export interface Purchase {
   _id: string
   userId: string
   postId: string
+  postSlug: string
   postTitle: string
   amount: number
   stripeSessionId: string

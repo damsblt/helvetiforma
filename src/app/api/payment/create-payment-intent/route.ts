@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
       currency: 'chf',
       metadata: {
         postId: post._id,
+        postSlug: post.slug.current,
         userId: user.id,
         postTitle: post.title,
       },
