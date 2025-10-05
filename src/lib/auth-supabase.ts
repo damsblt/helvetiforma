@@ -1,10 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseClient } from './supabase'
 // import type { Profile } from './supabase' // Removed Profile type
 
-// Créer une instance Supabase pour l'authentification côté client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Use the singleton Supabase client to avoid multiple instances
+const supabase = getSupabaseClient()
 
 export interface AuthUser {
   id: string

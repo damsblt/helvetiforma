@@ -173,7 +173,7 @@ L'équipe HelvetiForma
     `
 
     const mailOptions = {
-      from: `"HelvetiForma" <${process.env.EMAIL_FROM || 'noreply@helvetiforma.ch'}>`,
+      from: `"HelvetiForma" <${process.env.EMAIL_SERVER_USER || 'contact@helvetiforma.ch'}>`,
       to: data.userEmail,
       subject: '🎉 Bienvenue chez HelvetiForma - Inscription confirmée',
       text: textContent,

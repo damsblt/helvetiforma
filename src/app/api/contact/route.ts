@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create transporter using the new email configuration
-    const transporter = nodemailer.createTransport({
+    const emailConfig = {
       host: process.env.EMAIL_SERVER_HOST || 'asmtp.mail.hostpoint.ch',
       port: parseInt(process.env.EMAIL_SERVER_PORT || '465'),
       secure: true, // true for 465, false for other ports
@@ -41,7 +41,16 @@ export async function POST(request: NextRequest) {
         user: process.env.EMAIL_SERVER_USER || 'contact@helvetiforma.ch',
         pass: process.env.EMAIL_SERVER_PASSWORD || 'Contactformation2025*',
       },
+    }
+
+    console.log('📧 Email configuration:', {
+      host: emailConfig.host,
+      port: emailConfig.port,
+      user: emailConfig.auth.user,
+      passwordSet: !!emailConfig.auth.pass
     })
+
+    const transporter = nodemailer.createTransport(emailConfig)
 
     // Email content
     const htmlContent = `
@@ -93,7 +102,7 @@ Date: ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Zurich' })}
 
     // Send email
     const mailOptions = {
-      from: `"HelvetiForma Contact Form" <${process.env.EMAIL_FROM || 'contact@helvetiforma.ch'}>`,
+      from: `"HelvetiForma Contact Form" <${process.env.EMAIL_SERVER_USER || 'contact@helvetiforma.ch'}>`,
       to: 'contact@helvetiforma.ch',
       replyTo: formData.email,
       subject: `[Contact Form] ${formData.subject}`,
@@ -101,12 +110,34 @@ Date: ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Zurich' })}
       html: htmlContent,
     }
 
-    await transporter.sendMail(mailOptions)
+    // Test connection first
+    try {
+      await transporter.verify()
+      console.log('✅ Email server connection verified')
+    } catch (verifyError) {
+      console.error('❌ Email server connection failed:', verifyError)
+      return NextResponse.json(
+        { error: 'Email server connection failed' },
+        { status: 500 }
+      )
+    }
 
-    return NextResponse.json(
-      { message: 'Email sent successfully' },
-      { status: 200 }
-    )
+    // Send email
+    try {
+      const result = await transporter.sendMail(mailOptions)
+      console.log('✅ Email sent successfully:', result.messageId)
+      
+      return NextResponse.json(
+        { message: 'Email sent successfully' },
+        { status: 200 }
+      )
+    } catch (sendError) {
+      console.error('❌ Error sending email:', sendError)
+      return NextResponse.json(
+        { error: 'Failed to send email' },
+        { status: 500 }
+      )
+    }
 
   } catch (error) {
     console.error('Error sending email:', error)
