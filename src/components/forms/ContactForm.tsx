@@ -11,7 +11,6 @@ interface FormData {
   company: string
   subject: string
   message: string
-  interest: string
 }
 
 export default function ContactForm() {
@@ -23,7 +22,6 @@ export default function ContactForm() {
     company: '',
     subject: '',
     message: '',
-    interest: '',
   })
   const [isWebinarRegistration, setIsWebinarRegistration] = useState(false)
 
@@ -39,8 +37,7 @@ export default function ContactForm() {
       setFormData(prev => ({
         ...prev,
         subject: `Inscription au webinaire: ${webinar}`,
-        message: `Bonjour,\n\nJe souhaite m'inscrire au webinaire "${webinar}" organisé par HelvetiForma.\n\nPouvez-vous m'envoyer une invitation par email ?\n\nInformations sur la session :\n- Titre: ${webinar}\n- Date et heure : ${webinarDateTime || '[date and time]'}\n- Emplacement : ${webinarLocation || '[location]'}\n\nCordialement`,
-        interest: 'webinaire'
+        message: `Bonjour,\n\nJe souhaite m'inscrire au webinaire "${webinar}" organisé par HelvetiForma.\n\nPouvez-vous m'envoyer une invitation par email ?\n\nInformations sur la session :\n- Titre: ${webinar}\n- Date et heure : ${webinarDateTime || '[date and time]'}\n- Emplacement : ${webinarLocation || '[location]'}\n\nCordialement`
       }))
     }
   }, [searchParams])
@@ -90,17 +87,6 @@ export default function ContactForm() {
     }
   }
 
-  const interestOptions = [
-    { value: '', label: 'Sélectionnez un domaine' },
-    { value: 'webinaire', label: 'Webinaire' },
-    { value: 'comptabilite', label: 'Comptabilité générale' },
-    { value: 'salaires', label: 'Gestion des salaires' },
-    { value: 'charges-sociales', label: 'Charges sociales' },
-    { value: 'impot-source', label: 'Impôt à la source' },
-    { value: 'tva', label: 'TVA et fiscalité' },
-    { value: 'formation-entreprise', label: 'Formation en entreprise' },
-    { value: 'autre', label: 'Autre' },
-  ]
 
   if (submitStatus === 'success') {
     return (
@@ -218,25 +204,6 @@ export default function ContactForm() {
         </div>
       </div>
 
-      {/* Domaine d'intérêt */}
-      <div>
-        <label htmlFor="interest" className="block text-sm font-medium text-foreground mb-2">
-          Domaine d'intérêt
-        </label>
-        <select
-          id="interest"
-          name="interest"
-          value={formData.interest}
-          onChange={handleChange}
-          className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-        >
-          {interestOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
 
       {/* Sujet */}
       <div>

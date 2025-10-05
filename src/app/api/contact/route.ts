@@ -8,7 +8,6 @@ interface ContactFormData {
   company?: string
   subject: string
   message: string
-  interest?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -65,7 +64,6 @@ export async function POST(request: NextRequest) {
           <p><strong>Email:</strong> <a href="mailto:${formData.email}">${formData.email}</a></p>
           ${formData.phone ? `<p><strong>Téléphone:</strong> <a href="tel:${formData.phone}">${formData.phone}</a></p>` : ''}
           ${formData.company ? `<p><strong>Entreprise:</strong> ${formData.company}</p>` : ''}
-          ${formData.interest ? `<p><strong>Domaine d'intérêt:</strong> ${formData.interest}</p>` : ''}
         </div>
 
         <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
