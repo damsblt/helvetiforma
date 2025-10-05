@@ -16,6 +16,12 @@ interface AuthUser {
   avatar_url?: string
 }
 
+interface Profile {
+  first_name?: string
+  last_name?: string
+  avatar_url?: string
+}
+
 interface AuthContextType {
   user: AuthUser | null
   loading: boolean
@@ -45,12 +51,14 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
           .eq('id', session.user.id)
           .single()
 
+        const profileData = profile as Profile | null
+
         setUser({
           id: session.user.id,
           email: session.user.email!,
-          first_name: profile?.first_name,
-          last_name: profile?.last_name,
-          avatar_url: profile?.avatar_url,
+          first_name: profileData?.first_name,
+          last_name: profileData?.last_name,
+          avatar_url: profileData?.avatar_url,
         })
       } else {
         setUser(null)
@@ -72,12 +80,14 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             .eq('id', session.user.id)
             .single()
 
+          const profileData = profile as Profile | null
+
           setUser({
             id: session.user.id,
             email: session.user.email!,
-            first_name: profile?.first_name,
-            last_name: profile?.last_name,
-            avatar_url: profile?.avatar_url,
+            first_name: profileData?.first_name,
+            last_name: profileData?.last_name,
+            avatar_url: profileData?.avatar_url,
           })
         } else {
           setUser(null)
