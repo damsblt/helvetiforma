@@ -94,38 +94,44 @@ export async function getTeamsWebinars(params?: {
       .top(params?.limit || 50)
       .get()
 
-    return events.value.map((event: any): TeamsWebinar => {
-      // Strip HTML from description
-      const description = event.body?.content || ''
-      const cleanDescription = description
-        .replace(/<[^>]*>/g, '') // Remove HTML tags
-        .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
-        .replace(/&amp;/g, '&') // Replace &amp; with &
-        .replace(/&lt;/g, '<') // Replace &lt; with <
-        .replace(/&gt;/g, '>') // Replace &gt; with >
-        .replace(/&quot;/g, '"') // Replace &quot; with "
-        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-        .trim()
-      
-      return {
-        id: event.id,
-        title: event.subject || 'Événement sans titre',
-        description: cleanDescription || 'Aucune description disponible',
-        startDate: new Date(event.start.dateTime),
-        endDate: new Date(event.end.dateTime),
-        meetingUrl: event.onlineMeeting?.joinUrl || event.webLink || '',
-        location: event.location ? {
-          displayName: event.location.displayName,
-          address: event.location.address
-        } : undefined,
-        attendees: event.attendees?.map((attendee: any) => attendee.emailAddress.address) || [],
-        maxAttendees: 100, // Valeur par défaut
-        registrationCount: event.attendees?.length || 0,
-        status: 'scheduled',
-        isPublic: true,
-        tags: ['webinaire', 'formation'],
-      }
-    })
+    return events.value
+      .filter((event: any) => {
+        // Filtrer uniquement les événements dont le titre commence par "HF"
+        const title = event.subject || ''
+        return title.toUpperCase().startsWith('HF')
+      })
+      .map((event: any): TeamsWebinar => {
+        // Strip HTML from description
+        const description = event.body?.content || ''
+        const cleanDescription = description
+          .replace(/<[^>]*>/g, '') // Remove HTML tags
+          .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+          .replace(/&amp;/g, '&') // Replace &amp; with &
+          .replace(/&lt;/g, '<') // Replace &lt; with <
+          .replace(/&gt;/g, '>') // Replace &gt; with >
+          .replace(/&quot;/g, '"') // Replace &quot; with "
+          .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+          .trim()
+        
+        return {
+          id: event.id,
+          title: event.subject || 'Événement sans titre',
+          description: cleanDescription || 'Aucune description disponible',
+          startDate: new Date(event.start.dateTime),
+          endDate: new Date(event.end.dateTime),
+          meetingUrl: event.onlineMeeting?.joinUrl || event.webLink || '',
+          location: event.location ? {
+            displayName: event.location.displayName,
+            address: event.location.address
+          } : undefined,
+          attendees: event.attendees?.map((attendee: any) => attendee.emailAddress.address) || [],
+          maxAttendees: 100, // Valeur par défaut
+          registrationCount: event.attendees?.length || 0,
+          status: 'scheduled',
+          isPublic: true,
+          tags: ['webinaire', 'formation'],
+        }
+      })
   } catch (error) {
     console.error('Error fetching Teams webinars:', error)
     return getMockWebinars(params)
@@ -153,6 +159,13 @@ export async function getTeamsWebinar(id: string, accessToken?: string): Promise
       .api(`/users/${calendarUser}/calendar/events/${id}`)
       .select('id,subject,body,start,end,location,attendees,onlineMeeting,webLink')
       .get()
+
+    // Vérifier que l'événement commence par "HF"
+    const title = event.subject || ''
+    if (!title.toUpperCase().startsWith('HF')) {
+      console.log(`Event ${id} does not start with 'HF': ${title}`)
+      return null
+    }
 
     // Strip HTML from description
     const description = event.body?.content || ''
@@ -374,7 +387,7 @@ function getMockWebinars(params?: { startDate?: Date; endDate?: Date; limit?: nu
   const webinars: TeamsWebinar[] = [
     {
       id: 'webinar1',
-      title: 'Introduction à la Comptabilité Suisse',
+      title: 'HF - Introduction à la Comptabilité Suisse',
       description: 'Découvrez les bases de la comptabilité selon les normes suisses. Ce webinaire vous donnera un aperçu complet des principes fondamentaux.',
       startDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // Dans 7 jours
       endDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000), // 2h plus tard
@@ -388,7 +401,7 @@ function getMockWebinars(params?: { startDate?: Date; endDate?: Date; limit?: nu
     },
     {
       id: 'webinar2',
-      title: 'Gestion des Salaires : Nouveautés 2024',
+      title: 'HF - Gestion des Salaires : Nouveautés 2024',
       description: 'Webinaire spécialisé sur les dernières évolutions en matière de gestion des salaires en Suisse. Idéal pour les professionnels RH.',
       startDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000), // Dans 14 jours
       endDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000 + 1.5 * 60 * 60 * 1000), // 1.5h plus tard
@@ -402,7 +415,7 @@ function getMockWebinars(params?: { startDate?: Date; endDate?: Date; limit?: nu
     },
     {
       id: 'webinar3',
-      title: 'Session Q&A avec les Experts',
+      title: 'HF - Session Q&A avec les Experts',
       description: 'Session interactive de questions-réponses avec nos formateurs experts. Apportez vos questions sur la comptabilité et la gestion d\'entreprise.',
       startDate: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000), // Dans 21 jours
       endDate: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000 + 1 * 60 * 60 * 1000), // 1h plus tard
