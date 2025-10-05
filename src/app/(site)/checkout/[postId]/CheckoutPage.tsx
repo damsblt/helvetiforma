@@ -26,7 +26,7 @@ interface CheckoutPageProps {
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
-function PaymentForm({ postId, postTitle, price, onSuccess }: { postId: string, postTitle: string, price: number, onSuccess?: () => void }) {
+function PaymentForm({ postId, postTitle, price, postSlug, onSuccess }: { postId: string, postTitle: string, price: number, postSlug: string, onSuccess?: () => void }) {
   const stripe = useStripe()
   const elements = useElements()
   const [isLoading, setIsLoading] = useState(false)
@@ -66,11 +66,12 @@ function PaymentForm({ postId, postTitle, price, onSuccess }: { postId: string, 
         }),
       })
 
-      const { clientSecret } = await response.json()
-
       if (!response.ok) {
-        throw new Error('Erreur lors de la création du paiement')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erreur lors de la création du paiement')
       }
+
+      const { clientSecret } = await response.json()
 
       // Confirmer le paiement
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
@@ -84,7 +85,7 @@ function PaymentForm({ postId, postTitle, price, onSuccess }: { postId: string, 
       } else if (paymentIntent.status === 'succeeded') {
         // Paiement réussi
         onSuccess?.()
-        window.location.href = `/posts/${postTitle.toLowerCase().replace(/\s+/g, '-')}?payment=success`
+        window.location.href = `/posts/${postSlug}?payment=success`
       }
     } catch (err: any) {
       console.error('Erreur de paiement:', err)
@@ -150,16 +151,62 @@ export default function CheckoutPage({ post }: CheckoutPageProps) {
   const { data: session, status } = useSession()
   const isLoading = status === 'loading'
   const user = session?.user
+  const [isCheckingPurchase, setIsCheckingPurchase] = useState(true)
+  const [hasAlreadyPurchased, setHasAlreadyPurchased] = useState(false)
+
+  // Debug logging
+  console.log('🔍 CheckoutPage Debug:', {
+    status,
+    hasSession: !!session,
+    user: user ? { id: (user as any).id, email: user.email, name: user.name } : null,
+    timestamp: new Date().toISOString()
+  })
+
+  // Check if user has already purchased this article
+  useEffect(() => {
+    const checkPurchaseStatus = async () => {
+      if (status === 'loading') return
+      
+      if (!user) {
+        setIsCheckingPurchase(false)
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/check-purchase?postId=${post._id}`)
+        const data = await response.json()
+        
+        console.log('🔍 Purchase check result:', data)
+        
+        if (data.hasPurchased) {
+          setHasAlreadyPurchased(true)
+          // Redirect to the article without payment overlay
+          window.location.href = `/posts/${post.slug.current}?alreadyPurchased=true`
+        }
+      } catch (error) {
+        console.error('Error checking purchase status:', error)
+      } finally {
+        setIsCheckingPurchase(false)
+      }
+    }
+
+    checkPurchaseStatus()
+  }, [status, user, post._id, post.slug.current])
 
   const handlePaymentSuccess = () => {
     // Rediriger vers l'article après paiement réussi
     window.location.href = `/posts/${post.slug.current}?payment=success`
   }
 
-  if (isLoading) {
+  if (isLoading || isCheckingPurchase) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-white">
+            {isLoading ? 'Chargement...' : 'Vérification de votre achat...'}
+          </p>
+        </div>
       </div>
     )
   }
@@ -216,12 +263,22 @@ export default function CheckoutPage({ post }: CheckoutPageProps) {
               Informations de paiement
             </h2>
             
+            {/* Debug info */}
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+              <strong>Debug Info:</strong><br/>
+              Status: {status}<br/>
+              Has Session: {session ? 'Yes' : 'No'}<br/>
+              User: {user ? `${user.email} (${user.name})` : 'None'}<br/>
+              User ID: {(user as any)?.id || 'None'}
+            </div>
+
             {user ? (
               <Elements stripe={stripePromise}>
                 <PaymentForm
                   postId={post._id}
                   postTitle={post.title}
                   price={post.price}
+                  postSlug={post.slug.current}
                   onSuccess={handlePaymentSuccess}
                 />
               </Elements>

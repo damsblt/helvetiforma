@@ -19,8 +19,9 @@ export const navigationConfig: NavigationConfig = {
   main: [
     { name: 'Accueil', href: '/' },
     { name: 'Concept', href: '/concept' },
-    { name: 'Coin des docs', href: '/coins-des-docs' },
     { name: 'Sessions', href: '/sessions' },
+    { name: 'Coin des docs', href: '/coins-des-docs' },
+    { name: 'Contact', href: '/contact' },
   ],
   footer: [
     {

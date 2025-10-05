@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { workingAuthOptions } from '@/lib/auth-working'
 
 export async function GET() {
   try {
     console.log('🔍 Testing NextAuth server-side session...')
     
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(workingAuthOptions)
     
     return NextResponse.json({
       success: true,

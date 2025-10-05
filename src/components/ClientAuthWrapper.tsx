@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getSupabaseClient } from '@/lib/supabase'
+import { useSession } from 'next-auth/react'
 import PaymentButton from './PaymentButton'
+import { useSearchParams } from 'next/navigation'
 
 interface ClientAuthWrapperProps {
   postId: string
@@ -21,30 +22,25 @@ export default function ClientAuthWrapper({
   isPremium, 
   children 
 }: ClientAuthWrapperProps) {
-  const supabase = getSupabaseClient()
-  const [user, setUser] = useState<any>(null)
+  const { data: session, status } = useSession()
+  const [hasPurchased, setHasPurchased] = useState(false)
   const [loading, setLoading] = useState(true)
+  const searchParams = useSearchParams()
+  const paymentSuccess = searchParams.get('payment') === 'success'
+  const user = session?.user
 
   useEffect(() => {
-    // Récupérer la session actuelle
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user || null)
-      setLoading(false)
+    setLoading(status === 'loading')
+  }, [status])
+
+  // Auto-refresh when payment success is detected
+  useEffect(() => {
+    if (paymentSuccess && user) {
+      console.log('🔍 Payment success detected in ClientAuthWrapper, refreshing...')
+      // Force re-render by updating state
+      setHasPurchased(true)
     }
-
-    getSession()
-
-    // Écouter les changements d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user || null)
-        setLoading(false)
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [])
+  }, [paymentSuccess, user])
 
   // Afficher le contenu avec la logique d'authentification côté client
   if (loading) {
@@ -58,14 +54,14 @@ export default function ClientAuthWrapper({
   const hasAccess = 
     accessLevel === 'public' || 
     (accessLevel === 'members' && user) ||
-    (accessLevel === 'premium' && user) // Pour l'instant, on considère que si l'utilisateur est connecté, il peut acheter
+    (accessLevel === 'premium' && (user && hasPurchased))
 
   return (
     <>
       {children}
       
-      {/* Section de paiement pour les utilisateurs connectés */}
-      {isPremium && user && !hasAccess && (
+      {/* Section de paiement pour les utilisateurs non connectés ou sans achat */}
+      {isPremium && !hasAccess && (
         <div className="mt-16 p-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-2xl border-2 border-blue-200/50 dark:border-blue-700/50 shadow-lg">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-lg">

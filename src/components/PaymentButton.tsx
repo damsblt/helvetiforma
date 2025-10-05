@@ -1,31 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { getSupabaseClient } from '@/lib/supabase'
+import { useSession } from 'next-auth/react'
 
 interface PaymentButtonProps {
   postId: string
   postTitle: string
+  postSlug?: string
   price: number
   className?: string
   onSuccess?: () => void
 }
 
 
-export default function PaymentButton({ postId, postTitle, price, className = '', onSuccess }: PaymentButtonProps) {
+export default function PaymentButton({ postId, postTitle, postSlug, price, className = '', onSuccess }: PaymentButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const supabase = getSupabaseClient()
+  const { data: session } = useSession()
 
   const handlePayment = async () => {
     setIsLoading(true)
 
     try {
-      // Récupérer l'utilisateur actuel
-      const { data: { session } } = await supabase.auth.getSession()
-      
       if (!session?.user) {
-        alert('Vous devez être connecté pour effectuer un achat')
-        setIsLoading(false)
+        // Rediriger vers la page de registration avec callback vers checkout
+        window.location.href = `/register?callbackUrl=${encodeURIComponent(`/checkout/${postId}`)}`
         return
       }
 
@@ -37,7 +35,9 @@ export default function PaymentButton({ postId, postTitle, price, className = ''
       }
     } catch (error) {
       console.error('Erreur:', error)
-      alert('Une erreur est survenue lors du paiement')
+      // Afficher l'erreur dans la console et rediriger vers la page de contact
+      console.error('Erreur de paiement:', error)
+      window.location.href = `/contact?subject=Erreur de paiement&message=Une erreur est survenue lors du paiement. Veuillez nous contacter pour obtenir de l'aide.`
     } finally {
       setIsLoading(false)
     }

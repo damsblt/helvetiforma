@@ -98,19 +98,19 @@ Si l'invitation automatique échoue → Redirection vers `/contact` avec pré-re
 
 ```mermaid
 flowchart TD
-    A[Utilisateur clique "Demander l'accès"] --> B[Saisie email + nom]
-    B --> C{Compte Microsoft personnel ?}
-    C -->|Oui| D[Dialog de choix]
-    C -->|Non| E[Invitation guest standard]
-    D -->|OUI| F[Auto-inscription]
-    D -->|NON| G[Formulaire de contact]
-    F --> H{Succès ?}
-    H -->|Oui| I[Email Teams avec bouton]
+    A["Utilisateur clique Demander l'accès"] --> B["Saisie email + nom"]
+    B --> C{"Compte Microsoft personnel ?"}
+    C -->|Oui| D["Dialog de choix"]
+    C -->|Non| E["Invitation guest standard"]
+    D -->|OUI| F["Auto-inscription"]
+    D -->|NON| G["Formulaire de contact"]
+    F --> H{"Succès ?"}
+    H -->|Oui| I["Email Teams avec bouton"]
     H -->|Non| G
-    E --> J{Succès ?}
+    E --> J{"Succès ?"}
     J -->|Oui| I
     J -->|Non| G
-    G --> K[Contact manuel]
+    G --> K["Contact manuel"]
 ```
 
 ## 🎯 Avantages de cette Solution

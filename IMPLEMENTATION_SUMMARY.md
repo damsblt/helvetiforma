@@ -138,17 +138,17 @@ sanity/
 #### **Avant**
 ```mermaid
 graph LR
-  A[helvetiforma.ch] --> B[Clic sur carte]
-  B --> C[❌ api.helvetiforma.ch]
-  C --> D[Utilisateur quitte le site]
+  A["helvetiforma.ch"] --> B["Clic sur carte"]
+  B --> C["❌ api.helvetiforma.ch"]
+  C --> D["Utilisateur quitte le site"]
 ```
 
 #### **Après**
 ```mermaid
 graph LR
-  A[helvetiforma.ch] --> B[Clic sur carte]
-  B --> C[✅ helvetiforma.ch/docs/slug]
-  C --> D[Utilisateur reste sur le site]
+  A["helvetiforma.ch"] --> B["Clic sur carte"]
+  B --> C["✅ helvetiforma.ch/docs/slug"]
+  C --> D["Utilisateur reste sur le site"]
 ```
 
 ---

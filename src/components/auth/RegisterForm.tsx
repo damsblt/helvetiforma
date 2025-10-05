@@ -3,17 +3,13 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 interface RegisterFormProps {
   onSuccess?: () => void
+  callbackUrl?: string
 }
 
-export default function RegisterForm({ onSuccess }: RegisterFormProps) {
+export default function RegisterForm({ onSuccess, callbackUrl }: RegisterFormProps) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -52,44 +48,34 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            first_name: formData.first_name,
-            last_name: formData.last_name,
-          },
+      // Create user in Sanity instead of Supabase
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+        }),
       })
 
-      if (error) {
-        setError(error.message)
-      } else if (data.user) {
-        // Vérifier si l'email doit être confirmé
-        if (data.user.email_confirmed_at) {
-          // Email déjà confirmé, rediriger directement
-          setSuccess(true)
-          if (onSuccess) {
-            onSuccess()
-          } else {
-            // Rediriger vers la page de connexion
-            setTimeout(() => {
-              window.location.href = '/login?message=inscription-reussie'
-            }, 2000)
-          }
+      const result = await response.json()
+
+      if (result.success) {
+        // Registration successful, redirect to checkout
+        if (onSuccess) {
+          onSuccess()
+        } else if (callbackUrl) {
+          // Rediriger vers l'URL de callback (checkout page)
+          window.location.href = callbackUrl
         } else {
-          // Email à confirmer
           setSuccess(true)
-          if (onSuccess) {
-            onSuccess()
-          } else {
-            // Rediriger vers la page de connexion avec message
-            setTimeout(() => {
-              window.location.href = '/login?message=confirmer-email'
-            }, 2000)
-          }
         }
+      } else {
+        setError(result.error || 'Une erreur est survenue lors de l\'inscription')
       }
     } catch (error) {
       setError('Une erreur est survenue lors de l\'inscription')
@@ -103,25 +89,40 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="text-center p-6"
+        className="text-center p-8 bg-green-50 dark:bg-green-900/20 rounded-xl border-2 border-green-200 dark:border-green-800"
       >
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-20 h-20 bg-green-100 dark:bg-green-800 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-10 h-10 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          Inscription réussie !
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          🎉 Inscription réussie !
         </h3>
-        <p className="text-gray-600 dark:text-white mb-4">
-          Vérifiez votre email pour confirmer votre compte.
+        <p className="text-lg text-gray-700 dark:text-gray-300 mb-6 max-w-md mx-auto">
+          Un email de confirmation a été envoyé à votre adresse email. 
+          Vérifiez votre boîte de réception et cliquez sur le lien pour activer votre compte.
         </p>
-        <Link
-          href="/login"
-          className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-        >
-          Se connecter
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-lg hover:shadow-xl"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            Se connecter maintenant
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Retour à l'accueil
+          </Link>
+        </div>
       </motion.div>
     )
   }
@@ -251,7 +252,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         <p className="text-sm text-gray-600 dark:text-white">
           Déjà un compte ?{' '}
           <Link
-            href="/login"
+            href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"}
             className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
           >
             Se connecter

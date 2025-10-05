@@ -140,17 +140,17 @@ MICROSOFT_CALENDAR_USER=damien@helvetiforma.onmicrosoft.com
 
 ```mermaid
 flowchart TD
-    A[Utilisateur sur /calendrier] --> B{Connecté ?}
-    B -->|Non| C[Redirection vers /login]
-    B -->|Oui| D{Compte Microsoft personnel ?}
-    D -->|Non| E[Inscription manuelle]
-    D -->|Oui| F[Auto-inscription]
-    F --> G[Ajout à l'événement Teams]
-    G --> H[Envoi invitation calendrier]
-    H --> I[Confirmation utilisateur]
-    E --> J[Invitation guest Azure AD]
-    J --> K[Ajout à l'événement]
-    K --> L[Email d'invitation]
+    A["Utilisateur sur /calendrier"] --> B{"Connecté ?"}
+    B -->|Non| C["Redirection vers /login"]
+    B -->|Oui| D{"Compte Microsoft personnel ?"}
+    D -->|Non| E["Inscription manuelle"]
+    D -->|Oui| F["Auto-inscription"]
+    F --> G["Ajout à l'événement Teams"]
+    G --> H["Envoi invitation calendrier"]
+    H --> I["Confirmation utilisateur"]
+    E --> J["Invitation guest Azure AD"]
+    J --> K["Ajout à l'événement"]
+    K --> L["Email d'invitation"]
 ```
 
 ## 📊 Avantages

@@ -10,20 +10,58 @@ export const workingAuthOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log('🔍 Credentials received:', { email: credentials?.email })
+        console.log('🔍 AUTHORIZE CALLED - Credentials received:', { 
+          email: credentials?.email,
+          hasPassword: !!credentials?.password,
+          timestamp: new Date().toISOString()
+        })
         
-        // For testing, accept any credentials
-        if (credentials?.email) {
-          const user = {
-            id: "1",
-            email: credentials.email,
-            name: "Test User"
-          }
-          console.log('🔍 User authorized:', user)
-          return user
+        if (!credentials?.email || !credentials?.password) {
+          console.log('🔍 Missing credentials - returning null')
+          return null
         }
-        console.log('🔍 No credentials provided')
-        return null
+
+        try {
+          console.log('🔍 Starting Sanity query for user:', credentials.email)
+          
+          // Check if user exists in Sanity
+          const { sanityClient } = await import('@/lib/sanity')
+          
+          const users = await sanityClient.fetch(
+            `*[_type == "user" && email == $email]`,
+            { 
+              email: credentials.email
+            }
+          )
+
+          console.log('🔍 Sanity query result:', { 
+            userCount: users.length,
+            users: users.map((u: any) => ({ id: u._id, email: u.email, hasPassword: !!u.password }))
+          })
+
+          if (users.length > 0) {
+            const user = users[0]
+            
+            // Check password
+            if (user.password === credentials.password) {
+              console.log('🔍 Password match - User authorized:', { id: user._id, email: user.email })
+              return {
+                id: user._id,
+                email: user.email,
+                name: user.name || user.email
+              }
+            } else {
+              console.log('🔍 Password mismatch for user:', user.email)
+              return null
+            }
+          }
+
+          console.log('🔍 No user found with email:', credentials.email)
+          return null
+        } catch (error) {
+          console.error('🔍 Auth error:', error)
+          return null
+        }
       }
     }),
   ],

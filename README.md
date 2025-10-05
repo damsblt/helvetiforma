@@ -356,38 +356,38 @@ export default function PortableText({ content }: { content: PortableTextBlock[]
 ### 1. Parcours Cours Payants (TutorLMS)
 ```mermaid
 flowchart TD
-    A[Découverte /formations] --> B[Sélection cours]
-    B --> C[Page détail cours]
-    C --> D{Cours gratuit ?}
-    D -->|Oui| E[Inscription directe]
-    D -->|Non| F[Redirection WordPress]
-    F --> G[Paiement TutorLMS]
-    G --> H[Retour Next.js avec succès]
-    E --> I[Accès tableau de bord]
+    A["Découverte /formations"] --> B["Sélection cours"]
+    B --> C["Page détail cours"]
+    C --> D{"Cours gratuit ?"}
+    D -->|Oui| E["Inscription directe"]
+    D -->|Non| F["Redirection WordPress"]
+    F --> G["Paiement TutorLMS"]
+    G --> H["Retour Next.js avec succès"]
+    E --> I["Accès tableau de bord"]
     H --> I
 ```
 
 ### 2. Parcours Webinaires Gratuits (Teams)
 ```mermaid
 flowchart TD
-    A[Découverte /calendrier] --> B[Sélection webinaire]
-    B --> C[Auth Microsoft requis ?]
-    C -->|Non connecté| D[Login Microsoft]
-    C -->|Connecté| E[Inscription directe]
+    A["Découverte /calendrier"] --> B["Sélection webinaire"]
+    B --> C{"Auth Microsoft requis ?"}
+    C -->|Non connecté| D["Login Microsoft"]
+    C -->|Connecté| E["Inscription directe"]
     D --> E
-    E --> F[Invitation Teams automatique]
-    F --> G[Confirmation inscription]
+    E --> F["Invitation Teams automatique"]
+    F --> G["Confirmation inscription"]
 ```
 
 ### 3. Gestion de Contenu (Admin)
 ```mermaid
 flowchart TD
-    A[Login Admin] --> B[Dashboard contenu]
-    B --> C[Sélection page/formation]
-    C --> D[Éditeur Markdown WYSIWYG]
-    D --> E[Prévisualisation temps réel]
-    E --> F[Sauvegarde auto + Git commit]
-    F --> G[Déploiement Vercel automatique]
+    A["Login Admin"] --> B["Dashboard contenu"]
+    B --> C["Sélection page/formation"]
+    C --> D["Éditeur Markdown WYSIWYG"]
+    D --> E["Prévisualisation temps réel"]
+    E --> F["Sauvegarde auto + Git commit"]
+    F --> G["Déploiement Vercel automatique"]
 ```
 
 ---

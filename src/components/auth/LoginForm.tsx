@@ -38,6 +38,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setError('')
 
     try {
+      // Use NextAuth signIn instead of Supabase
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
@@ -245,7 +246,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         <p className="text-sm text-gray-600 dark:text-white">
           Pas encore de compte ?{' '}
           <Link
-            href="/register"
+            href={searchParams.get('callbackUrl') ? `/register?callbackUrl=${encodeURIComponent(searchParams.get('callbackUrl')!)}` : "/register"}
             className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
           >
             S'inscrire

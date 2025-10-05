@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { portableTextComponents } from "@/components/ui/PortableTextComponents";
 import { checkUserPurchaseWithSession } from "@/lib/purchases";
 import PaymentButton from "@/components/PaymentButton";
+import PurchaseSuccessMessage from "@/components/PurchaseSuccessMessage";
 import { getServerSession } from 'next-auth';
 import { noEmailAuthOptions } from '@/lib/auth-no-email';
 import type { Metadata } from "next";
@@ -130,6 +131,7 @@ export default async function PostPage({
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <PurchaseSuccessMessage />
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-indigo-800/90"></div>
@@ -246,6 +248,7 @@ export default async function PostPage({
                     <PaymentButton
                       postId={post._id}
                       postTitle={post.title}
+                      postSlug={post.slug.current}
                       price={post.price}
                       className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     />
