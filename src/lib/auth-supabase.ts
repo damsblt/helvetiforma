@@ -204,12 +204,12 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
  */
 export async function updateProfile(
   userId: string,
-  updates: Partial<Pick<AuthUser, 'first_name' | 'last_name' | 'avatar_url'>>
+  updates: Partial<Pick<Profile, 'first_name' | 'last_name' | 'avatar_url'>>
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabase
       .from('profiles')
-      .update(updates)
+      .update(updates as any)
       .eq('id', userId)
 
     if (error) {
