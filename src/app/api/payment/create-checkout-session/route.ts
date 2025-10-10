@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe, formatAmountForStripe } from '@/lib/stripe'
-import { getCurrentUser } from '@/lib/auth-supabase'
+import { getServerSession } from 'next-auth'
+import { workingAuthOptions } from '@/lib/auth-working'
 import { sanityClient } from '@/lib/sanity'
 
 export async function POST(request: NextRequest) {

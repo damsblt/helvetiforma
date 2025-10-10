@@ -16,13 +16,10 @@ export default function CalendrierClient() {
 
   useEffect(() => {
     fetchWebinars()
-    getSession()
+    // Removed getSession() call - using NextAuth instead
   }, [])
 
-  const getSession = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    setSession(session)
-  }
+  // Removed Supabase session handling - using NextAuth instead
 
   const fetchWebinars = async () => {
     try {
