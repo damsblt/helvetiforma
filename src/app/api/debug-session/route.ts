@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const debugInfo: any = {
       hasSession: !!session,
       user: session?.user ? {
-        id: session.user.id,
+        id: (session.user as any).id || 'no-id',
         email: session.user.email,
         name: session.user.name,
         image: session.user.image
@@ -31,7 +31,8 @@ export async function GET(request: NextRequest) {
     // If user is logged in, check their purchases
     if (session?.user) {
       const testPostId = '040b76b6-4718-4b2c-a11f-c6277c9f937c' // test-2 post
-      const hasPurchased = await checkUserPurchase(session.user.id, testPostId)
+      const userId = (session.user as any).id
+      const hasPurchased = await checkUserPurchase(userId, testPostId)
       
       // Also check all purchases for this user
       const { createClient } = require('@sanity/client')
@@ -45,13 +46,13 @@ export async function GET(request: NextRequest) {
       
       const allUserPurchases = await sanityClient.fetch(
         `*[_type == "purchase" && userId == $userId] | order(purchasedAt desc)`,
-        { userId: session.user.id }
+        { userId: userId }
       )
       
       debugInfo.purchaseCheck = {
         postId: testPostId,
         hasPurchased,
-        userId: session.user.id,
+        userId: userId,
         allPurchases: allUserPurchases.map((p: any) => ({
           id: p._id,
           postId: p.postId,
