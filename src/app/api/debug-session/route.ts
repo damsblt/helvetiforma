@@ -1,25 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseClient } from '@/lib/supabase'
+import { getServerSession } from 'next-auth'
+import { workingAuthOptions } from '@/lib/auth-working'
 import { checkUserPurchase } from '@/lib/purchases'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = getSupabaseClient()
+    // Get NextAuth session
+    const session = await getServerSession(workingAuthOptions)
     
     // Try to get session from cookies first
     const authHeader = request.headers.get('authorization')
     const cookieHeader = request.headers.get('cookie')
-    
-    const { data: { session } } = await supabase.auth.getSession()
     
     const debugInfo: any = {
       hasSession: !!session,
       user: session?.user ? {
         id: session.user.id,
         email: session.user.email,
-        created_at: session.user.created_at,
-        raw_user_meta_data: session.user.user_metadata,
-        app_metadata: session.user.app_metadata
+        name: session.user.name,
+        image: session.user.image
       } : null,
       headers: {
         authorization: authHeader ? 'present' : 'missing',
