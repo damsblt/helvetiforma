@@ -207,9 +207,15 @@ export async function updateProfile(
   updates: Partial<Pick<Profile, 'first_name' | 'last_name' | 'avatar_url'>>
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Créer un objet avec les champs à mettre à jour
+    const updateData: Record<string, any> = {}
+    if (updates.first_name !== undefined) updateData.first_name = updates.first_name
+    if (updates.last_name !== undefined) updateData.last_name = updates.last_name
+    if (updates.avatar_url !== undefined) updateData.avatar_url = updates.avatar_url
+
     const { error } = await supabase
       .from('profiles')
-      .update(updates as any)
+      .update(updateData)
       .eq('id', userId)
 
     if (error) {
