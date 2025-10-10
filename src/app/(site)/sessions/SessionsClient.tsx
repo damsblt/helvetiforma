@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { getSupabaseClient } from '@/lib/supabase'
+// Removed Supabase import - using NextAuth instead
 import { TeamsWebinar } from '@/types/microsoft'
 
 export default function CalendrierClient() {
-  const supabase = getSupabaseClient()
+  // Removed Supabase client - using NextAuth instead
   const [session, setSession] = useState<any>(null)
   const [webinars, setWebinars] = useState<TeamsWebinar[]>([])
   const [loading, setLoading] = useState(true)

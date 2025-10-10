@@ -1,36 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export default function SystemStatus() {
   const [status, setStatus] = useState({
-    supabase: 'checking',
+    nextauth: 'checking',
     stripe: 'checking',
     sanity: 'checking'
   })
 
   useEffect(() => {
-    // Test Supabase
-    const testSupabase = async () => {
-      try {
-        // Vérifier si on est en mode démo
-        if (supabaseUrl.includes('placeholder')) {
-          setStatus(prev => ({ ...prev, supabase: 'demo' }))
-          return
-        }
-        
-        const { data, error } = await supabase.from('profiles').select('count').limit(1)
-        if (error) throw error
-        setStatus(prev => ({ ...prev, supabase: 'connected' }))
-      } catch (error) {
-        console.error('Supabase error:', error)
-        setStatus(prev => ({ ...prev, supabase: 'error' }))
-      }
+    // Test NextAuth
+    const testNextAuth = () => {
+      const hasNextAuthSecret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET
+      setStatus(prev => ({ ...prev, nextauth: hasNextAuthSecret ? 'configured' : 'not-configured' }))
     }
 
     // Test Stripe (vérification des variables d'environnement)
@@ -47,7 +30,7 @@ export default function SystemStatus() {
       setStatus(prev => ({ ...prev, sanity: hasSanityConfig ? 'configured' : 'not-configured' }))
     }
 
-    testSupabase()
+    testNextAuth()
     testStripe()
     testSanity()
   }, [])
@@ -94,9 +77,9 @@ export default function SystemStatus() {
       
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-600 dark:text-white">Supabase</span>
-          <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(status.supabase)}`}>
-            {getStatusIcon(status.supabase)} {status.supabase}
+          <span className="text-xs text-gray-600 dark:text-white">NextAuth</span>
+          <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(status.nextauth)}`}>
+            {getStatusIcon(status.nextauth)} {status.nextauth}
           </span>
         </div>
         
@@ -117,9 +100,7 @@ export default function SystemStatus() {
 
       <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
         <p className="text-xs text-gray-500 dark:text-white">
-          {status.supabase === 'demo'
-            ? 'Mode démo actif 🎭'
-            : status.supabase === 'connected' && status.stripe === 'configured' && status.sanity === 'configured'
+          {status.nextauth === 'configured' && status.stripe === 'configured' && status.sanity === 'configured'
             ? 'Système prêt ✅'
             : 'Configuration requise ⚠️'
           }

@@ -7,7 +7,7 @@ export function middleware(req: NextRequest) {
   // Only protect admin routes - calendar is now public
   if (pathname.startsWith('/admin')) {
     // For now, allow access to admin routes
-    // In production, you might want to add Supabase auth check here
+    // In production, you might want to add NextAuth check here
     return NextResponse.next()
   }
 
