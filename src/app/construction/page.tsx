@@ -13,13 +13,13 @@ export default function ConstructionPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  // Auto-authenticate in development/localhost
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-      sessionStorage.setItem('dev-auth', 'true')
-      router.push('/')
-    }
-  }, [router])
+  // Auto-authenticate in development/localhost - DISABLED
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  //     sessionStorage.setItem('dev-auth', 'true')
+  //     router.push('/')
+  //   }
+  // }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

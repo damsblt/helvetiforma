@@ -16,6 +16,7 @@ Create these files in your project root:
 MICROSOFT_CLIENT_ID=your-microsoft-client-id
 MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
 MICROSOFT_TENANT_ID=your-microsoft-tenant-id
+MICROSOFT_CALENDAR_USER=damien@helvetiforma.onmicrosoft.com
 
 # NextAuth.js Configuration
 AUTH_SECRET=your-auth-secret-here
@@ -45,6 +46,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 MICROSOFT_CLIENT_ID=your-microsoft-client-id
 MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
 MICROSOFT_TENANT_ID=your-microsoft-tenant-id
+MICROSOFT_CALENDAR_USER=damien@helvetiforma.onmicrosoft.com
 
 # NextAuth.js Configuration
 AUTH_SECRET=your-auth-secret-here
@@ -86,6 +88,7 @@ NEXT_PUBLIC_SITE_URL=https://helvetiforma.vercel.app
 - **MICROSOFT_CLIENT_ID**: Azure AD App Registration Client ID
 - **MICROSOFT_CLIENT_SECRET**: Azure AD App Registration Client Secret
 - **MICROSOFT_TENANT_ID**: Azure AD Tenant ID
+- **MICROSOFT_CALENDAR_USER**: Microsoft account email for calendar access (default: damien@helvetiforma.onmicrosoft.com)
 - **AUTH_SECRET**: NextAuth.js secret key (generate with openssl)
 - **AUTH_URL**: Base URL for authentication (must match your domain)
 - **NEXTAUTH_URL**: Public URL for NextAuth.js (must match your domain)

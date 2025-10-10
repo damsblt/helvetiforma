@@ -16,7 +16,10 @@ if (!dataset || dataset.length === 0) {
   throw new Error('Invalid Sanity dataset name. Must contain only lowercase letters, numbers, underscores, and dashes.')
 }
 
-console.log('Sanity configuration:', { projectId, dataset })
+// Log Sanity configuration only in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('Sanity configuration:', { projectId, dataset })
+}
 
 // Sanity client configuration
 export const sanityConfig = {

@@ -41,10 +41,12 @@ export async function POST(request: NextRequest) {
     })
 
     // Create transporter
+    const port = parseInt(process.env.EMAIL_SERVER_PORT || process.env.SMTP_PORT || '587')
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_SERVER_HOST || process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.EMAIL_SERVER_PORT || process.env.SMTP_PORT || '587'),
-      secure: process.env.EMAIL_SERVER_PORT === '465' || process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      port: port,
+      secure: port === 465, // true for 465, false for other ports
+      requireTLS: port !== 465, // requireTLS for non-SSL ports
       auth: {
         user: process.env.EMAIL_SERVER_USER || process.env.SMTP_USER,
         pass: process.env.EMAIL_SERVER_PASSWORD || process.env.SMTP_PASS,

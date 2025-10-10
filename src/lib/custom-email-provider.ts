@@ -8,7 +8,8 @@ export function CustomEmailProvider() {
     server: {
       host: process.env.EMAIL_SERVER_HOST,
       port: parseInt(process.env.EMAIL_SERVER_PORT || '587'),
-      secure: false,
+      secure: process.env.EMAIL_SERVER_PORT === '465', // true for 465, false for other ports
+      requireTLS: process.env.EMAIL_SERVER_PORT !== '465', // requireTLS for non-SSL ports
       auth: {
         user: process.env.EMAIL_SERVER_USER,
         pass: process.env.EMAIL_SERVER_PASSWORD,

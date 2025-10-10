@@ -83,9 +83,9 @@ export async function getTeamsWebinars(params?: {
     const startTime = params?.startDate?.toISOString() || today.toISOString()
     const endTime = params?.endDate?.toISOString() || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
-    // Use specific user's calendar (info@helvetiforma.onmicrosoft.com)
+    // Use specific user's calendar (damien@helvetiforma.onmicrosoft.com)
     // When using application permissions, use /users/{userId}/calendar/events
-    const calendarUser = 'info@helvetiforma.onmicrosoft.com'
+    const calendarUser = 'damien@helvetiforma.onmicrosoft.com'
     
     const events = await graphClient
       .api(`/users/${calendarUser}/calendar/events`)
@@ -152,8 +152,8 @@ export async function getTeamsWebinar(id: string, accessToken?: string): Promise
 
     const graphClient = createGraphClient(accessToken)
 
-    // Use specific user's calendar (info@helvetiforma.onmicrosoft.com)
-    const calendarUser = 'info@helvetiforma.onmicrosoft.com'
+    // Use specific user's calendar (damien@helvetiforma.onmicrosoft.com)
+    const calendarUser = 'damien@helvetiforma.onmicrosoft.com'
     
     const event = await graphClient
       .api(`/users/${calendarUser}/calendar/events/${id}`)
@@ -559,7 +559,7 @@ export async function autoRegisterMicrosoftUser(
 ): Promise<{ success: boolean; message: string; meetingUrl?: string }> {
   try {
     const graphClient = createGraphClient(accessToken)
-    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'info@helvetiforma.onmicrosoft.com'
+    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'damien@helvetiforma.onmicrosoft.com'
 
     // Get current event
     const event = await graphClient
@@ -662,7 +662,7 @@ export async function addGuestToEvent(
 
     const { access_token } = await tokenResponse.json()
     const graphClient = createGraphClient(access_token)
-    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'info@helvetiforma.onmicrosoft.com'
+    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'damien@helvetiforma.onmicrosoft.com'
 
     // Get current event
     const event = await graphClient

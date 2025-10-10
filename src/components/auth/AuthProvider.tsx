@@ -1,12 +1,11 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseClient } from '@/lib/supabase'
+import { useSessionCache } from '@/hooks/useSessionCache'
 import type { User } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabase = getSupabaseClient()
 
 interface AuthUser {
   id: string
@@ -37,34 +36,72 @@ const AuthContext = createContext<AuthContextType>({
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const { getCachedSession, setCachedSession, clearCachedSession } = useSessionCache()
+
+  // Fonction helper pour récupérer le profil utilisateur avec cache
+  const fetchUserProfile = async (userId: string) => {
+    const cacheKey = `profile_${userId}`
+    
+    // Vérifier le cache d'abord
+    const cachedProfile = getCachedSession(cacheKey)
+    if (cachedProfile) {
+      return cachedProfile
+    }
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      const profileData = profile as Profile | null
+      
+      // Mettre en cache le profil
+      if (profileData) {
+        setCachedSession(cacheKey, profileData, 5 * 60 * 1000) // 5 minutes
+      }
+
+      return profileData
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+      return null
+    }
+  }
+
+  // Fonction helper pour créer l'objet utilisateur
+  const createUserObject = (sessionUser: any, profileData: Profile | null) => ({
+    id: sessionUser.id,
+    email: sessionUser.email!,
+    first_name: profileData?.first_name,
+    last_name: profileData?.last_name,
+    avatar_url: profileData?.avatar_url,
+  })
 
   useEffect(() => {
+    let isMounted = true
+
     // Récupérer la session actuelle
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (session?.user) {
-        // Récupérer le profil complet
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-
-        const profileData = profile as Profile | null
-
-        setUser({
-          id: session.user.id,
-          email: session.user.email!,
-          first_name: profileData?.first_name,
-          last_name: profileData?.last_name,
-          avatar_url: profileData?.avatar_url,
-        })
-      } else {
-        setUser(null)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (isMounted) {
+          if (session?.user) {
+            const profileData = await fetchUserProfile(session.user.id)
+            setUser(createUserObject(session.user, profileData))
+          } else {
+            setUser(null)
+          }
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Error getting session:', error)
+        if (isMounted) {
+          setUser(null)
+          setLoading(false)
+        }
       }
-      
-      setLoading(false)
     }
 
     getSession()
@@ -72,36 +109,35 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     // Écouter les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session?.user) {
-          // Récupérer le profil complet
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
+        if (!isMounted) return
 
-          const profileData = profile as Profile | null
-
-          setUser({
-            id: session.user.id,
-            email: session.user.email!,
-            first_name: profileData?.first_name,
-            last_name: profileData?.last_name,
-            avatar_url: profileData?.avatar_url,
-          })
-        } else {
+        try {
+          if (session?.user) {
+            const profileData = await fetchUserProfile(session.user.id)
+            setUser(createUserObject(session.user, profileData))
+          } else {
+            setUser(null)
+          }
+          setLoading(false)
+        } catch (error) {
+          console.error('Error in auth state change:', error)
           setUser(null)
+          setLoading(false)
         }
-        setLoading(false)
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signOut = async () => {
     await supabase.auth.signOut()
     setUser(null)
+    // Nettoyer le cache lors de la déconnexion
+    clearCachedSession(`profile_${user?.id}`)
   }
 
   return (
