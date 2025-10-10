@@ -4,6 +4,12 @@ import { getSupabaseClient } from './supabase'
 // Utiliser le client Supabase centralisé
 const supabase = getSupabaseClient()
 
+export interface Profile {
+  first_name?: string
+  last_name?: string
+  avatar_url?: string
+}
+
 export interface AuthUser {
   id: string
   email: string
@@ -115,14 +121,16 @@ export async function loginUser(credentials: LoginCredentials): Promise<{
       console.error('Erreur lors de la récupération du profil:', profileError)
     }
 
+    const profileData = profile as Profile | null
+
     return {
       success: true,
       user: {
         id: data.user.id,
         email: data.user.email!,
-        first_name: profile?.first_name,
-        last_name: profile?.last_name,
-        avatar_url: profile?.avatar_url,
+        first_name: profileData?.first_name,
+        last_name: profileData?.last_name,
+        avatar_url: profileData?.avatar_url,
       },
     }
   } catch (error) {
@@ -176,12 +184,14 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       .eq('id', user.id)
       .single()
 
+    const profileData = profile as Profile | null
+
     return {
       id: user.id,
       email: user.email!,
-      first_name: profile?.first_name,
-      last_name: profile?.last_name,
-      avatar_url: profile?.avatar_url,
+      first_name: profileData?.first_name,
+      last_name: profileData?.last_name,
+      avatar_url: profileData?.avatar_url,
     }
   } catch (error) {
     console.error('Erreur lors de la récupération de l\'utilisateur:', error)
