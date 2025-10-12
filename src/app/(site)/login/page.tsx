@@ -24,7 +24,7 @@ export default function LoginPage() {
                 <p className="text-sm font-medium">{message}</p>
               </div>
             )}
-            <LoginForm callbackUrl={callbackUrl} />
+            <LoginForm callbackUrl={callbackUrl || undefined} />
             
             {/* Liens utiles */}
             <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
