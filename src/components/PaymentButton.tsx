@@ -22,8 +22,9 @@ export default function PaymentButton({ postId, postTitle, postSlug, price, clas
 
     try {
       if (!session?.user) {
-        // Rediriger vers la page de registration avec callback vers checkout
-        window.location.href = `/register?callbackUrl=${encodeURIComponent(`/checkout/${postId}`)}`
+        // Rediriger vers la page de login avec callback vers checkout
+        // L'utilisateur pourra s'inscrire ou se connecter selon ses besoins
+        window.location.href = `/login?callbackUrl=${encodeURIComponent(`/checkout/${postId}`)}`
         return
       }
 
