@@ -21,7 +21,7 @@ export default function LoginPage() {
               <div className="text-center space-y-3">
                 <Link
                   href="/"
-                  className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                 >
                   ← Retour à l'accueil
                 </Link>
@@ -29,7 +29,7 @@ export default function LoginPage() {
                   Besoin d'aide ?{' '}
                   <Link
                     href="/contact"
-                    className="text-primary-600 dark:text-primary-400 hover:underline"
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     Contactez-nous
                   </Link>

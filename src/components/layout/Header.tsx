@@ -113,7 +113,7 @@ export default function Header() {
             ) : (
               <Link
                 href="/login"
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
               >
                 Connexion
               </Link>
@@ -193,7 +193,7 @@ export default function Header() {
                   ) : (
                     <Link
                       href="/login"
-                      className="block bg-primary text-primary-foreground px-4 py-3 rounded-lg text-base font-medium hover:bg-primary/90 transition-colors text-center"
+                      className="block bg-blue-600 text-white px-4 py-3 rounded-lg text-base font-medium hover:bg-blue-700 transition-colors text-center"
                     >
                       Connexion
                     </Link>

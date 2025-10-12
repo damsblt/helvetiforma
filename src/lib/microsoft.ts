@@ -559,7 +559,7 @@ export async function autoRegisterMicrosoftUser(
 ): Promise<{ success: boolean; message: string; meetingUrl?: string }> {
   try {
     const graphClient = createGraphClient(accessToken)
-    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'damien@helvetiforma.onmicrosoft.com'
+    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'info@helvetiforma.ch'
 
     // Get current event
     const event = await graphClient
@@ -662,7 +662,7 @@ export async function addGuestToEvent(
 
     const { access_token } = await tokenResponse.json()
     const graphClient = createGraphClient(access_token)
-    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'damien@helvetiforma.onmicrosoft.com'
+    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'info@helvetiforma.ch'
 
     // Get current event
     const event = await graphClient

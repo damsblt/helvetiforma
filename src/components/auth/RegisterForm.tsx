@@ -161,7 +161,7 @@ export default function RegisterForm({ onSuccess, callbackUrl }: RegisterFormPro
             name="first_name"
             value={formData.first_name}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             placeholder="Votre prénom"
           />
         </div>
@@ -175,7 +175,7 @@ export default function RegisterForm({ onSuccess, callbackUrl }: RegisterFormPro
             name="last_name"
             value={formData.last_name}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             placeholder="Votre nom"
           />
         </div>
@@ -233,7 +233,7 @@ export default function RegisterForm({ onSuccess, callbackUrl }: RegisterFormPro
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full flex items-center justify-center px-4 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors"
+        className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors"
       >
         {isLoading ? (
           <>
@@ -253,7 +253,7 @@ export default function RegisterForm({ onSuccess, callbackUrl }: RegisterFormPro
           Déjà un compte ?{' '}
           <Link
             href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"}
-            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
           >
             Se connecter
           </Link>

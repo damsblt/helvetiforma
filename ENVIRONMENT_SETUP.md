@@ -16,7 +16,7 @@ Create these files in your project root:
 MICROSOFT_CLIENT_ID=your-microsoft-client-id
 MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
 MICROSOFT_TENANT_ID=your-microsoft-tenant-id
-MICROSOFT_CALENDAR_USER=damien@helvetiforma.onmicrosoft.com
+MICROSOFT_CALENDAR_USER=info@helvetiforma.ch
 
 # NextAuth.js Configuration
 AUTH_SECRET=your-auth-secret-here
@@ -46,7 +46,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 MICROSOFT_CLIENT_ID=your-microsoft-client-id
 MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
 MICROSOFT_TENANT_ID=your-microsoft-tenant-id
-MICROSOFT_CALENDAR_USER=damien@helvetiforma.onmicrosoft.com
+MICROSOFT_CALENDAR_USER=info@helvetiforma.ch
 
 # NextAuth.js Configuration
 AUTH_SECRET=your-auth-secret-here

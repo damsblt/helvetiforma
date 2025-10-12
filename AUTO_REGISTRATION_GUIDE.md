@@ -94,7 +94,7 @@ export async function autoRegisterMicrosoftUser(
 MICROSOFT_CLIENT_ID=your-client-id
 MICROSOFT_CLIENT_SECRET=your-client-secret
 MICROSOFT_TENANT_ID=your-tenant-id
-MICROSOFT_CALENDAR_USER=damien@helvetiforma.onmicrosoft.com
+MICROSOFT_CALENDAR_USER=info@helvetiforma.ch
 ```
 
 ### **Permissions Azure AD**

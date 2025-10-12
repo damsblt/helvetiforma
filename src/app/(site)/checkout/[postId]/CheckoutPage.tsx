@@ -108,9 +108,9 @@ function PaymentForm({ postId, postTitle, price, postSlug, onSuccess }: { postId
                 style: {
                   base: {
                     fontSize: '16px',
-                    color: '#ffffff',
+                    color: '#1f2937',
                     '::placeholder': {
-                      color: '#aab7c4',
+                      color: '#6b7280',
                     },
                   },
                 },
