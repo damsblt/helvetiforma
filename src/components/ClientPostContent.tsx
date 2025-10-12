@@ -73,9 +73,18 @@ export default function ClientPostContent({
         // Start the retry process
         checkPurchaseWithRetry()
       } else {
-        // User not logged in but payment success - show message to log in
-        console.log('🔍 Payment success detected but user not logged in')
+        // User not logged in but payment success - redirect to login with callback
+        console.log('🔍 Payment success detected but user not logged in - redirecting to login')
         setLoading(false)
+        
+        // Redirect to login with callback to this article
+        const currentUrl = window.location.pathname + window.location.search
+        const loginUrl = `/login?message=Paiement réussi ! Veuillez vous connecter pour accéder à votre article.&callbackUrl=${encodeURIComponent(currentUrl)}`
+        
+        // Show a brief message before redirecting
+        setTimeout(() => {
+          window.location.href = loginUrl
+        }, 2000)
       }
     }
   }, [paymentSuccess, (session?.user as any)?.id, post._id])
@@ -89,6 +98,35 @@ export default function ClientPostContent({
   const contentToShow = hasAccess ? post.body : (post.previewContent || post.body)
   const isPremium = accessLevel === 'premium'
   const isMembers = accessLevel === 'members'
+
+  // Show payment success message for non-authenticated users
+  if (paymentSuccess && !session?.user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 text-center">
+            <div className="mb-6">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/20 mb-4">
+                <svg className="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Paiement réussi !
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                Votre paiement a été traité avec succès. Vous allez être redirigé vers la page de connexion pour accéder à votre article.
+              </p>
+            </div>
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-gray-600 dark:text-gray-300">Redirection en cours...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
 
   // Show loading state while session is loading or purchase verification is in progress
