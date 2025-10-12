@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { signIn } from 'next-auth/react'
 
 interface RegisterFormProps {
   onSuccess?: () => void
@@ -48,7 +49,7 @@ export default function RegisterForm({ onSuccess, callbackUrl }: RegisterFormPro
     }
 
     try {
-      // Create user in Sanity instead of Supabase
+      // First, create the user via API
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -65,14 +66,37 @@ export default function RegisterForm({ onSuccess, callbackUrl }: RegisterFormPro
       const result = await response.json()
 
       if (result.success) {
-        // Registration successful, redirect to checkout
-        if (onSuccess) {
-          onSuccess()
-        } else if (callbackUrl) {
-          // Rediriger vers l'URL de callback (checkout page)
-          window.location.href = callbackUrl
+        console.log('✅ User created successfully, attempting login...')
+        
+        // User created successfully, now log them in
+        const signInResult = await signIn('credentials', {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+        })
+
+        console.log('🔍 SignIn result:', signInResult)
+
+        if (signInResult?.ok) {
+          console.log('✅ Login successful, redirecting to checkout...')
+          // Registration and login successful, redirect to checkout
+          if (onSuccess) {
+            onSuccess()
+          } else if (callbackUrl) {
+            // Rediriger vers l'URL de callback (checkout page)
+            window.location.href = callbackUrl
+          } else {
+            setSuccess(true)
+          }
         } else {
-          setSuccess(true)
+          console.error('❌ Login failed:', signInResult)
+          // Compte créé mais connexion échouée, rediriger vers login avec message
+          if (callbackUrl) {
+            // Rediriger vers login avec message de succès et callback
+            window.location.href = `/login?message=Compte créé avec succès ! Veuillez vous connecter pour continuer.&callbackUrl=${encodeURIComponent(callbackUrl)}`
+          } else {
+            setError('Compte créé avec succès ! Veuillez vous connecter pour continuer.')
+          }
         }
       } else {
         setError(result.error || 'Une erreur est survenue lors de l\'inscription')

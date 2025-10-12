@@ -13,6 +13,13 @@ const menuItems = [
     ]
   },
   {
+    category: 'Utilisateurs',
+    items: [
+      { name: 'Gestion des utilisateurs', href: '/admin/users', icon: '👥' },
+      { name: 'Achats et paiements', href: '/admin/purchases', icon: '💳' },
+    ]
+  },
+  {
     category: 'Intégrations',
     items: [
       { name: 'Microsoft Teams', href: '/admin/integrations/teams', icon: '👥' },
@@ -86,16 +93,16 @@ export default function AdminSidebar() {
           <h4 className="font-medium text-foreground mb-3">Statistiques rapides</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Pages</span>
-              <span className="font-medium">5</span>
+              <span className="text-muted-foreground">Utilisateurs</span>
+              <span className="font-medium">-</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Formations</span>
-              <span className="font-medium">12</span>
+              <span className="text-muted-foreground">Achats</span>
+              <span className="font-medium">-</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Images</span>
-              <span className="font-medium">28</span>
+              <span className="text-muted-foreground">Articles</span>
+              <span className="font-medium">-</span>
             </div>
           </div>
         </div>

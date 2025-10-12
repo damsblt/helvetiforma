@@ -8,9 +8,10 @@ import { signIn } from 'next-auth/react'
 
 interface LoginFormProps {
   onSuccess?: () => void
+  callbackUrl?: string
 }
 
-export default function LoginForm({ onSuccess }: LoginFormProps) {
+export default function LoginForm({ onSuccess, callbackUrl }: LoginFormProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
@@ -52,8 +53,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           onSuccess()
         } else {
           // Rediriger vers l'URL de callback ou vers la page des articles
-          const callbackUrl = searchParams.get('callbackUrl') || '/posts'
-          router.push(callbackUrl)
+          const redirectUrl = callbackUrl || searchParams.get('callbackUrl') || '/posts'
+          router.push(redirectUrl)
         }
       }
     } catch (error) {

@@ -3,32 +3,66 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { createClient } from '@sanity/client'
 
 interface DashboardStats {
-  pages: number
-  formations: number
-  images: number
+  users: number
+  purchases: number
+  revenue: number
+  articles: number
   lastUpdate: string
 }
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
-    pages: 0,
-    formations: 0,
-    images: 0,
+    users: 0,
+    purchases: 0,
+    revenue: 0,
+    articles: 0,
     lastUpdate: '',
   })
 
+  // Configuration Sanity
+  const sanityClient = createClient({
+    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'xzzyyelh',
+    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+    token: 'skXgzGEbD5K6lnUI1tltLBqjTHvUakrCiqKQ37zJ2PToinKyf9tI2ZXYK7eebnstQSfKuUMm0c7RYTR1Xkn6RVzSP8z7pfDlDk5b6cyABqcsUFLgFSjAQXjRHD4b85DbhOEetOF53mXLmPtH5btF69AXkDXKSYuw34e6NikU9JSMBPAIdqBI',
+    useCdn: false,
+    apiVersion: '2023-05-03'
+  })
+
   useEffect(() => {
-    // Simuler le chargement des statistiques
     const loadStats = async () => {
-      // En production, ceci sera remplacé par de vrais appels API
-      setStats({
-        pages: 5,
-        formations: 12,
-        images: 28,
-        lastUpdate: new Date().toLocaleDateString('fr-CH'),
-      })
+      try {
+        // Charger les vraies statistiques depuis Sanity
+        const [users, purchases, articles] = await Promise.all([
+          sanityClient.fetch(`*[_type == "user"]`),
+          sanityClient.fetch(`*[_type == "purchase"]`),
+          sanityClient.fetch(`*[_type == "post"]`)
+        ])
+
+        const revenue = purchases
+          .filter((p: any) => p.status === 'completed')
+          .reduce((sum: number, p: any) => sum + p.amount, 0)
+
+        setStats({
+          users: users.length,
+          purchases: purchases.length,
+          revenue: revenue,
+          articles: articles.length,
+          lastUpdate: new Date().toLocaleDateString('fr-CH'),
+        })
+      } catch (error) {
+        console.error('Erreur lors du chargement des statistiques:', error)
+        // Valeurs par défaut en cas d'erreur
+        setStats({
+          users: 0,
+          purchases: 0,
+          revenue: 0,
+          articles: 0,
+          lastUpdate: new Date().toLocaleDateString('fr-CH'),
+        })
+      }
     }
     
     loadStats()
@@ -36,24 +70,24 @@ export default function AdminDashboard() {
 
   const quickActions = [
     {
+      title: 'Gestion des utilisateurs',
+      description: 'Voir et gérer les utilisateurs',
+      href: '/admin/users',
+      icon: '👥',
+      color: 'bg-blue-500',
+    },
+    {
+      title: 'Achats et paiements',
+      description: 'Consulter les achats et revenus',
+      href: '/admin/purchases',
+      icon: '💳',
+      color: 'bg-green-500',
+    },
+    {
       title: 'Sanity Studio',
       description: 'Gérer le contenu avec Sanity',
       href: '/admin/sanity',
       icon: '📄',
-      color: 'bg-blue-500',
-    },
-    {
-      title: 'Microsoft Teams',
-      description: 'Configurer l\'intégration Teams',
-      href: '/admin/integrations/teams',
-      icon: '👥',
-      color: 'bg-green-500',
-    },
-    {
-      title: 'WordPress',
-      description: 'Gérer l\'intégration WordPress',
-      href: '/admin/integrations/wordpress',
-      icon: '🌐',
       color: 'bg-purple-500',
     },
     {
@@ -85,10 +119,10 @@ export default function AdminDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { title: 'Pages', value: stats.pages, icon: '📄', color: 'text-blue-600' },
-          { title: 'Formations', value: stats.formations, icon: '🎓', color: 'text-green-600' },
-          { title: 'Images', value: stats.images, icon: '🖼️', color: 'text-purple-600' },
-          { title: 'Dernière MAJ', value: stats.lastUpdate, icon: '🕒', color: 'text-orange-600' },
+          { title: 'Utilisateurs', value: stats.users, icon: '👥', color: 'text-blue-600' },
+          { title: 'Achats', value: stats.purchases, icon: '💳', color: 'text-green-600' },
+          { title: 'Chiffre d\'affaires', value: `${stats.revenue} CHF`, icon: '💰', color: 'text-purple-600' },
+          { title: 'Articles', value: stats.articles, icon: '📝', color: 'text-orange-600' },
         ].map((stat, index) => (
           <motion.div
             key={stat.title}

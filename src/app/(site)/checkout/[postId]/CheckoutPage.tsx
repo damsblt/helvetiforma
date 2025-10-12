@@ -31,8 +31,32 @@ function PaymentForm({ postId, postTitle, price, postSlug, onSuccess }: { postId
   const elements = useElements()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isDarkMode, setIsDarkMode] = useState(false)
   const { data: session } = useSession()
   const user = session?.user
+
+  // Detect dark mode
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDarkMode(document.documentElement.classList.contains('dark') || 
+                   window.matchMedia('(prefers-color-scheme: dark)').matches)
+    }
+    
+    checkDarkMode()
+    
+    // Listen for changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    mediaQuery.addEventListener('change', checkDarkMode)
+    
+    // Listen for class changes on html element
+    const observer = new MutationObserver(checkDarkMode)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    
+    return () => {
+      mediaQuery.removeEventListener('change', checkDarkMode)
+      observer.disconnect()
+    }
+  }, [])
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -51,6 +75,13 @@ function PaymentForm({ postId, postTitle, price, postSlug, onSuccess }: { postId
     setError(null)
 
     try {
+      console.log('🔍 CheckoutPage - Données utilisateur:', { 
+        user, 
+        userId: (user as any)?.id, 
+        userEmail: user?.email,
+        postId 
+      })
+      
       // Créer un PaymentIntent directement
       const response = await fetch('/api/payment/create-payment-intent', {
         method: 'POST',
@@ -58,11 +89,7 @@ function PaymentForm({ postId, postTitle, price, postSlug, onSuccess }: { postId
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          postId,
-          user: {
-            id: (user as any).id,
-            email: user.email
-          }
+          postId
         }),
       })
 
@@ -108,9 +135,9 @@ function PaymentForm({ postId, postTitle, price, postSlug, onSuccess }: { postId
                 style: {
                   base: {
                     fontSize: '16px',
-                    color: '#1f2937',
+                    color: isDarkMode ? '#ffffff' : '#1f2937',
                     '::placeholder': {
-                      color: '#6b7280',
+                      color: isDarkMode ? '#d1d5db' : '#6b7280',
                     },
                   },
                 },
