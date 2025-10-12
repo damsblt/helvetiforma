@@ -174,6 +174,13 @@ export default function LoginForm({ onSuccess, callbackUrl }: LoginFormProps) {
         <p className="text-gray-600 dark:text-white">
           Accédez à vos articles premium et webinaires
         </p>
+        {callbackUrl && (
+          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <p className="text-sm text-blue-600 dark:text-blue-400">
+              🔒 Connectez-vous pour finaliser votre achat
+            </p>
+          </div>
+        )}
       </div>
 
       {error && (

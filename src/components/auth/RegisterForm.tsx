@@ -89,13 +89,13 @@ export default function RegisterForm({ onSuccess, callbackUrl }: RegisterFormPro
             setSuccess(true)
           }
         } else {
-          console.error('❌ Login failed:', signInResult)
-          // Compte créé mais connexion échouée, rediriger vers login avec message
+          console.log('ℹ️ Login automatique échoué, redirection vers login...')
+          // Toujours rediriger vers login avec message de succès et callback
           if (callbackUrl) {
             // Rediriger vers login avec message de succès et callback
-            window.location.href = `/login?message=Compte créé avec succès ! Veuillez vous connecter pour continuer.&callbackUrl=${encodeURIComponent(callbackUrl)}`
+            window.location.href = `/login?message=Compte créé avec succès ! Veuillez vous connecter pour finaliser votre achat.&callbackUrl=${encodeURIComponent(callbackUrl)}`
           } else {
-            setError('Compte créé avec succès ! Veuillez vous connecter pour continuer.')
+            setSuccess(true)
           }
         }
       } else {
