@@ -83,9 +83,9 @@ export async function getTeamsWebinars(params?: {
     const startTime = params?.startDate?.toISOString() || today.toISOString()
     const endTime = params?.endDate?.toISOString() || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
-    // Use specific user's calendar (damien@helvetiforma.onmicrosoft.com)
+    // Use specific user's calendar (info@helvetiforma.ch)
     // When using application permissions, use /users/{userId}/calendar/events
-    const calendarUser = 'damien@helvetiforma.onmicrosoft.com'
+    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'info@helvetiforma.ch'
     
     const events = await graphClient
       .api(`/users/${calendarUser}/calendar/events`)
@@ -152,8 +152,8 @@ export async function getTeamsWebinar(id: string, accessToken?: string): Promise
 
     const graphClient = createGraphClient(accessToken)
 
-    // Use specific user's calendar (damien@helvetiforma.onmicrosoft.com)
-    const calendarUser = 'damien@helvetiforma.onmicrosoft.com'
+    // Use specific user's calendar (info@helvetiforma.ch)
+    const calendarUser = process.env.MICROSOFT_CALENDAR_USER || 'info@helvetiforma.ch'
     
     const event = await graphClient
       .api(`/users/${calendarUser}/calendar/events/${id}`)
