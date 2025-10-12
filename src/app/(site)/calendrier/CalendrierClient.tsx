@@ -150,7 +150,7 @@ export default function CalendrierClient() {
   const getEventColorScheme = (title: string) => {
     const lowerTitle = title.toLowerCase()
     
-    if (lowerTitle.includes('salaires')) {
+    if (lowerTitle.includes('salaires') || lowerTitle.includes('salaire')) {
       return {
         header: 'from-blue-500 via-blue-600 to-blue-700',
         icon: 'text-blue-600',
