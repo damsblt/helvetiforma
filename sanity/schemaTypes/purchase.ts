@@ -39,7 +39,11 @@ export const purchaseType = defineType({
       name: 'stripeSessionId',
       title: 'ID Session Stripe',
       type: 'string',
-      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'stripePaymentIntentId',
+      title: 'ID Payment Intent Stripe',
+      type: 'string',
     }),
     defineField({
       name: 'purchasedAt',

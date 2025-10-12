@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
       amount: amount / 100, // Convertir de centimes en CHF
       purchasedAt: new Date().toISOString(),
       stripeSessionId,
+      stripePaymentIntentId,
       status: 'completed'
     })
 
