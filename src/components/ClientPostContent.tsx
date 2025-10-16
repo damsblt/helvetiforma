@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { PortableText } from 'next-sanity'
-import { portableTextComponents } from '@/components/ui/PortableTextComponents'
-import { useSession } from 'next-auth/react'
-import PaymentButton from '@/components/PaymentButton'
+import { useAuth } from '@/contexts/AuthContext'
+import OptimizedPaymentButton from '@/components/OptimizedPaymentButton'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
@@ -21,78 +19,98 @@ export default function ClientPostContent({
   initialHasAccess, 
   initialHasPurchased 
 }: ClientPostContentProps) {
-  const { data: session, status } = useSession()
+  const { user, isAuthenticated } = useAuth()
   const [hasPurchased, setHasPurchased] = useState(initialHasPurchased)
   const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
   const paymentSuccess = searchParams.get('payment') === 'success'
 
+  // Check if user has already purchased this article
+  useEffect(() => {
+    const checkExistingPurchase = async () => {
+      if (!user || !isAuthenticated) {
+        console.log('🔍 No user authenticated, skipping purchase check')
+        return
+      }
+
+      try {
+        console.log('🔍 Checking existing purchase for user:', user.id, 'post:', post._id || post.id)
+        const response = await fetch(`/api/check-purchase?postId=${post._id || post.id}&userId=${user.id}`)
+        const data = await response.json()
+        
+        console.log('🔍 Purchase check result:', data)
+        
+        if (data.hasPurchased) {
+          console.log('✅ User has already purchased this article')
+          setHasPurchased(true)
+        } else {
+          console.log('❌ User has not purchased this article')
+          setHasPurchased(false)
+        }
+      } catch (error) {
+        console.error('❌ Error checking existing purchase:', error)
+      }
+    }
+
+    checkExistingPurchase()
+  }, [user?.id, isAuthenticated, post._id, post.id])
+
   // Auto-refresh when payment success is detected
   useEffect(() => {
     if (paymentSuccess) {
-      if (session?.user) {
-        console.log('🔍 Payment success detected, refreshing purchase status...')
-        setLoading(true)
+      console.log('🔍 Payment success detected, unlocking content immediately...')
+      setLoading(true)
+      
+      // If user is logged in, unlock content immediately
+      if (user) {
+        console.log('🔍 User is logged in, unlocking content...')
+        setHasPurchased(true)
         
-        // Retry logic with delays to handle webhook processing time
-        const checkPurchaseWithRetry = async (attempt = 1, maxAttempts = 5) => {
+        // Record the purchase in WooCommerce
+        const recordPurchase = async () => {
           try {
-            const response = await fetch(`/api/check-purchase?postId=${post._id}`)
-            const data = await response.json()
+            console.log('🔍 Recording purchase in WooCommerce...')
+            const response = await fetch('/api/payment/record-purchase', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                postId: post._id || post.id,
+                userId: user.id,
+                amount: post.price || 0
+              })
+            })
             
-            console.log(`🔍 Purchase verification attempt ${attempt}:`, data)
-            
-            if (data.hasPurchased) {
-              setHasPurchased(true)
-              setLoading(false)
-              return
-            }
-            
-            // If not purchased yet and we have more attempts, retry after delay
-            if (attempt < maxAttempts) {
-              console.log(`⏳ Purchase not found yet, retrying in ${attempt * 2} seconds...`)
-              setTimeout(() => {
-                checkPurchaseWithRetry(attempt + 1, maxAttempts)
-              }, attempt * 2000) // 2s, 4s, 6s, 8s delays
+            if (response.ok) {
+              console.log('✅ Purchase recorded successfully')
             } else {
-              console.log('⚠️ Purchase verification timeout - webhook may be delayed')
-              setLoading(false)
+              console.error('❌ Failed to record purchase')
             }
           } catch (error) {
-            console.error(`❌ Error verifying purchase (attempt ${attempt}):`, error)
-            if (attempt < maxAttempts) {
-              setTimeout(() => {
-                checkPurchaseWithRetry(attempt + 1, maxAttempts)
-              }, attempt * 2000)
-            } else {
-              setLoading(false)
-            }
+            console.error('❌ Error recording purchase:', error)
           }
         }
         
-        // Start the retry process
-        checkPurchaseWithRetry()
-      } else {
-        // User not logged in but payment success - redirect to login with callback
-        console.log('🔍 Payment success detected but user not logged in - redirecting to login')
+        recordPurchase()
         setLoading(false)
         
-        // Redirect to login with callback to this article
-        const currentUrl = window.location.pathname + window.location.search
-        const loginUrl = `/login?message=Paiement réussi ! Veuillez vous connecter pour accéder à votre article.&callbackUrl=${encodeURIComponent(currentUrl)}`
-        
-        // Show a brief message before redirecting
-        setTimeout(() => {
-          window.location.href = loginUrl
-        }, 2000)
+        // Remove the payment success parameter from URL to clean it up
+        const url = new URL(window.location.href)
+        url.searchParams.delete('payment')
+        window.history.replaceState({}, '', url.toString())
+      } else {
+        // User not logged in - this shouldn't happen in normal flow
+        console.log('⚠️ Payment success but user not logged in - this is unexpected')
+        setLoading(false)
       }
     }
-  }, [paymentSuccess, (session?.user as any)?.id, post._id])
+  }, [paymentSuccess, user?.id, post._id, post.id, post.price])
 
   const accessLevel = post.accessLevel || 'public'
   const hasAccess = 
     accessLevel === 'public' || 
-    (accessLevel === 'members' && session?.user) ||
+    (accessLevel === 'members' && user) ||
     (accessLevel === 'premium' && hasPurchased)
 
   const contentToShow = hasAccess ? post.body : (post.previewContent || post.body)
@@ -100,7 +118,7 @@ export default function ClientPostContent({
   const isMembers = accessLevel === 'members'
 
   // Show payment success message for non-authenticated users
-  if (paymentSuccess && !session?.user) {
+  if (paymentSuccess && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-md w-full mx-4">
@@ -114,13 +132,18 @@ export default function ClientPostContent({
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Paiement réussi !
               </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                Votre paiement a été traité avec succès. Vous allez être redirigé vers la page de connexion pour accéder à votre article.
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Votre paiement a été traité avec succès. Veuillez vous connecter pour accéder à votre article premium.
               </p>
-            </div>
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600 dark:text-gray-300">Redirection en cours...</span>
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+                Se connecter pour accéder
+              </Link>
             </div>
           </div>
         </div>
@@ -129,14 +152,13 @@ export default function ClientPostContent({
   }
 
 
-  // Show loading state while session is loading or purchase verification is in progress
-  if (status === 'loading' || loading) {
+  // Show loading state while user is loading or purchase verification is in progress
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         <span className="ml-2 text-gray-600">
-          {status === 'loading' ? 'Chargement...' : 
-           paymentSuccess ? 'Vérification de votre achat...' : 'Vérification de l\'accès...'}
+          {paymentSuccess ? 'Vérification de votre achat...' : 'Vérification de l\'accès...'}
         </span>
       </div>
     )
@@ -148,9 +170,12 @@ export default function ClientPostContent({
       <div className="container mx-auto max-w-4xl px-4 py-16">
         <article className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 p-8 md:p-12">
           <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-white prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white">
-            {Array.isArray(post.body) && post.body.length > 0 ? (
+            {post.body && post.body.trim() !== '' ? (
               <div className={!hasAccess && (isPremium || isMembers) ? 'relative' : ''}>
-                <PortableText value={post.body} components={portableTextComponents} />
+                <div 
+                  className="prose prose-lg max-w-none prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white prose-ul:text-slate-700 dark:prose-ul:text-slate-300 prose-ol:text-slate-700 dark:prose-ol:text-slate-300 prose-li:text-slate-700 dark:prose-li:text-slate-300"
+                  dangerouslySetInnerHTML={{ __html: post.body }}
+                />
                 {!hasAccess && (isPremium || isMembers) && (
                   <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/50 to-transparent dark:from-gray-800/90 dark:via-gray-800/50 dark:to-transparent pointer-events-none"></div>
                 )}
@@ -175,7 +200,7 @@ export default function ClientPostContent({
                   {isPremium ? 'Contenu Premium' : 'Contenu Réservé aux Membres'}
                 </h3>
                 <p className="text-lg text-slate-600 dark:text-white mb-8 max-w-lg mx-auto leading-relaxed">
-                  {paymentSuccess && !session?.user ? (
+                  {paymentSuccess && !user ? (
                     <>
                       <span className="text-green-600 dark:text-green-400 font-semibold">✅ Paiement réussi !</span>
                       <br />
@@ -193,7 +218,7 @@ export default function ClientPostContent({
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                       <span className="ml-2 text-gray-600">Chargement...</span>
                     </div>
-                  ) : paymentSuccess && !session?.user ? (
+                  ) : paymentSuccess && !user ? (
                     // Payment success but not logged in - show login button
                     <Link
                       href="/login"
@@ -205,15 +230,15 @@ export default function ClientPostContent({
                       Se connecter pour accéder
                     </Link>
                   ) : isPremium ? (
-                    // Premium content - always show PaymentButton (handles login redirect internally)
-                    <PaymentButton
-                      postId={post._id}
+                    // Premium content - always show OptimizedPaymentButton (handles login redirect internally)
+                    <OptimizedPaymentButton
+                      postId={post._id?.toString() || post.id?.toString() || ''}
                       postTitle={post.title}
-                      postSlug={post.slug?.current}
+                      postSlug={post.slug}
                       price={post.price || 0}
                       className="mb-4"
                     />
-                  ) : session?.user ? (
+                  ) : user ? (
                     // Members content + logged in - show contact button
                     <Link
                       href="/contact"

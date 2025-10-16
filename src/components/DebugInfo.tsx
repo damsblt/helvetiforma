@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface DebugInfoProps {
   postId: string
@@ -11,25 +11,25 @@ export default function DebugInfo({ postId }: DebugInfoProps) {
   const [debugInfo, setDebugInfo] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
-  const { data: session, status } = useSession()
+  const { user, isAuthenticated } = useAuth()
 
   useEffect(() => {
     async function getDebugInfo() {
       try {
         const info: any = {
-          hasSession: !!session,
-          user: session?.user ? {
-            id: (session.user as any)?.id,
-            email: session.user.email,
-            name: session.user.name
+          hasSession: !!user,
+          user: user ? {
+            id: user.id,
+            email: user.email,
+            name: user.name
           } : null,
           timestamp: new Date().toISOString(),
-          status
+          isAuthenticated
         }
 
-        if (session?.user) {
+        if (user) {
           // Use server-side API to check purchase
-          const userId = (session.user as any)?.id
+          const userId = user.id
           const response = await fetch(`/api/check-purchase?postId=${postId}`)
           const purchaseData = await response.json()
           
@@ -49,10 +49,8 @@ export default function DebugInfo({ postId }: DebugInfoProps) {
       }
     }
 
-    if (status !== 'loading') {
-      getDebugInfo()
-    }
-  }, [session, status, postId])
+    getDebugInfo()
+  }, [user, isAuthenticated, postId])
 
   if (loading) {
     return <div className="p-4 bg-gray-100 rounded">Loading debug info...</div>

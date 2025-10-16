@@ -7,25 +7,29 @@ import RegisterForm from '@/components/auth/RegisterForm'
 
 export default function RegisterPage() {
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/posts'
+  const callbackUrl = searchParams.get('callbackUrl') || '/'
+  
+  // Debug: Log the callbackUrl
+  console.log('🔍 RegisterPage - callbackUrl from searchParams:', searchParams.get('callbackUrl'))
+  console.log('🔍 RegisterPage - final callbackUrl:', callbackUrl)
 
   return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-3 sm:p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
+          className="w-full max-w-sm sm:max-w-md"
         >
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8">
             <RegisterForm callbackUrl={callbackUrl} />
             
             {/* Liens utiles */}
-            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-center space-y-3">
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-center space-y-2 sm:space-y-3">
                 <Link
                   href="/"
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                  className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                 >
                   ← Retour à l'accueil
                 </Link>

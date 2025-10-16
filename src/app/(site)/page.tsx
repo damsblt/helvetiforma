@@ -38,8 +38,8 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* System Status (only in development) */}
-      {process.env.NODE_ENV === 'development' && <SystemStatus />}
+      {/* System Status (only in development) - DISABLED */}
+      {/* {process.env.NODE_ENV === 'development' && <SystemStatus />} */}
       {/* Hero Section */}
       {content?.hero && (
         <HeroSection 

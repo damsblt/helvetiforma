@@ -1,41 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe, formatAmountForStripe } from '@/lib/stripe'
-import { sanityClient } from '@/lib/sanity'
-import { getServerSession } from 'next-auth'
-import { workingAuthOptions } from '@/lib/auth-working'
+import { getWordPressPostById } from '@/lib/wordpress'
 
 export async function POST(request: NextRequest) {
   try {
-    const { postId } = await request.json()
+    const { postId, userId } = await request.json()
     
-    // Get the current session
-    const session = await getServerSession(workingAuthOptions)
-    
-    console.log('🔍 PaymentIntent API - Session:', { 
-      hasSession: !!session, 
-      user: session?.user ? { 
-        id: (session.user as any).id, 
-        email: session.user.email 
-      } : null,
-      postId 
+    console.log('🔍 PaymentIntent API - Request data:', { 
+      postId, 
+      userId 
     })
     
-    if (!session?.user) {
-      console.log('❌ Utilisateur non connecté')
-      return NextResponse.json(
-        { error: 'Vous devez être connecté pour effectuer un achat' },
-        { status: 401 }
-      )
-    }
-    
-    const user = session.user
-    const userId = (user as any).id
-    
     if (!userId) {
-      console.log('❌ ID utilisateur manquant dans la session')
+      console.log('❌ User ID manquant')
       return NextResponse.json(
-        { error: 'ID utilisateur manquant' },
-        { status: 401 }
+        { error: 'User ID is required' },
+        { status: 400 }
       )
     }
     
@@ -47,21 +27,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('🔍 Recherche de l\'article dans Sanity avec ID:', postId)
+    console.log('🔍 Recherche de l\'article dans WordPress avec ID:', postId)
     
-    // Récupérer l'article depuis Sanity
-    const post = await sanityClient.fetch(
-      `*[_type == "post" && _id == $postId][0]{
-        _id,
-        title,
-        price,
-        accessLevel,
-        slug
-      }`,
-      { postId }
-    )
+    // Récupérer l'article depuis WordPress
+    const post = await getWordPressPostById(postId)
     
-    console.log('🔍 Article trouvé dans Sanity:', post)
+    console.log('🔍 Article trouvé dans WordPress:', post)
 
     if (!post) {
       return NextResponse.json(
@@ -70,26 +41,42 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (post.accessLevel !== 'premium' || !post.price) {
+    if (post.accessLevel !== 'premium') {
       return NextResponse.json(
         { error: 'Cet article n\'est pas disponible à l\'achat' },
         { status: 400 }
       )
     }
 
+    // Vérifier si l'article est gratuit (prix = 0)
+    const isFree = post.price === 0 || post.price === null || post.price === undefined
+    
+    if (isFree) {
+      // Pour les articles gratuits, retourner un clientSecret spécial
+      return NextResponse.json({ 
+        success: true,
+        clientSecret: 'free_article',
+        isFree: true
+      })
+    }
+
     // Créer un PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: formatAmountForStripe(post.price),
       currency: 'chf',
+      automatic_payment_methods: {
+        enabled: true,
+      },
       metadata: {
-        postId: post._id,
-        postSlug: post.slug.current,
+        postId: post._id.toString(),
+        postSlug: typeof post.slug === 'string' ? post.slug : post.slug?.current || '',
         userId: userId,
         postTitle: post.title,
       },
     })
 
     return NextResponse.json({ 
+      success: true,
       clientSecret: paymentIntent.client_secret 
     })
 

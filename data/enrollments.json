@@ -1,0 +1,42 @@
+[
+  {
+    "user_id": "217",
+    "course_id": 3633,
+    "enrolled_at": "2025-10-16T11:50:30.453Z",
+    "status": "enrolled",
+    "payment_status": "paid",
+    "id": "1760615430453"
+  },
+  {
+    "user_id": "218",
+    "course_id": 3633,
+    "enrolled_at": "2025-10-16T11:57:51.764Z",
+    "status": "enrolled",
+    "payment_status": "paid",
+    "id": "1760615871766"
+  },
+  {
+    "user_id": "219",
+    "course_id": 3633,
+    "enrolled_at": "2025-10-16T12:02:17.176Z",
+    "status": "enrolled",
+    "payment_status": "paid",
+    "id": "1760616137178"
+  },
+  {
+    "user_id": "220",
+    "course_id": "3633",
+    "enrolled_at": "2025-10-16T14:14:09.216Z",
+    "status": "enrolled",
+    "payment_status": "paid",
+    "id": "1760624049217"
+  },
+  {
+    "user_id": "225",
+    "course_id": 4505,
+    "enrolled_at": "2025-10-16T18:58:36.638Z",
+    "status": "enrolled",
+    "payment_status": "paid",
+    "id": "1760641116638"
+  }
+]

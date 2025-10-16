@@ -1,40 +1,12 @@
 import Link from "next/link";
-import { type SanityDocument } from "next-sanity";
-import { sanityClient } from "@/lib/sanity";
-import imageUrlBuilder from "@sanity/image-url";
-import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { checkUserPurchaseWithSession } from '@/lib/purchases'
-
-const POSTS_QUERY = `*[
-  _type == "post"
-  && defined(slug.current)
-]|order(publishedAt desc)[0...12]{
-  _id, 
-  title, 
-  slug, 
-  publishedAt,
-  excerpt,
-  image,
-  accessLevel,
-  price,
-  category,
-  tags
-}`;
-
-const { projectId, dataset } = sanityClient.config();
-const urlFor = (source: SanityImageSource) =>
-  projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
-    : null;
-
-const options = { next: { revalidate: 30 } };
+import { cookies } from "next/headers";
+import { getWordPressPosts, getPostSlug, type WordPressPost } from "@/lib/wordpress";
+import { cleanExcerpt } from "@/lib/utils";
 
 export default async function PostsPage() {
-  const posts = await sanityClient.fetch(POSTS_QUERY, {}, options) as SanityDocument[];
-  const session = await getServerSession(authOptions);
-  const user = session?.user;
+  const posts = await getWordPressPosts();
+  const cookieStore = await cookies();
+  const token = cookieStore.get('wp_auth_token')?.value || null;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
@@ -65,17 +37,14 @@ export default async function PostsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map(async (post) => {
-              const postImageUrl = post.image
-                ? urlFor(post.image)?.width(600).height(400).url()
-                : null;
+            {posts.map((post: WordPressPost) => {
+              const postImageUrl = post.image || null;
               
               const accessLevel = post.accessLevel || 'public';
-              const hasPurchased = await checkUserPurchaseWithSession(post._id);
               const hasAccess = 
                 accessLevel === 'public' || 
-                (accessLevel === 'members' && user) ||
-                (accessLevel === 'premium' && hasPurchased);
+                (accessLevel === 'members' && token) ||
+                (accessLevel === 'premium' && token); // Purchase verification handled client-side
 
               const getAccessBadge = () => {
                 if (accessLevel === 'premium') {
@@ -106,13 +75,13 @@ export default async function PostsPage() {
                   key={post._id}
                   className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-white/20 dark:border-gray-700/20 hover:-translate-y-2"
                 >
-                  <Link href={`/posts/${post.slug.current}`} className="block">
+                  <Link href={`/posts/${getPostSlug(post)}`} className="block">
                     {/* Image */}
                     <div className="relative aspect-video overflow-hidden">
                       {postImageUrl ? (
                         <img
                           src={postImageUrl}
-                          alt={post.image?.alt || post.title}
+                          alt={post.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
@@ -126,18 +95,7 @@ export default async function PostsPage() {
                       <div className="absolute top-4 left-4">
                         {getAccessBadge()}
                       </div>
-                      {!hasAccess && (accessLevel === 'premium' || accessLevel === 'members') && (
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                          <div className="text-center text-white">
-                            <svg className="w-8 h-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                            <p className="text-sm font-medium">
-                              {accessLevel === 'premium' ? 'Contenu Premium' : 'Réservé aux Membres'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                      {/* Lock overlay removed - individual article page will handle purchase verification */}
                     </div>
 
                     {/* Content */}
@@ -159,7 +117,7 @@ export default async function PostsPage() {
                       {/* Excerpt */}
                       {post.excerpt && (
                         <p className="text-slate-600 dark:text-white text-sm leading-relaxed mb-4 line-clamp-3">
-                          {post.excerpt}
+                          {cleanExcerpt(post.excerpt, 150)}
                         </p>
                       )}
 
@@ -177,6 +135,36 @@ export default async function PostsPage() {
                         </div>
                       )}
 
+                      {/* Price and Access Info */}
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {post.price && post.price > 0 ? (
+                              <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 text-sm font-semibold rounded-lg border border-green-200 dark:border-green-700">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                </svg>
+                                {post.price} CHF
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-700 dark:text-blue-300 text-sm font-semibold rounded-lg border border-blue-200 dark:border-blue-700">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                Gratuit
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                              {accessLevel === 'public' && 'Accès public'}
+                              {accessLevel === 'members' && 'Réservé aux membres'}
+                              {accessLevel === 'premium' && 'Contenu premium'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Footer */}
                       <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-gray-700">
                         <time 
@@ -189,11 +177,23 @@ export default async function PostsPage() {
                             year: 'numeric'
                           })}
                         </time>
-                        {accessLevel === 'premium' && post.price && (
-                          <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-                            {post.price} CHF
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {accessLevel === 'premium' && (
+                            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                              Premium
+                            </span>
+                          )}
+                          {accessLevel === 'members' && (
+                            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                              Membres
+                            </span>
+                          )}
+                          {accessLevel === 'public' && (
+                            <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                              Public
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </Link>

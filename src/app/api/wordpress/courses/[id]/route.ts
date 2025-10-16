@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getTutorCourse } from '@/lib/wordpress'
+import { getTutorCourse } from '@/lib/tutor-lms'
 
 export async function GET(
   request: NextRequest,
@@ -7,27 +7,20 @@ export async function GET(
 ) {
   const resolvedParams = await params
   try {
-    const courseId = parseInt(resolvedParams.id)
+    const courseIdOrSlug = resolvedParams.id
     
-    if (isNaN(courseId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid course ID',
-          message: 'Course ID must be a number'
-        },
-        { status: 400 }
-      )
-    }
+    // Try to parse as number first, if it fails, treat as slug
+    const courseId = parseInt(courseIdOrSlug)
+    const isNumericId = !isNaN(courseId)
 
-    const course = await getTutorCourse(courseId)
+    const course = await getTutorCourse(courseIdOrSlug)
     
     if (!course) {
       return NextResponse.json(
         {
           success: false,
           error: 'Course not found',
-          message: `Course with ID ${courseId} does not exist`
+          message: `Course with ${isNumericId ? 'ID' : 'slug'} ${courseIdOrSlug} does not exist`
         },
         { status: 404 }
       )

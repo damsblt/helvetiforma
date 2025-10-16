@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useSession, signOut } from 'next-auth/react'
+import { useAuth } from '@/contexts/AuthContext'
 import { navigationConfig } from '@/lib/navigation'
 import type { NavigationConfig } from '@/lib/navigation'
 
@@ -13,8 +13,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
-  const { data: session, status } = useSession()
-  const user = session?.user
+  const { user, logout, isAuthenticated } = useAuth()
 
   useEffect(() => {
     setNavigation(navigationConfig)
@@ -104,7 +103,7 @@ export default function Header() {
                   Tableau de bord
                 </Link>
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => logout()}
                   className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm hover:shadow-md"
                 >
                   Déconnexion
@@ -184,7 +183,7 @@ export default function Header() {
                         Tableau de bord
                       </Link>
                       <button
-                        onClick={() => signOut()}
+                        onClick={() => logout()}
                         className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg text-sm font-medium transition-colors shadow-sm hover:shadow-md"
                       >
                         Déconnexion

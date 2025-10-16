@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getTutorCourses } from '@/lib/wordpress'
+import { getTutorCourses } from '@/lib/tutor-lms'
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,6 +10,9 @@ export async function GET(request: NextRequest) {
       page: parseInt(searchParams.get('page') || '1'),
       search: searchParams.get('search') || undefined,
       status: searchParams.get('status') as 'publish' | 'draft' | 'private' || 'publish',
+      category: searchParams.get('category') || undefined,
+      level: searchParams.get('level') || undefined,
+      featured: searchParams.get('featured') === 'true',
     }
 
     const courses = await getTutorCourses(params)
@@ -25,7 +28,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('API Error - WordPress courses:', error)
+    console.error('API Error - Tutor LMS courses:', error)
     
     return NextResponse.json(
       {

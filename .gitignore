@@ -58,3 +58,5 @@ logs
 .env.local
 .env.vercel
 .env.production
+.env.local
+env.local*

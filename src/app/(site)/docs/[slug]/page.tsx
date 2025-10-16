@@ -48,7 +48,7 @@ export default async function WordPressPostPage({ params }: PageProps) {
   }
 
   // Format date
-  const formattedDate = new Date(post.created_at).toLocaleDateString('fr-CH', {
+  const formattedDate = new Date(post.created_at || post.publishedAt).toLocaleDateString('fr-CH', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
@@ -118,7 +118,7 @@ export default async function WordPressPostPage({ params }: PageProps) {
               prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm
               prose-pre:bg-gray-100 dark:prose-pre:bg-gray-800 prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-x-auto
               prose-img:rounded-lg prose-img:shadow-lg"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: post.content || post.body }}
           />
 
           {/* Footer CTA */}

@@ -1,44 +1,11 @@
-import { PortableText, type SanityDocument } from "next-sanity";
-import imageUrlBuilder from "@sanity/image-url";
-import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
-import { sanityClient } from "@/lib/sanity";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { portableTextComponents } from "@/components/ui/PortableTextComponents";
-import { checkUserPurchaseWithSession } from "@/lib/purchases";
-import PaymentButton from "@/components/PaymentButton";
-import PurchaseSuccessMessage from "@/components/PurchaseSuccessMessage";
-import { getServerSession } from 'next-auth';
-import { noEmailAuthOptions } from '@/lib/auth-no-email';
+import { getWordPressPost } from "@/lib/wordpress";
+import { getWordPressToken } from "@/lib/wordpress-auth";
+import { checkUserPurchaseWithSession } from "@/lib/wordpress-purchases";
 import type { Metadata } from "next";
 import ClientPostContent from "@/components/ClientPostContent";
-
-const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
-  ...,
-  "author": author->{name, image},
-  "categoryTitle": category,
-  body,
-  previewContent,
-  accessLevel,
-  price,
-  pdfAttachments[]{
-    ...,
-    file{
-      asset->{
-        _id,
-        url
-      }
-    }
-  }
-}`;
-
-const { projectId, dataset } = sanityClient.config();
-const urlFor = (source: SanityImageSource) =>
-  projectId && dataset
-    ? imageUrlBuilder({ projectId, dataset }).image(source)
-    : null;
-
-const options = { next: { revalidate: 30 } };
+import PurchaseSuccessMessage from "@/components/PurchaseSuccessMessage";
 
 export async function generateMetadata({
   params,
@@ -46,7 +13,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const resolvedParams = await params;
-  const post = await sanityClient.fetch(POST_QUERY, resolvedParams, options) as SanityDocument | null;
+  const post = await getWordPressPost(resolvedParams.slug);
   
   if (!post) {
     return {
@@ -54,17 +21,14 @@ export async function generateMetadata({
     };
   }
 
-  const imageUrl = post.image ? urlFor(post.image)?.width(1200).height(630).url() : undefined;
-
   return {
-    title: post.seo?.metaTitle || post.title,
-    description: post.seo?.metaDescription || post.excerpt,
-    keywords: post.seo?.keywords?.join(', '),
+    title: post.title,
+    description: post.excerpt,
     openGraph: {
-      title: post.seo?.metaTitle || post.title,
-      description: post.seo?.metaDescription || post.excerpt,
+      title: post.title,
+      description: post.excerpt,
       type: 'article',
-      images: imageUrl ? [imageUrl] : [],
+      images: post.image ? [post.image] : [],
     },
   };
 }
@@ -75,33 +39,35 @@ export default async function PostPage({
   params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = await params;
-  const post = await sanityClient.fetch(POST_QUERY, resolvedParams, options) as SanityDocument | null;
-  
-  // Récupérer la session utilisateur avec NextAuth
-  const session = await getServerSession(noEmailAuthOptions);
-  
+  const post = await getWordPressPost(resolvedParams.slug);
   
   if (!post) {
     notFound();
   }
 
-  const postImageUrl = post.image
-    ? urlFor(post.image)?.width(1200).height(600).url()
-    : null;
+  const postImageUrl = post.image || null;
+  const token = getWordPressToken();
+
+  // Check if user has purchased this premium article
+  let hasPurchased = false;
+  if (post.accessLevel === 'premium' && token) {
+    try {
+      // For now, we'll let the client-side component handle the purchase check
+      // since the server-side session management is complex
+      console.log('🔍 Server-side: Premium article detected, letting client handle purchase check');
+      hasPurchased = false; // Will be checked on client side
+    } catch (error) {
+      console.error('❌ Error checking purchase on server:', error);
+    }
+  }
 
   // Access control logic
   const accessLevel = post.accessLevel || 'public';
-  const hasPurchased = await checkUserPurchaseWithSession(post._id);
-  
   const hasAccess = 
     accessLevel === 'public' || 
-    (accessLevel === 'members' && !!session?.user) ||
-    (accessLevel === 'premium' && hasPurchased);
+    (accessLevel === 'members' && !!token) ||
+    (accessLevel === 'premium' && (!!token && hasPurchased));
 
-
-
-  // Determine what content to show
-  const contentToShow = hasAccess ? post.body : (post.previewContent || post.body);
   const isPremium = accessLevel === 'premium';
   const isMembers = accessLevel === 'members';
 
@@ -149,9 +115,9 @@ export default async function PostPage({
           
           <div className="flex items-center gap-3 mb-6">
             {getAccessBadge()}
-            {post.categoryTitle && (
+            {post.category && (
               <span className="text-sm text-white/90 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
-                {post.categoryTitle}
+                {post.category}
               </span>
             )}
           </div>
@@ -199,7 +165,7 @@ export default async function PostPage({
           <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl ring-4 ring-white/20 dark:ring-gray-800/20">
             <img
               src={postImageUrl}
-              alt={post.image?.alt || post.title}
+              alt={post.title}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>

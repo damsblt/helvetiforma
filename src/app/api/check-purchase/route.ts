@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { checkUserPurchase } from '@/lib/purchases'
+import { checkUserPurchase } from '@/lib/wordpress-purchases'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const postId = searchParams.get('postId')
+    const userId = searchParams.get('userId')
 
     if (!postId) {
       return NextResponse.json(
@@ -15,20 +14,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get the current session
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user) {
-      return NextResponse.json(
-        { hasPurchased: false, isAuthenticated: false },
-        { status: 200 }
-      )
-    }
-
-    const userId = (session.user as any).id
+    // If no userId provided, return not authenticated
     if (!userId) {
       return NextResponse.json(
-        { hasPurchased: false, isAuthenticated: true, error: 'User ID not found' },
+        { hasPurchased: false, isAuthenticated: false, error: 'userId parameter required' },
         { status: 200 }
       )
     }
@@ -39,8 +28,7 @@ export async function GET(request: NextRequest) {
     console.log('🔍 Check purchase API:', {
       userId,
       postId,
-      hasPurchased,
-      userEmail: session.user.email
+      hasPurchased
     })
 
     return NextResponse.json({

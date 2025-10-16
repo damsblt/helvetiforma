@@ -4,7 +4,7 @@ import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import DevWrapper from '@/components/DevWrapper'
-import SessionProvider from '@/components/providers/SessionProvider'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -87,7 +87,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <SessionProvider>
+        <AuthProvider>
           <DevWrapper>
             <div className="relative flex min-h-screen flex-col">
               {/* Header Navigation */}
@@ -102,7 +102,7 @@ export default function RootLayout({
               <Footer />
             </div>
           </DevWrapper>
-        </SessionProvider>
+        </AuthProvider>
       </body>
     </html>
   )

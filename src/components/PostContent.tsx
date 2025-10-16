@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { PortableText } from 'next-sanity'
 import { portableTextComponents } from '@/components/ui/PortableTextComponents'
-import { useSession } from 'next-auth/react'
-import { checkUserPurchase } from '@/lib/purchases'
-import PaymentButton from '@/components/PaymentButton'
+import { useAuth } from '@/contexts/AuthContext'
+import { checkUserPurchase } from '@/lib/wordpress-purchases'
+import OptimizedPaymentButton from '@/components/OptimizedPaymentButton'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
@@ -15,7 +15,7 @@ interface PostContentProps {
 }
 
 export default function PostContent({ post, postImageUrl }: PostContentProps) {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [hasPurchased, setHasPurchased] = useState(false)
   const [loading, setLoading] = useState(true)
   const searchParams = useSearchParams()
@@ -24,10 +24,10 @@ export default function PostContent({ post, postImageUrl }: PostContentProps) {
   useEffect(() => {
     async function checkAccess() {
       try {
-        console.log('🔍 PostContent: Session:', session?.user?.email)
+        console.log('🔍 PostContent: User:', user?.email)
         
-        if (session?.user) {
-          const purchased = await checkUserPurchase((session.user as any).id, post._id)
+        if (user) {
+          const purchased = await checkUserPurchase(user.id, post._id)
           console.log('🔍 PostContent: A acheté:', purchased)
           setHasPurchased(purchased)
         }
@@ -39,20 +39,20 @@ export default function PostContent({ post, postImageUrl }: PostContentProps) {
     }
 
     checkAccess()
-  }, [post._id, (session?.user as any)?.id])
+  }, [post._id, user?.id])
 
   // Auto-refresh when payment success is detected
   useEffect(() => {
-    if (paymentSuccess && session?.user) {
+    if (paymentSuccess && user) {
       console.log('🔍 Payment success detected, refreshing purchase status...')
-      checkUserPurchase((session.user as any).id, post._id).then(setHasPurchased)
+      checkUserPurchase(user.id, post._id).then(setHasPurchased)
     }
-  }, [paymentSuccess, (session?.user as any)?.id, post._id])
+  }, [paymentSuccess, user?.id, post._id])
 
   const accessLevel = post.accessLevel || 'public'
   const hasAccess = 
     accessLevel === 'public' || 
-    (accessLevel === 'members' && session?.user) ||
+    (accessLevel === 'members' && user) ||
     (accessLevel === 'premium' && hasPurchased)
 
   const contentToShow = hasAccess ? post.body : (post.previewContent || post.body)
@@ -121,8 +121,8 @@ export default function PostContent({ post, postImageUrl }: PostContentProps) {
                   }
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  {isPremium && session?.user && (
-                    <PaymentButton
+                  {isPremium && user && (
+                    <OptimizedPaymentButton
                       postId={post._id}
                       postTitle={post.title}
                       postSlug={post.slug?.current}
@@ -130,7 +130,7 @@ export default function PostContent({ post, postImageUrl }: PostContentProps) {
                       className="mb-4"
                     />
                   )}
-                  {!session?.user ? (
+                  {!user ? (
                     <>
                       <Link
                         href="/login"

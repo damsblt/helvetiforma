@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
 import { getPageBySlug, sanityClient, urlFor } from '@/lib/sanity'
+import { getWordPressPosts, getPostSlug, type WordPressPost } from '@/lib/wordpress'
+import { cleanExcerpt } from '@/lib/utils'
 import Link from 'next/link'
 import { Calendar, FileText, Lock, Sparkles } from 'lucide-react'
 import HeroSection from '@/components/sections/HeroSection'
@@ -10,23 +12,7 @@ import { type SanityDocument } from 'next-sanity'
 // Revalidate every 10 seconds for fresh Sanity content
 export const revalidate = 10
 
-// Query to fetch all published articles with necessary fields
-const ARTICLES_QUERY = `*[
-  _type == "post"
-  && defined(slug.current)
-]|order(publishedAt desc){
-  _id,
-  title,
-  slug,
-  excerpt,
-  publishedAt,
-  image,
-  category,
-  tags,
-  accessLevel,
-  price,
-  "categoryTitle": category
-}`
+// Note: Articles are now fetched from WordPress instead of Sanity
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getPageBySlug('coins-des-docs')
@@ -45,26 +31,11 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-interface SanityArticle extends SanityDocument {
-  title: string
-  slug: { current: string }
-  excerpt?: string
-  publishedAt: string
-  image?: any
-  category?: string
-  categoryTitle?: string
-  tags?: string[]
-  accessLevel?: 'public' | 'members' | 'premium'
-  price?: number
-}
+// Using WordPressPost interface from wordpress.ts
 
 export default async function CoinsDesDocsPage() {
   const content = await getPageBySlug('coins-des-docs')
-  const articles = (await sanityClient.fetch(
-    ARTICLES_QUERY,
-    {},
-    { next: { revalidate: 10 } }
-  )) as SanityArticle[]
+  const articles = await getWordPressPosts()
 
   // If no Sanity page content exists, show fallback
   if (!content) {
@@ -178,7 +149,7 @@ export default async function CoinsDesDocsPage() {
 }
 
 // Fallback component when no Sanity page content exists
-function FallbackCoinsDesDocsPage({ articles }: { articles: SanityArticle[] }) {
+function FallbackCoinsDesDocsPage({ articles }: { articles: WordPressPost[] }) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
@@ -275,11 +246,11 @@ function FallbackCoinsDesDocsPage({ articles }: { articles: SanityArticle[] }) {
 }
 
 interface ArticleCardProps {
-  article: SanityArticle
+  article: WordPressPost
 }
 
 function ArticleCard({ article }: ArticleCardProps) {
-  const imageUrl = article.image ? urlFor(article.image)?.width(400).height(250).url() : null
+  const imageUrl = article.image || article.featured_image || null
   const accessLevel = article.accessLevel || 'public'
   
   // Access level badge configuration
@@ -305,7 +276,7 @@ function ArticleCard({ article }: ArticleCardProps) {
   
   return (
     <Link 
-      href={`/posts/${article.slug.current}`}
+      href={`/posts/${getPostSlug(article)}`}
       className="group block bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-xl transition-all duration-300"
     >
       {/* Image */}
@@ -330,9 +301,9 @@ function ArticleCard({ article }: ArticleCardProps) {
       
       <div className="p-6">
         {/* Category */}
-        {article.categoryTitle && (
+        {article.category && (
           <span className="inline-block px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded mb-3">
-            {article.categoryTitle}
+            {article.category}
           </span>
         )}
         
@@ -342,9 +313,9 @@ function ArticleCard({ article }: ArticleCardProps) {
         </h3>
         
         {/* Excerpt */}
-        {article.excerpt && (
+        {(article.excerpt || article.body) && (
           <p className="text-sm text-gray-600 dark:text-white mb-4 line-clamp-3">
-            {article.excerpt}
+            {cleanExcerpt(article.excerpt || article.body, 150)}
           </p>
         )}
         
@@ -366,7 +337,7 @@ function ArticleCard({ article }: ArticleCardProps) {
         <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
           <span className="text-xs text-gray-500 dark:text-white flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5" />
-            {new Date(article.publishedAt).toLocaleDateString('fr-FR', {
+            {new Date(article.publishedAt || article.created_at || new Date()).toLocaleDateString('fr-FR', {
               day: 'numeric',
               month: 'short',
               year: 'numeric'

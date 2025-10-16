@@ -13,7 +13,13 @@ export default function DevWrapper({ children }: DevWrapperProps) {
   const pathname = usePathname()
 
   useEffect(() => {
-    // Check for dev authentication in both development and production
+    // Auto-authenticate in development/localhost
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      setIsAuthenticated(true)
+      return
+    }
+    
+    // Check for dev authentication in production
     const devAuth = sessionStorage.getItem('dev-auth')
     
     if (devAuth === 'true') {

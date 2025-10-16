@@ -1,488 +1,437 @@
-// WordPress/TutorLMS API Integration
-import { TutorCourse, TutorEnrollment, WordPressUser, WordPressPost } from '@/types/wordpress'
+import axios from 'axios';
 
-const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://cms.helvetiforma.ch'
-const WORDPRESS_APP_USER = process.env.WORDPRESS_APP_USER || 'service-account'
-const WORDPRESS_APP_PASSWORD = process.env.WORDPRESS_APP_PASSWORD || ''
+const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
 
-// Configuration des en-têtes pour l'authentification
-const getAuthHeaders = () => {
-  const credentials = Buffer.from(`${WORDPRESS_APP_USER}:${WORDPRESS_APP_PASSWORD}`).toString('base64')
-  return {
-    'Authorization': `Basic ${credentials}`,
+// Types pour les articles WordPress
+export interface WordPressPost {
+  _id: number;
+  title: string;
+  slug: string | { current: string };
+  excerpt: string;
+  body: string;
+  publishedAt: string;
+  accessLevel: 'public' | 'members' | 'premium';
+  price: number;
+  image: string | null;
+  category: string | null;
+  tags: string[];
+  // Propriétés additionnelles pour compatibilité
+  created_at?: string;
+  updated_at?: string;
+  featured_image?: string;
+  content?: string;
+  // Métadonnées ACF et WordPress
+  acf?: any;
+  meta?: any;
+  // Données WooCommerce
+  woocommerce?: any;
+}
+
+// Client WordPress standard (avec cookies pour les sessions)
+export const wordpressClient = axios.create({
+  baseURL: `${WORDPRESS_URL}/wp-json`,
+  headers: {
     'Content-Type': 'application/json',
+  },
+  withCredentials: true, // Important: permet l'envoi des cookies de session
+});
+
+// Client WooCommerce (avec authentification)
+export const woocommerceClient = axios.create({
+  baseURL: `${WORDPRESS_URL}/wp-json`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  auth: {
+    username: process.env.WOOCOMMERCE_CONSUMER_KEY || '',
+    password: process.env.WOOCOMMERCE_CONSUMER_SECRET || ''
   }
-}
+});
 
-// Fonction utilitaire pour les appels API
-async function wordpressApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${WORDPRESS_URL}/wp-json${endpoint}`
-  
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...getAuthHeaders(),
-      ...options.headers,
-    },
-  })
+// Client authentifié
+export const wordpressAuthClient = (token: string) => axios.create({
+  baseURL: `${WORDPRESS_URL}/wp-json`,
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  },
+});
 
-  if (!response.ok) {
-    throw new Error(`WordPress API Error: ${response.status} ${response.statusText}`)
-  }
-
-  return response.json()
-}
-
-// === TUTOR LMS FUNCTIONS ===
-
-/**
- * Récupère tous les cours TutorLMS
- */
-export async function getTutorCourses(params?: {
-  per_page?: number
-  page?: number
-  search?: string
-  status?: 'publish' | 'draft' | 'private'
-}): Promise<TutorCourse[]> {
+// Récupérer tous les articles
+export async function getWordPressPosts(): Promise<WordPressPost[]> {
   try {
-    // First try to get TutorLMS courses
-    const queryParams = new URLSearchParams({
-      per_page: params?.per_page?.toString() || '10',
-      page: params?.page?.toString() || '1',
-      status: params?.status || 'publish',
-      ...(params?.search && { search: params.search }),
-    })
-
-    try {
-      const courses = await wordpressApi<any[]>(`/tutor/v1/courses?${queryParams}`)
-      
-      return courses.map(course => ({
-        id: course.id,
-        title: course.title?.rendered || course.title,
-        description: course.excerpt?.rendered || course.content?.rendered || '',
-        content: course.content?.rendered || '',
-        price: course.price || 0,
-        instructor: course.instructor?.display_name || 'Instructeur',
-        instructor_id: course.instructor?.ID || course.author,
-        thumbnail: course.featured_image || course.thumbnail || '',
-        duration: course.duration || '',
-        level: course.level || 'beginner',
-        category: course.course_category?.[0]?.name || '',
-        enrollment_url: `${WORDPRESS_URL}/courses/${course.slug}`,
-        purchase_url: `${WORDPRESS_URL}/checkout?course=${course.id}`,
-        slug: course.slug,
-        status: course.status,
-        created_at: course.date,
-        updated_at: course.modified,
-        enrolled_count: course.enrolled || 0,
-        max_students: course.max_students || 0,
-        prerequisites: course.prerequisites || [],
-        objectives: course.objectives || [],
-        features: course.features || [],
-      }))
-    } catch (tutorError) {
-      console.log('TutorLMS API not accessible, trying WordPress posts as courses...')
-      
-      // Fallback to WordPress posts as courses
-      const posts = await wordpressApi<any[]>(`/wp/v2/posts?${queryParams}`)
-      
-      return posts.map(post => ({
-        id: post.id,
-        title: post.title?.rendered || post.title,
-        description: post.excerpt?.rendered || post.content?.rendered?.substring(0, 200) + '...' || '',
-        content: post.content?.rendered || '',
-        price: 0, // Free for now
-        instructor: 'HelvetiForma',
-        instructor_id: post.author,
-        thumbnail: post.featured_media ? `${WORDPRESS_URL}/wp-json/wp/v2/media/${post.featured_media}` : '',
-        duration: 'À déterminer',
-        level: 'beginner' as const,
-        category: post.categories?.[0] || 'Formation',
-        enrollment_url: `${WORDPRESS_URL}/${post.slug}`,
-        purchase_url: `${WORDPRESS_URL}/${post.slug}`,
-        slug: post.slug,
-        status: post.status,
-        created_at: post.date,
-        updated_at: post.modified,
-        enrolled_count: 0,
-        max_students: 100,
-        prerequisites: [],
-        objectives: ['Comprendre les concepts de base'],
-        features: ['Contenu accessible', 'Formation gratuite'],
-      }))
-    }
-  } catch (error) {
-    console.error('Error fetching courses:', error)
+    console.log('🔍 Récupération des articles WordPress...');
     
-    // Fallback avec des données simulées en cas d'erreur
-    return [
-      {
-        id: 1,
-        title: "Comptabilité Suisse Fondamentale",
-        description: "Maîtrisez les bases de la comptabilité selon les normes suisses",
-        content: "<p>Formation complète en comptabilité suisse...</p>",
-        price: 299,
-        instructor: "Marie Dubois",
-        instructor_id: 1,
-        thumbnail: "/images/course-comptabilite.jpg",
-        duration: "8 semaines",
-        level: "beginner",
-        category: "Comptabilité",
-        enrollment_url: `${WORDPRESS_URL}/courses/comptabilite-suisse`,
-        purchase_url: `${WORDPRESS_URL}/checkout?course=1`,
-        slug: "comptabilite-suisse",
-        status: "publish",
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-15T00:00:00Z",
-        enrolled_count: 45,
-        max_students: 100,
-        prerequisites: [],
-        objectives: ["Comprendre les principes comptables suisses", "Maîtriser les écritures de base"],
-        features: ["Accès à vie", "Certificat inclus", "Support 24/7"],
-      },
-      {
-        id: 2,
-        title: "Gestion des Salaires en Suisse",
-        description: "Formation complète sur le calcul et la gestion des salaires",
-        content: "<p>Apprenez à calculer et gérer les salaires...</p>",
-        price: 399,
-        instructor: "Jean-Claude Martin",
-        instructor_id: 2,
-        thumbnail: "/images/course-salaires.jpg",
-        duration: "6 semaines",
-        level: "intermediate",
-        category: "RH",
-        enrollment_url: `${WORDPRESS_URL}/courses/gestion-salaires`,
-        purchase_url: `${WORDPRESS_URL}/checkout?course=2`,
-        slug: "gestion-salaires",
-        status: "publish",
-        created_at: "2024-01-05T00:00:00Z",
-        updated_at: "2024-01-20T00:00:00Z",
-        enrolled_count: 32,
-        max_students: 80,
-        prerequisites: ["Bases de comptabilité"],
-        objectives: ["Calculer les salaires suisses", "Gérer les charges sociales"],
-        features: ["Cas pratiques", "Outils Excel", "Suivi personnalisé"],
+    // Utiliser l'API WordPress standard au lieu de l'endpoint personnalisé
+    const response = await wordpressClient.get('/wp/v2/posts', {
+      params: {
+        per_page: 100, // Récupérer jusqu'à 100 articles
+        status: 'publish' // Seulement les articles publiés
       }
-    ]
-  }
-}
-
-/**
- * Récupère un cours TutorLMS par son ID
- */
-export async function getTutorCourse(id: number): Promise<TutorCourse | null> {
-  try {
-    const course = await wordpressApi<any>(`/tutor/v1/courses/${id}`)
+    });
     
-    return {
-      id: course.id,
-      title: course.title?.rendered || course.title,
-      description: course.excerpt?.rendered || course.content?.rendered || '',
-      content: course.content?.rendered || '',
-      price: course.price || 0,
-      instructor: course.instructor?.display_name || 'Instructeur',
-      instructor_id: course.instructor?.ID || course.author,
-      thumbnail: course.featured_image || course.thumbnail || '',
-      duration: course.duration || '',
-      level: course.level || 'beginner',
-      category: course.course_category?.[0]?.name || '',
-      enrollment_url: `${WORDPRESS_URL}/courses/${course.slug}`,
-      purchase_url: `${WORDPRESS_URL}/checkout?course=${course.id}`,
-      slug: course.slug,
-      status: course.status,
-      created_at: course.date,
-      updated_at: course.modified,
-      enrolled_count: course.enrolled || 0,
-      max_students: course.max_students || 0,
-      prerequisites: course.prerequisites || [],
-      objectives: course.objectives || [],
-      features: course.features || [],
-    }
-  } catch (error) {
-    console.error(`Error fetching Tutor course ${id}:`, error)
-    return null
-  }
-}
-
-/**
- * Inscrit un utilisateur à un cours
- */
-export async function enrollUserInCourse(userId: number, courseId: number): Promise<TutorEnrollment | null> {
-  try {
-    const enrollment = await wordpressApi<any>('/tutor/v1/enroll', {
-      method: 'POST',
-      body: JSON.stringify({
-        user_id: userId,
-        course_id: courseId,
-      }),
-    })
-
-    return {
-      id: enrollment.id,
-      user_id: userId,
-      course_id: courseId,
-      enrolled_at: enrollment.enrolled_at || new Date().toISOString(),
-      status: enrollment.status || 'enrolled',
-      progress: enrollment.progress || 0,
-      completed_at: enrollment.completed_at,
-    }
-  } catch (error) {
-    console.error('Error enrolling user in course:', error)
-    return null
-  }
-}
-
-/**
- * Récupère les inscriptions d'un utilisateur
- */
-export async function getUserEnrollments(userId: number): Promise<TutorEnrollment[]> {
-  try {
-    const enrollments = await wordpressApi<any[]>(`/tutor/v1/enrollments?user_id=${userId}`)
+    console.log(`✅ ${response.data.length} articles récupérés depuis WordPress`);
     
-    return enrollments.map(enrollment => ({
-      id: enrollment.id,
-      user_id: userId,
-      course_id: enrollment.course_id,
-      enrolled_at: enrollment.enrolled_at,
-      status: enrollment.status || 'enrolled',
-      progress: enrollment.progress || 0,
-      completed_at: enrollment.completed_at,
-    }))
+    // Formater les articles selon notre interface
+    const formattedPosts = await Promise.all(
+      response.data.map((post: any) => formatWordPressPost(post))
+    );
+    
+    console.log(`✅ ${formattedPosts.length} articles formatés avec succès`);
+    return formattedPosts;
   } catch (error) {
-    console.error('Error fetching user enrollments:', error)
-    return []
+    console.error('❌ Erreur récupération articles WordPress:', error);
+    return [];
   }
 }
 
-// === WORDPRESS USER FUNCTIONS ===
+// Formater un article WordPress selon notre interface
+async function formatWordPressPost(post: any): Promise<WordPressPost> {
+  console.log('🔍 formatWordPressPost - Début traitement article:', post.id, post.title?.rendered);
+  
+  // Déterminer le prix depuis ACF d'abord
+  let price = 0;
+  if (post.acf?.price) {
+    price = parseFloat(post.acf.price);
+    console.log('🔍 Prix ACF trouvé:', price);
+  }
 
-/**
- * Authentifie un utilisateur WordPress
- */
-export async function authenticateWordPressUser(username: string, password: string): Promise<{
-  success: boolean
-  user?: WordPressUser
-  token?: string
-  error?: string
-}> {
+  // Formater l'article selon notre interface (sans WooCommerce pour l'instant)
+  const formattedPost = {
+    _id: post.id,
+    title: post.title.rendered,
+    slug: post.slug,
+    excerpt: post.excerpt.rendered,
+    body: post.content.rendered,
+    publishedAt: post.date,
+    accessLevel: post.acf?.access_level || post.acf?.access || 'public',
+    price: price,
+    image: post.featured_media ? `${WORDPRESS_URL}/wp-content/uploads/` : null,
+    category: post.categories?.[0] ? 'Category' : null,
+    tags: post.tags || [],
+    // Ajouter les métadonnées ACF et meta
+    acf: post.acf || {},
+    meta: post.meta || {},
+    // WooCommerce sera ajouté plus tard si nécessaire
+    woocommerce: null
+  };
+
+  console.log('✅ formatWordPressPost - Article formaté:', formattedPost.title, 'Prix:', formattedPost.price);
+  return formattedPost;
+}
+
+// Récupérer un article par slug
+export async function getWordPressPost(slug: string): Promise<WordPressPost | null> {
   try {
-    // Tentative d'authentification JWT
-    const jwtResponse = await fetch(`${WORDPRESS_URL}/wp-json/jwt-auth/v1/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    })
+    // D'abord, essayer de récupérer par slug via l'API WordPress standard
+    const response = await wordpressClient.get(`/wp/v2/posts`, {
+      params: {
+        slug: slug,
+        per_page: 1
+      }
+    });
+    
+    if (response.data && response.data.length > 0) {
+      const post = response.data[0];
+      return await formatWordPressPost(post);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Erreur récupération article WordPress:', error);
+    return null;
+  }
+}
 
-    if (jwtResponse.ok) {
-      const jwtData = await jwtResponse.json()
+// Récupérer un article par ID
+export async function getWordPressPostById(id: string | number): Promise<WordPressPost | null> {
+  try {
+    console.log('🔍 Récupération article WordPress par ID:', id, typeof id);
+    
+    // Validation de l'ID
+    if (!id || id === 'undefined' || id === 'null' || id === '') {
+      console.error('❌ ID invalide fourni:', id);
+      return null;
+    }
+    
+    // Vérifier si c'est un ID numérique ou un slug
+    const isNumericId = !isNaN(Number(id)) && Number(id) > 0;
+    
+    if (isNumericId) {
+      // Essayer par ID numérique avec l'API WordPress native
+      try {
+        console.log('🔄 Tentative par ID numérique...');
+        const url = `/wp/v2/posts/${id}`;
+        console.log('🔍 URL de requête:', url);
+        console.log('🔍 Base URL:', wordpressClient.defaults.baseURL);
+        console.log('🔍 URL complète:', `${wordpressClient.defaults.baseURL}${url}`);
+        
+        const response = await wordpressClient.get(url);
+        const post = response.data;
+        
+        console.log('🔍 Réponse WordPress:', {
+          status: response.status,
+          data: post,
+          title: post?.title?.rendered
+        });
+        
+        if (post) {
+          console.log('✅ Article WordPress trouvé par ID:', post.title?.rendered || 'Sans titre');
+          return await formatWordPressPost(post);
+        }
+      } catch (idError: any) {
+        console.log('⚠️ Article non trouvé par ID numérique, tentative par slug...', {
+          message: idError.message,
+          status: idError.response?.status,
+          data: idError.response?.data,
+          url: idError.config?.url
+        });
+      }
+    }
+    
+    // Essayer par slug avec l'API WordPress native
+    try {
+      console.log('🔄 Tentative par slug...');
+      const slugResponse = await wordpressClient.get('/wp/v2/posts', {
+        params: { slug: id, per_page: 1 }
+      });
       
-      if (jwtData.token) {
-        // Récupérer les informations utilisateur
-        const userResponse = await fetch(`${WORDPRESS_URL}/wp-json/wp/v2/users/me`, {
-          headers: {
-            'Authorization': `Bearer ${jwtData.token}`,
-          },
-        })
+      console.log('🔍 Slug response:', {
+        status: slugResponse.status,
+        dataLength: slugResponse.data?.length,
+        data: slugResponse.data
+      });
+      
+      if (slugResponse.data && slugResponse.data.length > 0) {
+        console.log('✅ Article trouvé par slug:', slugResponse.data[0].title?.rendered);
+        const formattedPost = await formatWordPressPost(slugResponse.data[0]);
+        console.log('🔍 Formatted post:', formattedPost);
+        return formattedPost;
+      } else {
+        console.log('⚠️ Aucun article trouvé par slug dans la réponse');
+      }
+    } catch (slugError: any) {
+      console.log('⚠️ Erreur lors de la recherche par slug:', {
+        message: slugError.message,
+        status: slugError.response?.status,
+        data: slugError.response?.data
+      });
+    }
+    
+    // Dernière tentative: récupérer tous les articles et chercher localement
+    try {
+      console.log('🔄 Tentative avec récupération de tous les articles...');
+      const response = await wordpressClient.get('/wp/v2/posts', {
+        params: { per_page: 100, status: 'publish' }
+      });
+      const posts = response.data;
+      
+      if (posts && Array.isArray(posts)) {
+        // Chercher par ID numérique ou par slug
+        const isNumericId = !isNaN(Number(id)) && Number(id) > 0;
+        let foundPost = null;
+        
+        if (isNumericId) {
+          foundPost = posts.find((post: any) => post.id === Number(id));
+        } else {
+          foundPost = posts.find((post: any) => post.slug === id);
+        }
+        
+        if (foundPost) {
+          console.log('✅ Article trouvé via recherche globale:', foundPost.title?.rendered || 'Sans titre');
+          return await formatWordPressPost(foundPost);
+        }
+      }
+    } catch (globalError: any) {
+      console.log('⚠️ Recherche globale échouée:', {
+        message: globalError.message,
+        status: globalError.response?.status
+      });
+    }
+    
+    console.error('❌ Article non trouvé ni par ID ni par slug:', id);
+    return null;
+    
+  } catch (error: any) {
+    console.error('❌ Erreur récupération article WordPress:', {
+      id,
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      code: error.code,
+      url: error.config?.url,
+      baseURL: error.config?.baseURL,
+      fullError: error
+    });
+    return null;
+  }
+}
 
-        if (userResponse.ok) {
-          const userData = await userResponse.json()
+// Alias pour compatibilité
+export const getWordPressPostBySlug = getWordPressPost;
+
+// Helper function to get slug string from WordPress post
+export function getPostSlug(post: WordPressPost): string {
+  return typeof post.slug === 'string' ? post.slug : post.slug?.current || '';
+}
+
+// Vérifier achat utilisateur via WooCommerce
+export async function checkWordPressPurchase(userId: string, postId: string): Promise<boolean> {
+  try {
+    console.log('🔍 checkWordPressPurchase called with:', { userId, postId })
+    
+    // Récupérer les commandes de l'utilisateur
+    const orders = await getWordPressUserPurchases(userId);
+    console.log('🔍 WooCommerce orders found:', orders.length);
+    
+    // Vérifier si une commande contient l'article spécifique
+    const hasPurchased = orders.some((order: any) =>
+      order.line_items.some((item: any) => {
+        // Vérifier si l'ID de l'article est dans les métadonnées de la ligne de commande
+        const postIdMeta = item.meta_data?.find((meta: any) => meta.key === '_post_id')
+        if (postIdMeta && postIdMeta.value === postId) {
+          return true
+        }
+        // Vérifier si l'ID de l'article est dans le SKU (format: article-{id})
+        if (item.sku === `article-${postId}`) {
+          return true
+        }
+        return false
+      })
+    );
+    
+    console.log('🔍 Purchase check result:', { hasPurchased, userId, postId });
+    return hasPurchased;
+  } catch (error) {
+    console.error('Erreur vérification achat WordPress:', error);
+    return false;
+  }
+}
+
+// Récupérer les achats d'un utilisateur via WooCommerce
+export async function getWordPressUserPurchases(userId: string): Promise<any[]> {
+  try {
+    console.log('🔍 Récupération des achats pour l\'utilisateur:', userId);
+    
+    // Récupérer toutes les commandes complétées
+    const response = await woocommerceClient.get('/wc/v3/orders', {
+      params: {
+        status: 'completed',
+        per_page: 100
+      }
+    });
+    
+    const allOrders = response.data || [];
+    console.log(`📦 ${allOrders.length} commandes totales trouvées`);
+    
+    // Filtrer les commandes qui appartiennent à cet utilisateur
+    const userOrders = allOrders.filter((order: any) => {
+      // Vérifier par customer_id si c'est un ID numérique
+      if (!isNaN(Number(userId)) && order.customer_id === Number(userId)) {
+        return true;
+      }
+      
+      // Vérifier par email dans billing
+      if (order.billing?.email === userId) {
+        return true;
+      }
+      
+      // Vérifier par _user_id dans les métadonnées
+      const userIdMeta = order.meta_data?.find((meta: any) => meta.key === '_user_id');
+      if (userIdMeta && userIdMeta.value === userId) {
+        return true;
+      }
+      
+      return false;
+    });
+    
+    console.log(`✅ ${userOrders.length} commandes trouvées pour l'utilisateur ${userId}`);
+    
+    return userOrders;
+  } catch (error) {
+    console.error('❌ Erreur récupération achats WordPress:', error);
+    return [];
+  }
+}
+
+// Récupérer les articles achetés par un utilisateur avec détails
+export async function getUserPurchasedArticles(userId: string): Promise<WordPressPost[]> {
+  try {
+    console.log('🔍 Récupération des articles achetés pour l\'utilisateur:', userId);
+    
+    // Récupérer les commandes de l'utilisateur
+    const orders = await getWordPressUserPurchases(userId);
+    
+    if (orders.length === 0) {
+      console.log('ℹ️ Aucune commande trouvée pour l\'utilisateur');
+      return [];
+    }
+    
+    // Extraire les IDs d'articles des commandes
+    const articleIds = new Set<string>();
+    
+    for (const order of orders) {
+      if (order.line_items && Array.isArray(order.line_items)) {
+        for (const item of order.line_items) {
+          // Chercher dans les métadonnées pour l'ID de l'article
+          if (item.meta_data) {
+            const postIdMeta = item.meta_data.find((meta: any) => meta.key === '_post_id');
+            if (postIdMeta && postIdMeta.value) {
+              articleIds.add(postIdMeta.value.toString());
+            }
+          }
           
-          return {
-            success: true,
-            user: {
-              id: userData.id,
-              username: userData.username,
-              email: userData.email,
-              first_name: userData.first_name || '',
-              last_name: userData.last_name || '',
-              display_name: userData.name,
-              roles: userData.roles || ['subscriber'],
-              avatar_url: userData.avatar_urls?.['96'] || '',
-            },
-            token: jwtData.token,
+          // Aussi vérifier le SKU pour les articles (format: article-{id})
+          if (item.sku && item.sku.startsWith('article-')) {
+            const postId = item.sku.replace('article-', '');
+            articleIds.add(postId);
           }
         }
       }
     }
-
-    return {
-      success: false,
-      error: 'Nom d\'utilisateur ou mot de passe incorrect',
-    }
-  } catch (error) {
-    console.error('WordPress authentication error:', error)
-    return {
-      success: false,
-      error: 'Erreur de connexion au serveur',
-    }
-  }
-}
-
-/**
- * Crée un nouvel utilisateur WordPress
- */
-export async function createWordPressUser(userData: {
-  username: string
-  email: string
-  password: string
-  first_name?: string
-  last_name?: string
-}): Promise<{ success: boolean; user?: WordPressUser; error?: string }> {
-  try {
-    const user = await wordpressApi<any>('/wp/v2/users', {
-      method: 'POST',
-      body: JSON.stringify({
-        username: userData.username,
-        email: userData.email,
-        password: userData.password,
-        first_name: userData.first_name || '',
-        last_name: userData.last_name || '',
-        roles: ['subscriber'],
-      }),
-    })
-
-    return {
-      success: true,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        display_name: user.name,
-        roles: user.roles,
-        avatar_url: user.avatar_urls?.['96'] || '',
-      },
-    }
-  } catch (error) {
-    console.error('Error creating WordPress user:', error)
-    return {
-      success: false,
-      error: 'Erreur lors de la création du compte',
-    }
-  }
-}
-
-/**
- * Vérifie la disponibilité d'un nom d'utilisateur
- */
-export async function checkUsernameAvailability(username: string): Promise<boolean> {
-  try {
-    await wordpressApi(`/wp/v2/users?search=${encodeURIComponent(username)}`)
-    return false // Si aucune erreur, l'utilisateur existe
-  } catch (error) {
-    return true // Si erreur 404, l'utilisateur n'existe pas
-  }
-}
-
-/**
- * Réinitialise le mot de passe d'un utilisateur
- */
-export async function resetUserPassword(email: string): Promise<{ success: boolean; error?: string }> {
-  try {
-    await wordpressApi('/wp/v2/users/reset-password', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    })
-
-    return { success: true }
-  } catch (error) {
-    console.error('Error resetting password:', error)
-    return {
-      success: false,
-      error: 'Erreur lors de la réinitialisation du mot de passe',
-    }
-  }
-}
-
-// === WORDPRESS POSTS FUNCTIONS ===
-
-/**
- * Récupère tous les posts WordPress
- */
-export async function getWordPressPosts(params?: {
-  per_page?: number
-  page?: number
-  search?: string
-  status?: 'publish' | 'draft' | 'private'
-  categories?: string
-}): Promise<WordPressPost[]> {
-  try {
-    const queryParams = new URLSearchParams({
-      per_page: params?.per_page?.toString() || '10',
-      page: params?.page?.toString() || '1',
-      status: params?.status || 'publish',
-      ...(params?.search && { search: params.search }),
-      ...(params?.categories && { categories: params.categories }),
-    })
-
-    const posts = await wordpressApi<any[]>(`/wp/v2/posts?${queryParams}`)
     
-    return posts.map(post => ({
-      id: post.id,
-      title: post.title?.rendered || post.title,
-      content: post.content?.rendered || '',
-      excerpt: post.excerpt?.rendered || '',
-      slug: post.slug,
-      status: post.status,
-      author_id: post.author,
-      featured_image: post.featured_media ? `${WORDPRESS_URL}/wp-content/uploads/${post.featured_media}` : undefined,
-      categories: post.categories || [],
-      tags: post.tags || [],
-      created_at: post.date,
-      updated_at: post.modified,
-    }))
-  } catch (error) {
-    console.error('Error fetching WordPress posts:', error)
-    return []
-  }
-}
-
-/**
- * Récupère un post WordPress par son slug
- */
-export async function getWordPressPostBySlug(slug: string): Promise<WordPressPost | null> {
-  try {
-    const posts = await wordpressApi<any[]>(`/wp/v2/posts?slug=${slug}`)
+    console.log(`📚 ${articleIds.size} articles uniques trouvés dans les commandes`);
     
-    if (posts.length === 0) {
-      return null
+    // Récupérer les détails de chaque article
+    const articles: WordPressPost[] = [];
+    
+    for (const articleId of articleIds) {
+      try {
+        const article = await getWordPressPostById(articleId);
+        if (article) {
+          articles.push(article);
+        }
+      } catch (error) {
+        console.error(`❌ Erreur récupération article ${articleId}:`, error);
+      }
     }
     
-    const post = posts[0]
+    console.log(`✅ ${articles.length} articles récupérés avec succès`);
+    return articles;
     
-    return {
-      id: post.id,
-      title: post.title?.rendered || post.title,
-      content: post.content?.rendered || '',
-      excerpt: post.excerpt?.rendered || '',
-      slug: post.slug,
-      status: post.status,
-      author_id: post.author,
-      featured_image: post.featured_media ? await getFeaturedImageUrl(post.featured_media) : undefined,
-      categories: post.categories || [],
-      tags: post.tags || [],
-      created_at: post.date,
-      updated_at: post.modified,
-    }
   } catch (error) {
-    console.error('Error fetching WordPress post by slug:', error)
-    return null
+    console.error('❌ Erreur récupération articles achetés:', error);
+    return [];
   }
 }
 
-/**
- * Récupère l'URL de l'image mise en avant
- */
-async function getFeaturedImageUrl(mediaId: number): Promise<string | undefined> {
+// Fonctions TutorLMS (placeholders)
+export async function getTutorCourses() {
   try {
-    const media = await wordpressApi<any>(`/wp/v2/media/${mediaId}`)
-    return media.source_url || undefined
+    const response = await wordpressClient.get('/tutor/v1/courses');
+    return response.data;
   } catch (error) {
-    console.error('Error fetching featured image:', error)
-    return undefined
+    console.error('Erreur récupération cours TutorLMS:', error);
+    return [];
+  }
+}
+
+export async function getTutorCourse(courseId: string) {
+  try {
+    const response = await wordpressClient.get(`/tutor/v1/courses/${courseId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Erreur récupération cours TutorLMS:', error);
+    return null;
   }
 }

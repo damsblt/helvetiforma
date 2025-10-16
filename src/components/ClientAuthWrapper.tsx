@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
-import PaymentButton from './PaymentButton'
+import { useAuth } from '@/contexts/AuthContext'
+import OptimizedPaymentButton from './OptimizedPaymentButton'
 import { useSearchParams } from 'next/navigation'
 
 interface ClientAuthWrapperProps {
@@ -22,16 +22,15 @@ export default function ClientAuthWrapper({
   isPremium, 
   children 
 }: ClientAuthWrapperProps) {
-  const { data: session, status } = useSession()
+  const { user } = useAuth()
   const [hasPurchased, setHasPurchased] = useState(false)
   const [loading, setLoading] = useState(true)
   const searchParams = useSearchParams()
   const paymentSuccess = searchParams.get('payment') === 'success'
-  const user = session?.user
 
   useEffect(() => {
-    setLoading(status === 'loading')
-  }, [status])
+    setLoading(false) // No loading state needed with our auth system
+  }, [])
 
   // Auto-refresh when payment success is detected
   useEffect(() => {
@@ -76,7 +75,7 @@ export default function ClientAuthWrapper({
               Pour accéder à l'intégralité de cet article premium ({price} CHF), effectuez votre achat ci-dessous.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <PaymentButton
+              <OptimizedPaymentButton
                 postId={postId}
                 postTitle={postTitle}
                 price={price}
