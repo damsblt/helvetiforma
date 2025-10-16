@@ -32,40 +32,14 @@ export default function AdminDashboard() {
   })
 
   useEffect(() => {
-    const loadStats = async () => {
-      try {
-        // Charger les vraies statistiques depuis Sanity
-        const [users, purchases, articles] = await Promise.all([
-          sanityClient.fetch(`*[_type == "user"]`),
-          sanityClient.fetch(`*[_type == "purchase"]`),
-          sanityClient.fetch(`*[_type == "post"]`)
-        ])
-
-        const revenue = purchases
-          .filter((p: any) => p.status === 'completed')
-          .reduce((sum: number, p: any) => sum + p.amount, 0)
-
-        setStats({
-          users: users.length,
-          purchases: purchases.length,
-          revenue: revenue,
-          articles: articles.length,
-          lastUpdate: new Date().toLocaleDateString('fr-CH'),
-        })
-      } catch (error) {
-        console.error('Erreur lors du chargement des statistiques:', error)
-        // Valeurs par défaut en cas d'erreur
-        setStats({
-          users: 0,
-          purchases: 0,
-          revenue: 0,
-          articles: 0,
-          lastUpdate: new Date().toLocaleDateString('fr-CH'),
-        })
-      }
-    }
-    
-    loadStats()
+    // Les statistiques sont maintenant gérées via WordPress/WooCommerce
+    setStats({
+      users: 0, // Géré via WordPress
+      purchases: 0, // Géré via WooCommerce
+      revenue: 0, // Géré via WooCommerce
+      articles: 0, // Géré via WordPress
+      lastUpdate: new Date().toLocaleDateString('fr-CH'),
+    })
   }, [])
 
   const quickActions = [
@@ -119,10 +93,10 @@ export default function AdminDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { title: 'Utilisateurs', value: stats.users, icon: '👥', color: 'text-blue-600' },
-          { title: 'Achats', value: stats.purchases, icon: '💳', color: 'text-green-600' },
-          { title: 'Chiffre d\'affaires', value: `${stats.revenue} CHF`, icon: '💰', color: 'text-purple-600' },
-          { title: 'Articles', value: stats.articles, icon: '📝', color: 'text-orange-600' },
+          { title: 'Utilisateurs', value: 'WordPress', icon: '👥', color: 'text-blue-600' },
+          { title: 'Achats', value: 'WooCommerce', icon: '💳', color: 'text-green-600' },
+          { title: 'Chiffre d\'affaires', value: 'WooCommerce', icon: '💰', color: 'text-purple-600' },
+          { title: 'Articles', value: 'WordPress', icon: '📝', color: 'text-orange-600' },
         ].map((stat, index) => (
           <motion.div
             key={stat.title}

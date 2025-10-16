@@ -96,6 +96,17 @@ async function formatWordPressPost(post: any): Promise<WordPressPost> {
     console.log('🔍 Prix ACF trouvé:', price);
   }
 
+  // Récupérer l'image featured
+  let featuredImageUrl = null;
+  if (post.featured_media) {
+    try {
+      featuredImageUrl = await getFeaturedImageUrl(post.featured_media);
+      console.log('🔍 Image featured récupérée:', featuredImageUrl);
+    } catch (error) {
+      console.error('❌ Erreur récupération image featured:', error);
+    }
+  }
+
   // Formater l'article selon notre interface (sans WooCommerce pour l'instant)
   const formattedPost = {
     _id: post.id,
@@ -106,7 +117,8 @@ async function formatWordPressPost(post: any): Promise<WordPressPost> {
     publishedAt: post.date,
     accessLevel: post.acf?.access_level || post.acf?.access || 'public',
     price: price,
-    image: post.featured_media ? `${WORDPRESS_URL}/wp-content/uploads/` : null,
+    image: featuredImageUrl,
+    featured_image: featuredImageUrl || undefined,
     category: post.categories?.[0] ? 'Category' : null,
     tags: post.tags || [],
     // Ajouter les métadonnées ACF et meta
@@ -116,7 +128,7 @@ async function formatWordPressPost(post: any): Promise<WordPressPost> {
     woocommerce: null
   };
 
-  console.log('✅ formatWordPressPost - Article formaté:', formattedPost.title, 'Prix:', formattedPost.price);
+  console.log('✅ formatWordPressPost - Article formaté:', formattedPost.title, 'Prix:', formattedPost.price, 'Image:', formattedPost.image);
   return formattedPost;
 }
 
@@ -269,6 +281,19 @@ export async function getWordPressPostById(id: string | number): Promise<WordPre
 
 // Alias pour compatibilité
 export const getWordPressPostBySlug = getWordPressPost;
+
+// Helper function to get featured image URL
+async function getFeaturedImageUrl(mediaId: number): Promise<string | null> {
+  try {
+    const response = await wordpressClient.get(`/wp/v2/media/${mediaId}`);
+    if (response.data && response.data.source_url) {
+      return response.data.source_url;
+    }
+  } catch (error) {
+    console.error('❌ Erreur récupération image featured:', error);
+  }
+  return null;
+}
 
 // Helper function to get slug string from WordPress post
 export function getPostSlug(post: WordPressPost): string {

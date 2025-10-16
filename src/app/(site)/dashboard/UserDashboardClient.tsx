@@ -5,7 +5,26 @@ import { motion } from 'framer-motion'
 import UserContentDashboard from '@/components/dashboard/UserContentDashboard'
 
 export default function UserDashboardClient() {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, loading } = useAuth()
+
+  // Show loading state while authentication is being checked
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="container mx-auto max-w-6xl px-4 py-16">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Chargement...
+            </h1>
+            <p className="text-gray-600 dark:text-white">
+              Vérification de votre authentification.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!isAuthenticated || !user) {
     // Redirect to login with callback URL

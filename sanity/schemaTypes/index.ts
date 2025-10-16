@@ -1,8 +1,6 @@
 import page from './page'
-import {postType} from './postType'
-import {purchaseType} from './purchase'
-import {userType} from './user'
 // sessionsSection removed - using inline threeCardsWithCta instead
+// post, purchase, and user schemas removed - now using WordPress for these
 
-export const schemaTypes = [page, postType, purchaseType, userType]
+export const schemaTypes = [page]
 

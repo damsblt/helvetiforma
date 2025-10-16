@@ -890,6 +890,7 @@ const COURSE_PRICE_MAPPING: { [key: string]: number } = {
   'charges-sociales': 30,
   'charges-sociales-test-123': 30,
   'charges-sociales-test-123-2': 30,
+  'mastering-workplace-communication': 50,
   'formation-gestion-projet': 299,
   'developpement-web-moderne': 199,
 };
@@ -1059,8 +1060,53 @@ function cleanHtmlText(html: string): string {
   return stripped.replace(/\s+/g, ' ').trim();
 }
 
+// Function to fetch image URL from WordPress Media ID
+async function getImageUrlFromMediaId(mediaId: number): Promise<string | undefined> {
+  if (!mediaId) return undefined;
+  
+  try {
+    console.log('🖼️ Fetching image URL for media ID:', mediaId);
+    const response = await fetch(`${TUTOR_API_URL}/wp-json/wp/v2/media/${mediaId}`);
+    
+    if (!response.ok) {
+      console.log('❌ Failed to fetch media:', response.status);
+      return undefined;
+    }
+    
+    const mediaData = await response.json();
+    console.log('🖼️ Media data:', mediaData);
+    
+    // Try to get the best available size
+    if (mediaData.source_url) {
+      console.log('✅ Using source_url:', mediaData.source_url);
+      return mediaData.source_url;
+    }
+    
+    if (mediaData.media_details && mediaData.media_details.sizes) {
+      const sizes = mediaData.media_details.sizes;
+      if (sizes.large && sizes.large.source_url) {
+        console.log('✅ Using large size:', sizes.large.source_url);
+        return sizes.large.source_url;
+      }
+      if (sizes.medium_large && sizes.medium_large.source_url) {
+        console.log('✅ Using medium_large size:', sizes.medium_large.source_url);
+        return sizes.medium_large.source_url;
+      }
+      if (sizes.medium && sizes.medium.source_url) {
+        console.log('✅ Using medium size:', sizes.medium.source_url);
+        return sizes.medium.source_url;
+      }
+    }
+    
+    return undefined;
+  } catch (error) {
+    console.error('❌ Error fetching media:', error);
+    return undefined;
+  }
+}
+
 // Utility function to get proper featured image URL
-function getFeaturedImageUrl(course: any): string | undefined {
+async function getFeaturedImageUrl(course: any): Promise<string | undefined> {
   if (!course) return undefined;
   
   console.log('🖼️ Getting featured image for course:', course.id, 'featured_media:', course.featured_media);
@@ -1141,9 +1187,8 @@ function getFeaturedImageUrl(course: any): string | undefined {
   if (course.meta && course.meta._thumbnail_id) {
     const thumbnailId = course.meta._thumbnail_id;
     if (typeof thumbnailId === 'number') {
-      const fallbackUrl = `${TUTOR_API_URL}/wp-content/uploads/${thumbnailId}`;
-      console.log('⚠️ Using meta _thumbnail_id fallback:', fallbackUrl);
-      return fallbackUrl;
+      console.log('🖼️ Found meta _thumbnail_id, fetching image URL...');
+      return await getImageUrlFromMediaId(thumbnailId);
     }
   }
   
@@ -1371,6 +1416,9 @@ export async function formatTutorCourse(course: any): Promise<TutorCourse> {
     else if (titleLower.includes('charges sociales')) {
       coursePrice = 30;
     }
+    else if (titleLower.includes('workplace communication') || titleLower.includes('communication')) {
+      coursePrice = 50;
+    }
   }
 
   // Resolve category IDs to full category objects
@@ -1390,7 +1438,7 @@ export async function formatTutorCourse(course: any): Promise<TutorCourse> {
     slug: course.slug,
     status: course.status || 'publish',
     author: course.author || 0,
-    featured_image: getFeaturedImageUrl(course), // Use proper image URL function
+    featured_image: await getFeaturedImageUrl(course), // Use proper image URL function
     course_price: coursePrice,
     course_level: course.course_level || course.level || 'beginner',
     course_duration: course.course_duration || course.duration,

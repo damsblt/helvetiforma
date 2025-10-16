@@ -19,7 +19,6 @@ export const navigationConfig: NavigationConfig = {
   main: [
     { name: 'Accueil', href: '/' },
     { name: 'Formations', href: '/courses' },
-    { name: 'Articles', href: '/posts' },
     { name: 'Concept', href: '/concept' },
     { name: 'Sessions', href: '/sessions' },
     { name: 'Coin des docs', href: '/coins-des-docs' },

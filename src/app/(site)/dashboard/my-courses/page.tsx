@@ -12,7 +12,7 @@ interface CourseWithProgress extends TutorCourse {
 }
 
 export default function MyCoursesPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [courses, setCourses] = useState<CourseWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'enrolled' | 'completed' | 'in-progress'>('enrolled');
@@ -77,6 +77,25 @@ export default function MyCoursesPage() {
       day: 'numeric',
     });
   };
+
+  // Show loading state while authentication is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Chargement...
+            </h1>
+            <p className="text-gray-600">
+              Vérification de votre authentification.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
