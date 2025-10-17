@@ -11,6 +11,9 @@ import AnimatedRichTextSection from '@/components/sections/AnimatedRichTextSecti
 import AnimatedContactForm from '@/components/sections/AnimatedContactForm'
 import ContactPageScrollHandler from '@/components/ContactPageScrollHandler'
 
+// Revalidate every 10 seconds for fresh Sanity content
+export const revalidate = 10
+
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getPageBySlug('contact')
   
