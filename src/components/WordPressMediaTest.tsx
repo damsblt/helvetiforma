@@ -35,7 +35,7 @@ export default function WordPressMediaTest() {
           name: 'Accès direct API WordPress',
           url: directUrl,
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error)
         })
       }
 
@@ -57,7 +57,7 @@ export default function WordPressMediaTest() {
           name: 'Accès via proxy',
           url: proxyUrl,
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error)
         })
       }
 
@@ -79,7 +79,7 @@ export default function WordPressMediaTest() {
           name: 'Accès direct image',
           url: imageUrl,
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error)
         })
       }
 
@@ -105,7 +105,7 @@ export default function WordPressMediaTest() {
           name: 'Accès avec authentification',
           url: `https://api.helvetiforma.ch/wp-json/wp/v2/media/${mediaId}`,
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error)
         })
       }
 
