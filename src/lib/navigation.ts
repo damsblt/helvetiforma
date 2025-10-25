@@ -21,7 +21,7 @@ export const navigationConfig: NavigationConfig = {
     // { name: 'E-learning', href: '/e-learning' }, // Hidden from navbar for now
     { name: 'Concept', href: '/concept' },
     { name: 'Sessions', href: '/sessions' },
-    { name: 'Coin des docs', href: '/coins-des-docs' },
+    { name: 'Coin des docs', href: '/coin-des-docs' },
     { name: 'Contact', href: '/contact' },
   ],
   footer: [
@@ -29,7 +29,7 @@ export const navigationConfig: NavigationConfig = {
       title: 'Ressources',
       links: [
         { name: 'Sessions', href: '/sessions' },
-        { name: 'Coin des docs', href: '/coins-des-docs' },
+        { name: 'Coin des docs', href: '/coin-des-docs' },
       ],
     },
     {

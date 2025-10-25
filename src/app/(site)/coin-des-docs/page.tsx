@@ -15,7 +15,7 @@ export const revalidate = 10
 // Note: Articles are now fetched from WordPress instead of Sanity
 
 export async function generateMetadata(): Promise<Metadata> {
-  const content = await getPageBySlug('coins-des-docs')
+  const content = await getPageBySlug('coin-des-docs')
   
   if (!content) {
     return {
@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // Using WordPressPost interface from wordpress.ts
 
 export default async function CoinsDesDocsPage() {
-  const content = await getPageBySlug('coins-des-docs')
+  const content = await getPageBySlug('coin-des-docs')
   const articles = await getWordPressPosts()
 
   // If no Sanity page content exists, show fallback

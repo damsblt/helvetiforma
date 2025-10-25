@@ -12,11 +12,11 @@ async function removeDocumentsSection() {
   try {
     console.log('🔍 Recherche de la section "Documents disponibles"...')
     
-    // Get the coins-des-docs page
-    const page = await client.fetch('*[_type == "page" && slug.current == "coins-des-docs"][0]')
+    // Get the coin-des-docs page
+    const page = await client.fetch('*[_type == "page" && slug.current == "coin-des-docs"][0]')
     
     if (!page) {
-      console.log('❌ Page "coins-des-docs" non trouvée')
+      console.log('❌ Page "coin-des-docs" non trouvée')
       return
     }
 
@@ -50,7 +50,7 @@ async function removeDocumentsSection() {
     
     // Verify the update
     console.log('\n🔍 Vérification de la mise à jour...')
-    const updatedPage = await client.fetch('*[_type == "page" && slug.current == "coins-des-docs"][0]')
+    const updatedPage = await client.fetch('*[_type == "page" && slug.current == "coin-des-docs"][0]')
     console.log('📊 Nombre de sections après vérification:', updatedPage.sections?.length || 0)
     
     // List remaining sections

@@ -60,7 +60,7 @@ export default async function WordPressPostPage({ params }: PageProps) {
       <header className="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900">
         <div className="container mx-auto px-4 py-8">
           <Link
-            href="/coins-des-docs#documents"
+            href="/coin-des-docs#documents"
             className="inline-flex items-center gap-2 text-blue-100 hover:text-white transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -138,7 +138,7 @@ export default async function WordPressPostPage({ params }: PageProps) {
                   Nous contacter
                 </Link>
                 <Link
-                  href="/coins-des-docs#documents"
+                  href="/coin-des-docs#documents"
                   className="inline-flex items-center justify-center px-6 py-3 border-2 border-blue-600 dark:border-blue-500 text-base font-medium rounded-lg text-blue-600 dark:text-blue-400 bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                 >
                   Voir tous les documents
@@ -150,7 +150,7 @@ export default async function WordPressPostPage({ params }: PageProps) {
           {/* Back to documents link */}
           <div className="mt-12 text-center">
             <Link
-              href="/coins-des-docs#documents"
+              href="/coin-des-docs#documents"
               className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline font-medium"
             >
               <ArrowLeft className="w-4 h-4" />

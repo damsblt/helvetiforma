@@ -16,7 +16,7 @@ async function createCoinsDesDocsPage() {
       _type: 'page',
       title: 'Coin des docs',
       slug: {
-        current: 'coins-des-docs'
+        current: 'coin-des-docs'
       },
       description: 'Découvrez notre bibliothèque de ressources et documents sur la comptabilité, la gestion des salaires et les charges sociales en Suisse.',
       hero: {
@@ -137,7 +137,7 @@ async function createCoinsDesDocsPage() {
     }
 
     // Check if page already exists
-    const existingPage = await client.fetch('*[_type == "page" && slug.current == "coins-des-docs"][0]')
+    const existingPage = await client.fetch('*[_type == "page" && slug.current == "coin-des-docs"][0]')
     
     if (existingPage) {
       console.log('Page already exists, updating...')
