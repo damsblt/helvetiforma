@@ -18,7 +18,7 @@ export function cleanWordPressContent(html: string): string {
     // Convert srcset URLs to use our proxy
     .replace(/srcset="([^"]*)"/g, (match, srcset) => {
       // Split srcset by comma and process each URL individually
-      const srcsetParts = srcset.split(',').map(part => {
+      const srcsetParts = srcset.split(',').map((part: string) => {
         const trimmedPart = part.trim();
         // Check if this part contains a WordPress URL
         if (trimmedPart.includes('https://api.helvetiforma.ch/wp-content/uploads/') || 
