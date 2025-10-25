@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe, STRIPE_CONFIG } from '@/lib/stripe'
+import Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
