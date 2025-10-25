@@ -8,9 +8,10 @@ export async function POST(request: NextRequest) {
     
     try {
       // First, find the user by email using admin credentials
+      const auth = Buffer.from(`${process.env.WORDPRESS_APP_USER || 'contact@helvetiforma.ch'}:${process.env.WORDPRESS_APP_PASSWORD || 'RWnb nSO6 6TMX yWd0 HWFl HBYh'}`).toString('base64')
       const searchResponse = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/wp/v2/users?search=${encodeURIComponent(email)}&per_page=1`, {
         headers: {
-          'Authorization': `Basic ${Buffer.from(`contact@helvetiforma.ch:RWnb nSO6 6TMX yWd0 HWFl HBYh`).toString('base64')}`
+          'Authorization': `Basic ${auth}`
         }
       })
       

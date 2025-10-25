@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import OptimizedPaymentButton from '@/components/OptimizedPaymentButton'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import '@/styles/wordpress-blocks.css'
+import '@/styles/dark-mode-tables.css'
 
 interface ClientPostContentProps {
   post: any
@@ -277,21 +279,37 @@ export default function ClientPostContent({
             </div>
           )}
 
-          {/* PDF Attachments Section */}
+          {/* PDF Attachments Section - Only show if user has access or if there are free PDFs */}
           {post.pdfAttachments && post.pdfAttachments.length > 0 && (
-            <div className="mt-12 pt-8 border-t border-slate-200/60 dark:border-gray-700/60">
-              <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+            <div className="mt-16 pt-8 border-t border-slate-200/60 dark:border-gray-700/60">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-100 to-pink-100 dark:from-red-900/30 dark:to-pink-900/30 rounded-2xl mb-4 shadow-lg">
+                  <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                   </svg>
                 </div>
-                Documents PDF joints
-              </h4>
-              <div className="space-y-4">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                  Documents PDF joints
+                </h3>
+                <p className="text-slate-600 dark:text-white">
+                  Téléchargez les documents complémentaires à cet article
+                </p>
+              </div>
+              
+              <div className="grid gap-4 md:grid-cols-2">
                 {post.pdfAttachments.map((pdf: any, index: number) => {
+                  // Pour les PDFs, on utilise leur propre statut premium ET l'accès global
+                  // Si l'utilisateur a acheté l'article, il peut télécharger tous les PDFs
                   const isPdfPremium = pdf.isPremium && !hasAccess;
-                  const fileUrl = pdf.file?.asset?.url;
+                  const fileUrl = pdf.url; // Utiliser pdf.url au lieu de pdf.file?.asset?.url
+                  
+                  console.log('🔍 PDF debug:', { 
+                    title: pdf.title, 
+                    isPremium: pdf.isPremium, 
+                    hasAccess, 
+                    isPdfPremium, 
+                    fileUrl 
+                  });
                   
                   return (
                     <div
@@ -302,35 +320,35 @@ export default function ClientPostContent({
                           : 'border-slate-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60 hover:border-blue-300 dark:hover:border-blue-600 backdrop-blur-sm'
                       }`}
                     >
-                      <div className="flex items-start gap-5">
-                        <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center shadow-sm ${
+                      <div className="flex items-start gap-4">
+                        <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${
                           isPdfPremium 
                             ? 'bg-gradient-to-br from-amber-200 to-yellow-200 dark:from-amber-800 dark:to-yellow-800' 
                             : 'bg-gradient-to-br from-red-100 to-pink-100 dark:from-red-900/30 dark:to-pink-900/30'
                         }`}>
                           {isPdfPremium ? (
-                            <svg className="w-7 h-7 text-amber-700 dark:text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-6 h-6 text-amber-700 dark:text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
                           ) : (
-                            <svg className="w-7 h-7 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                             </svg>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <h5 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
+                          <div className="flex flex-col gap-3">
+                            <div>
+                              <h5 className="text-lg font-semibold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
                                 {pdf.title}
                                 {pdf.isPremium && (
-                                  <span className="inline-flex items-center px-3 py-1 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded-full">
+                                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded-full">
                                     Premium
                                   </span>
                                 )}
                               </h5>
                               {pdf.description && (
-                                <p className="text-sm text-slate-600 dark:text-white mb-3 leading-relaxed">
+                                <p className="text-sm text-slate-600 dark:text-white mb-2 leading-relaxed">
                                   {pdf.description}
                                 </p>
                               )}
@@ -340,30 +358,32 @@ export default function ClientPostContent({
                                 </p>
                               )}
                             </div>
-                            {isPdfPremium ? (
-                              <button
-                                disabled
-                                className="px-5 py-3 bg-slate-200 dark:bg-gray-700 text-slate-500 dark:text-white rounded-xl text-sm font-medium cursor-not-allowed flex items-center gap-2 shadow-sm"
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                                Verrouillé
-                              </button>
-                            ) : fileUrl ? (
-                              <a
-                                href={fileUrl}
-                                download
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 flex-shrink-0 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                Télécharger
-                              </a>
-                            ) : null}
+                            <div className="flex justify-end">
+                              {isPdfPremium ? (
+                                <button
+                                  disabled
+                                  className="px-4 py-2 bg-slate-200 dark:bg-gray-700 text-slate-500 dark:text-white rounded-xl text-sm font-medium cursor-not-allowed flex items-center gap-2 shadow-sm"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                  </svg>
+                                  Verrouillé
+                                </button>
+                              ) : fileUrl ? (
+                                <a
+                                  href={fileUrl}
+                                  download
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                  </svg>
+                                  Télécharger
+                                </a>
+                              ) : null}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -371,6 +391,20 @@ export default function ClientPostContent({
                   );
                 })}
               </div>
+              
+              {/* Show message if PDFs are locked */}
+              {post.pdfAttachments.some((pdf: any) => pdf.isPremium && !hasAccess) && (
+                <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                      Certains documents PDF sont réservés aux membres premium. Achetez l'article pour y accéder.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

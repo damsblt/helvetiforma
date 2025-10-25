@@ -289,14 +289,14 @@ export function getContentAction(
         return {
           text: 'Voir le certificat',
           type: 'view',
-          href: `/courses/${content.slug}/certificate`,
+          href: `/e-learning/${content.slug}/certificate`,
           requiresPayment: false
         };
       } else {
         return {
           text: 'Continuer la formation',
           type: 'continue',
-          href: `/courses/${content.slug}/learn`,
+          href: `/e-learning/${content.slug}/learn`,
           requiresPayment: false
         };
       }
@@ -304,7 +304,7 @@ export function getContentAction(
       return {
         text: content.price > 0 ? `S'inscrire - ${getContentPricing(content).displayPrice}` : 'Commencer gratuitement',
         type: 'enroll',
-        href: `/courses/${content.slug}`,
+        href: `/e-learning/${content.slug}`,
         requiresPayment: content.price > 0
       };
     }

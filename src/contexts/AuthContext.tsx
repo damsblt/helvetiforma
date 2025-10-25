@@ -22,16 +22,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Vérifier la session WordPress au chargement
     const checkUserAuth = async () => {
+      console.log('🔄 AuthContext: Starting auth check...')
       try {
-        const wpUser = await getCurrentUserFromWordPress()
-        if (wpUser) {
-          setUser(wpUser)
+        // Check localStorage first to avoid unnecessary API calls
+        if (typeof window !== 'undefined') {
+          const storedUser = localStorage.getItem('helvetiforma_user')
+          if (storedUser) {
+            console.log('✅ AuthContext: Found stored user, setting user')
+            const user = JSON.parse(storedUser)
+            setUser(user)
+            return
+          }
         }
+        
+        // For non-logged-in users, don't call the API
+        // The API call will only happen when user explicitly tries to log in
+        console.log('ℹ️ AuthContext: No stored user found, user is not logged in')
       } catch (error) {
-        console.log('No WordPress session found')
+        console.log('❌ AuthContext: Error checking user auth:', error)
+      } finally {
+        // ALWAYS set loading to false, regardless of success or error
+        console.log('✅ AuthContext: Setting loading to false')
+        setLoading(false)
       }
-      
-      setLoading(false)
     }
     
     checkUserAuth()

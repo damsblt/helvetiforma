@@ -191,7 +191,7 @@ export default function CoursePage({}: CoursePageProps) {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Formation non trouvée</h1>
           <p className="text-gray-600 mb-6">Cette formation n'existe pas ou a été supprimée.</p>
           <Link
-            href="/courses"
+            href="/e-learning"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <BookOpen className="w-4 h-4" />
@@ -217,7 +217,7 @@ export default function CoursePage({}: CoursePageProps) {
             <div className="lg:col-span-2">
               {/* Breadcrumb */}
               <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4">
-                <Link href="/courses" className="hover:text-blue-600">Formations</Link>
+                <Link href="/e-learning" className="hover:text-blue-600">Formations</Link>
                 <span>/</span>
                 <span className="text-gray-900">{course.title}</span>
               </nav>
@@ -316,7 +316,7 @@ export default function CoursePage({}: CoursePageProps) {
                     </div>
                   ) : isEnrolled ? (
                     <Link
-                      href={`/courses/${course.slug}/learn`}
+                      href={`/e-learning/${course.slug}/learn`}
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                     >
                       <Play className="w-4 h-4" />
@@ -324,7 +324,7 @@ export default function CoursePage({}: CoursePageProps) {
                     </Link>
                   ) : course.course_price && course.course_price > 0 ? (
                     <Link
-                      href={`/courses/${course.slug}/checkout`}
+                      href={`/e-learning/${course.slug}/checkout`}
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                     >
                       <Lock className="w-4 h-4" />
@@ -335,7 +335,7 @@ export default function CoursePage({}: CoursePageProps) {
                       onClick={async () => {
                         if (!user) {
                           // Redirect to login with callback to checkout
-                          const checkoutUrl = `/courses/${course.slug}/checkout`;
+                          const checkoutUrl = `/e-learning/${course.slug}/checkout`;
                           window.location.href = `/login?callbackUrl=${encodeURIComponent(checkoutUrl)}`;
                           return;
                         }
@@ -487,21 +487,31 @@ export default function CoursePage({}: CoursePageProps) {
                   </div>
                 )}
 
-                {/* Course Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-200">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{course.enrolled_count || 0}</div>
-                    <div className="text-sm text-gray-600">Étudiants inscrits</div>
+                {/* Course Stats - Only show if we have meaningful data */}
+                {((course.enrolled_count && course.enrolled_count > 0) || 
+                  (course.rating && course.rating > 0) || 
+                  (course.reviews_count && course.reviews_count > 0)) && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-200">
+                    {course.enrolled_count && course.enrolled_count > 0 && (
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">{course.enrolled_count}</div>
+                        <div className="text-sm text-gray-600">Étudiants inscrits</div>
+                      </div>
+                    )}
+                    {course.rating && course.rating > 0 && (
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">{course.rating.toFixed(1)}</div>
+                        <div className="text-sm text-gray-600">Note moyenne</div>
+                      </div>
+                    )}
+                    {course.reviews_count && course.reviews_count > 0 && (
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">{course.reviews_count}</div>
+                        <div className="text-sm text-gray-600">Avis</div>
+                      </div>
+                    )}
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{course.rating || 0}</div>
-                    <div className="text-sm text-gray-600">Note moyenne</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">{course.reviews_count || 0}</div>
-                    <div className="text-sm text-gray-600">Avis</div>
-                  </div>
-                </div>
+                )}
               </div>
             )}
 

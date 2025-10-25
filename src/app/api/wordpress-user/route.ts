@@ -2,30 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get cookies from the request
-    const cookies = request.headers.get('cookie')
-    
-    // Try to get the current user from WordPress session using cookies
-    const response = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/wp/v2/users/me`, {
-      headers: {
-        'Cookie': cookies || '',
-        'Content-Type': 'application/json'
-      }
-    })
-    
-    if (response.ok) {
-      const user = await response.json()
-      
-      if (user && user.id) {
-        return NextResponse.json({
-          id: user.id.toString(),
-          email: user.email,
-          name: user.name,
-          display_name: user.display_name
-        })
-      }
-    }
-    
+    // For now, return a 401 since we don't have proper WordPress session management
+    // This prevents the infinite loop in AuthContext
     return NextResponse.json(
       { error: 'No WordPress session found' },
       { status: 401 }

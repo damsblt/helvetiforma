@@ -208,7 +208,7 @@ export default function PopularCoursesSection({ title, subtitle, limit = 3 }: Po
                 </div>
                 
                 <Link
-                  href={`/courses/${course.id}`}
+                  href={`/e-learning/${course.id}`}
                   className="block w-full bg-primary text-primary-foreground text-center py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
                 >
                   {course.price === 0 ? 'Accéder gratuitement' : 'En savoir plus'}

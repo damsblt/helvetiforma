@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-09-30.clover',
-})
+import { stripe, getStripeSuccessUrl, getStripeCancelUrl } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,8 +46,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `http://localhost:3000/courses/${courseSlug}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `http://localhost:3000/courses/${courseSlug}?payment=cancelled`,
+      success_url: getStripeSuccessUrl(`/e-learning/${courseSlug}`),
+      cancel_url: getStripeCancelUrl(`/e-learning/${courseSlug}`),
       metadata: {
         courseId: courseId.toString(),
         userId: userId.toString(),

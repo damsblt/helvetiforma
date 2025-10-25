@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Star, Clock, Users, Play, Lock, CheckCircle } from 'lucide-react';
 import { TutorCourse } from '@/lib/tutor-lms';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface CourseCardProps {
   course: TutorCourse;
@@ -57,10 +58,13 @@ export default function CourseCard({ course }: CourseCardProps) {
       {/* Course Image */}
       <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
         {course.featured_image ? (
-          <img
+          <Image
             src={course.featured_image}
             alt={course.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority={false}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -138,21 +142,23 @@ export default function CourseCard({ course }: CourseCardProps) {
         </p>
 
         {/* Course Meta */}
-        <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-          {course.course_duration && (
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              <span>{formatDuration(course.course_duration)}</span>
-            </div>
-          )}
-          
-          {course.enrolled_count && course.enrolled_count > 0 && (
-            <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              <span>{course.enrolled_count} inscrits</span>
-            </div>
-          )}
-        </div>
+        {(course.course_duration || (course.enrolled_count && course.enrolled_count > 0)) && (
+          <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+            {course.course_duration && (
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span>{formatDuration(course.course_duration)}</span>
+              </div>
+            )}
+            
+            {course.enrolled_count && course.enrolled_count > 0 && (
+              <div className="flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                <span>{course.enrolled_count} inscrits</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Rating */}
         {course.rating && course.rating > 0 && (
@@ -193,7 +199,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         <div className="pt-4 border-t border-gray-100">
           {course.is_enrolled ? (
             <Link
-              href={`/courses/${course.slug}`}
+              href={`/e-learning/${course.slug}`}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Play className="w-4 h-4" />
@@ -201,7 +207,7 @@ export default function CourseCard({ course }: CourseCardProps) {
             </Link>
           ) : course.course_price && course.course_price > 0 ? (
             <Link
-              href={`/courses/${course.slug}/checkout`}
+              href={`/e-learning/${course.slug}/checkout`}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Lock className="w-4 h-4" />
@@ -209,7 +215,7 @@ export default function CourseCard({ course }: CourseCardProps) {
             </Link>
           ) : (
             <Link
-              href={`/courses/${course.slug}`}
+              href={`/e-learning/${course.slug}`}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
               <Play className="w-4 h-4" />

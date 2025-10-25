@@ -8,6 +8,7 @@ import { checkUserPurchase } from '@/lib/wordpress-purchases'
 import OptimizedPaymentButton from '@/components/OptimizedPaymentButton'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import '@/styles/wordpress-blocks.css'
 
 interface PostContentProps {
   post: any

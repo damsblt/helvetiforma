@@ -18,7 +18,7 @@ export interface NavigationConfig {
 export const navigationConfig: NavigationConfig = {
   main: [
     { name: 'Accueil', href: '/' },
-    { name: 'Formations', href: '/courses' },
+    // { name: 'E-learning', href: '/e-learning' }, // Hidden from navbar for now
     { name: 'Concept', href: '/concept' },
     { name: 'Sessions', href: '/sessions' },
     { name: 'Coin des docs', href: '/coins-des-docs' },
@@ -26,24 +26,18 @@ export const navigationConfig: NavigationConfig = {
   ],
   footer: [
     {
-      title: 'Formation',
+      title: 'Ressources',
       links: [
-        { name: 'Formations', href: '/courses' },
         { name: 'Sessions', href: '/sessions' },
-      ],
-    },
-    {
-      title: 'Articles',
-      links: [
-        { name: 'Articles', href: '/posts' },
         { name: 'Coin des docs', href: '/coins-des-docs' },
       ],
     },
     {
-      title: 'Légal',
+      title: 'Contact',
       links: [
-        { name: 'Mentions légales', href: '/mentions' },
-        { name: 'Politique de confidentialité', href: '/privacy' },
+        { name: 'Email', href: 'mailto:contact@helvetiforma.ch' },
+        { name: 'Téléphone', href: 'tel:+41234567890' },
+        { name: 'Adresse', href: '#' },
       ],
     },
   ],

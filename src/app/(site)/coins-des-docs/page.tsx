@@ -123,7 +123,7 @@ export default async function CoinsDesDocsPage() {
                   Besoin d'aide personnalisée ?
                 </h3>
                 <p className="text-gray-600 dark:text-white mb-6">
-                  Nos experts sont là pour vous accompagner dans vos projets comptables et RH.
+                  Nos experts sont là pour vous accompagner dans vos projets de formations salaires, impôt source et assurances sociales.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
@@ -220,7 +220,7 @@ function FallbackCoinsDesDocsPage({ articles }: { articles: WordPressPost[] }) {
                   Besoin d'aide personnalisée ?
                 </h3>
                 <p className="text-gray-600 dark:text-white mb-6">
-                  Nos experts sont là pour vous accompagner dans vos projets comptables et RH.
+                  Nos experts sont là pour vous accompagner dans vos projets de formations salaires, impôt source et assurances sociales.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       }
       
       // Use application password for user creation
-      const auth = Buffer.from(`contact@helvetiforma.ch:RWnb nSO6 6TMX yWd0 HWFl HBYh`).toString('base64')
+      const auth = Buffer.from(`${process.env.WORDPRESS_APP_USER || 'contact@helvetiforma.ch'}:${process.env.WORDPRESS_APP_PASSWORD || 'RWnb nSO6 6TMX yWd0 HWFl HBYh'}`).toString('base64')
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/wp/v2/users`, {
         method: 'POST',

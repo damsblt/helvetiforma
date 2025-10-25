@@ -16,14 +16,23 @@ export const tutorClient = axios.create({
 // WooCommerce API Client for course prices (Tutor LMS uses WooCommerce for monetization)
 export const wooCommerceClient = axios.create({
   baseURL: `${TUTOR_API_URL}/wp-json/wc/v3`,
-  auth: {
-    username: 'contact@helvetiforma.ch',
-    password: 'RWnb nSO6 6TMX yWd0 HWFl HBYh'
-  },
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 10000,
+});
+
+// Add request interceptor to add auth at runtime
+wooCommerceClient.interceptors.request.use((config) => {
+  // Use environment variables on server-side, fallback to hardcoded for client-side
+  const consumerKey = process.env.WOOCOMMERCE_CONSUMER_KEY || 'ck_1939e665683edacf50304f61bc822287fa1755c8';
+  const consumerSecret = process.env.WOOCOMMERCE_CONSUMER_SECRET || 'cs_cfad39187d28b2debc6687e3e2a00af449412f01';
+  
+  config.auth = {
+    username: consumerKey,
+    password: consumerSecret
+  };
+  return config;
 });
 
 // Tutor LMS API Client with API key authentication
@@ -304,7 +313,9 @@ export async function getTutorCourses(params: {
       const courses = tutorResponse.data || [];
       
       // Format the courses to match our interface (now optimized with pre-fetched prices)
+      console.log('🔄 Processing courses with images in parallel...');
       const formattedCourses = await Promise.all(courses.map(formatTutorCourse));
+      console.log('✅ Course processing complete');
       
       // Cache the results if no specific filters
       if (!params.search && !params.category && !params.level) {
@@ -333,7 +344,9 @@ export async function getTutorCourses(params: {
       const courses = response.data || [];
       
       // Format the courses to match our interface (now optimized with pre-fetched prices)
+      console.log('🔄 Processing courses with images in parallel...');
       const formattedCourses = await Promise.all(courses.map(formatTutorCourse));
+      console.log('✅ Course processing complete');
       
       // Cache the results if no specific filters
       if (!params.search && !params.category && !params.level) {
@@ -366,7 +379,19 @@ export async function getTutorCourses(params: {
 
 export async function getTutorCourse(courseId: string | number): Promise<TutorCourse | null> {
   try {
+    const courseKey = String(courseId);
+    const now = Date.now();
+    
+    // Check cache first
+    if (courseCache[courseKey] && courseCacheExpiry[courseKey] && now < courseCacheExpiry[courseKey]) {
+      console.log(`✅ Returning cached course: ${courseId}`);
+      return courseCache[courseKey];
+    }
+    
     console.log(`🔍 Fetching course ${courseId}...`);
+    
+    // Pre-fetch WooCommerce prices to ensure they're available
+    await getWooCommerceCoursePrices();
     
     // First, try to find the course by slug if courseId is a string
     if (typeof courseId === 'string') {
@@ -381,7 +406,11 @@ export async function getTutorCourse(courseId: string | number): Promise<TutorCo
         
         if (searchResponse.data && searchResponse.data.length > 0) {
           console.log('✅ Found course by slug:', searchResponse.data[0].title?.rendered);
-          return await formatTutorCourse(searchResponse.data[0]);
+          const course = await formatTutorCourse(searchResponse.data[0]);
+          // Cache the result
+          courseCache[courseKey] = course;
+          courseCacheExpiry[courseKey] = now + COURSE_CACHE_DURATION;
+          return course;
         }
       } catch (searchError) {
         console.log('⚠️ Slug search failed, trying by ID...', searchError);
@@ -395,7 +424,11 @@ export async function getTutorCourse(courseId: string | number): Promise<TutorCo
         params: { _embed: true }
       });
       console.log('✅ WordPress API course response:', wpResponse.status, wpResponse.data);
-      return await formatTutorCourse(wpResponse.data);
+      const course = await formatTutorCourse(wpResponse.data);
+      // Cache the result
+      courseCache[courseKey] = course;
+      courseCacheExpiry[courseKey] = now + COURSE_CACHE_DURATION;
+      return course;
     } catch (wpError) {
       console.log('⚠️ WordPress API failed, trying alternative approach...', wpError);
       
@@ -409,6 +442,9 @@ export async function getTutorCourse(courseId: string | number): Promise<TutorCo
         
         if (course) {
           console.log('✅ Found course in courses list:', course.title);
+          // Cache the result
+          courseCache[courseKey] = course;
+          courseCacheExpiry[courseKey] = now + COURSE_CACHE_DURATION;
           return course;
         } else {
           console.log('❌ Course not found in courses list');
@@ -462,10 +498,10 @@ export async function getTutorCourseLessons(courseId: string | number): Promise<
       if (topicsResponse.data?.data && Array.isArray(topicsResponse.data.data)) {
         const allLessons: TutorLesson[] = [];
         
-        // Step 2: Get lessons for each topic
-        for (const topic of topicsResponse.data.data) {
+        // Step 2: Get lessons for all topics in parallel
+        console.log(`🔍 Fetching lessons for ${topicsResponse.data.data.length} topics in parallel...`);
+        const lessonPromises = topicsResponse.data.data.map(async (topic: any) => {
           try {
-            console.log(`🔍 Fetching lessons for topic ${topic.ID}...`);
             const lessonsResponse = await tutorLMSClient.get('/lessons', {
               params: { 
                 topic_id: topic.ID
@@ -478,13 +514,19 @@ export async function getTutorCourseLessons(courseId: string | number): Promise<
                 topic_id: topic.ID,
                 topic_title: topic.post_title || ''
               }));
-              allLessons.push(...topicLessons);
               console.log(`✅ Found ${topicLessons.length} lessons for topic ${topic.ID}`);
+              return topicLessons;
             }
+            return [];
           } catch (topicError) {
             console.log(`⚠️ Failed to get lessons for topic ${topic.ID}:`, topicError);
+            return [];
           }
-        }
+        });
+        
+        // Wait for all lesson requests to complete
+        const lessonResults = await Promise.all(lessonPromises);
+        allLessons.push(...lessonResults.flat());
         
         if (allLessons.length > 0) {
           console.log('✅ Total lessons found:', allLessons.length);
@@ -568,64 +610,20 @@ export async function getTutorCourseLessons(courseId: string | number): Promise<
 }
 
 export async function getTutorCourseQuizzes(courseId: string | number): Promise<TutorQuiz[]> {
-  try {
-    console.log(`🔍 Fetching quizzes for course ${courseId}...`);
-    
-    // First, get the actual course ID if we have a slug
-    let actualCourseId = courseId;
-    if (typeof courseId === 'string') {
-      try {
-        console.log('🔍 Getting course ID from slug for quizzes...');
-        const courseResponse = await tutorClient.get('/courses', {
-          params: { slug: courseId }
-        });
-        
-        if (courseResponse.data && courseResponse.data.length > 0) {
-          actualCourseId = courseResponse.data[0].id;
-          console.log('✅ Found course ID for quizzes:', actualCourseId);
-        }
-      } catch (error) {
-        console.log('⚠️ Could not get course ID from slug for quizzes:', error);
-      }
-    }
-    
-    // Try Tutor LMS API first
-    try {
-      const tutorResponse = await tutorLMSClient.get(`/courses/${actualCourseId}/quizzes`, {
-        params: { _embed: true }
-      });
-      console.log('✅ Tutor LMS quizzes response:', tutorResponse.status, tutorResponse.data?.length || 0, 'quizzes');
-      
-      if (tutorResponse.data && Array.isArray(tutorResponse.data)) {
-        return tutorResponse.data.map(formatTutorQuiz);
-      }
-    } catch (tutorError) {
-      console.log('⚠️ Tutor LMS quizzes API failed, trying WordPress API...', tutorError);
-      
-      // Try WordPress API
-      try {
-        const wpResponse = await tutorClient.get(`/courses/${actualCourseId}/quizzes`, {
-          params: { _embed: true }
-        });
-        console.log('✅ WordPress quizzes response:', wpResponse.status, wpResponse.data?.length || 0, 'quizzes');
-        
-        if (wpResponse.data && Array.isArray(wpResponse.data)) {
-          return wpResponse.data.map(formatTutorQuiz);
-        }
-      } catch (wpError) {
-        console.log('⚠️ WordPress quizzes API failed:', wpError);
-      }
-    }
-    
-    console.log('❌ No quizzes found for course:', courseId);
-    return [];
-  } catch (error) {
-    console.error('❌ Error fetching course quizzes:', error);
-    return [];
-  }
+  // Quiz APIs are not working (404 errors), return empty array
+  console.log(`⚠️ Quiz API disabled for course ${courseId} (404 errors)`);
+  return [];
 }
 
 export async function getTutorCategories(): Promise<TutorCategory[]> {
+  const now = Date.now();
+  
+  // Return cached data if still valid
+  if (courseCategoriesCache && now < courseCategoriesCacheExpiry) {
+    console.log('✅ Returning cached course categories:', courseCategoriesCache.length);
+    return courseCategoriesCache;
+  }
+  
   try {
     console.log('🔍 Fetching course categories from:', `${TUTOR_API_URL}/wp-json/wp/v2/course-category`);
     
@@ -641,13 +639,19 @@ export async function getTutorCategories(): Promise<TutorCategory[]> {
     
     // Format categories to match our interface
     const categories = response.data || [];
-    return categories.map((cat: any) => ({
+    const formattedCategories = categories.map((cat: any) => ({
       id: cat.id,
       name: cat.name,
       slug: cat.slug,
       description: cat.description,
       count: cat.count
     }));
+    
+    // Cache the results
+    courseCategoriesCache = formattedCategories;
+    courseCategoriesCacheExpiry = Date.now() + CACHE_DURATION;
+    
+    return formattedCategories;
   } catch (error) {
     console.error('❌ Error fetching Tutor course categories:', error);
     
@@ -896,13 +900,19 @@ const COURSE_PRICE_MAPPING: { [key: string]: number } = {
 };
 
 // Cache for WooCommerce product prices
-let wooCommercePricesCache: { [key: string]: number } = {};
+export let wooCommercePricesCache: { [key: string]: number } = {};
 let wooCommercePricesCacheExpiry = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // Cache for course categories
 let courseCategoriesCache: TutorCategory[] = [];
 let courseCategoriesCacheExpiry = 0;
+
+// Cache for individual courses
+let courseCache: { [key: string]: TutorCourse } = {};
+let courseCacheExpiry: { [key: string]: number } = {};
+const COURSE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+let categoriesLoadingPromise: Promise<TutorCategory[]> | null = null;
 
 // Cache for courses
 let coursesCache: TutorCourse[] = [];
@@ -917,6 +927,8 @@ export function clearTutorCaches() {
   wooCommercePricesCacheExpiry = 0;
   courseCategoriesCache = [];
   courseCategoriesCacheExpiry = 0;
+  courseCache = {};
+  courseCacheExpiry = {};
   console.log('✅ All Tutor LMS caches cleared');
 }
 
@@ -965,7 +977,7 @@ async function resolveCourseCategories(categoryIds: number[]): Promise<TutorCate
 }
 
 // Function to fetch course prices from WooCommerce
-async function getWooCommerceCoursePrices(): Promise<{ [key: string]: number }> {
+export async function getWooCommerceCoursePrices(): Promise<{ [key: string]: number }> {
   const now = Date.now();
   
   // Return cached data if still valid
@@ -1077,24 +1089,25 @@ async function getImageUrlFromMediaId(mediaId: number): Promise<string | undefin
     console.log('🖼️ Media data:', mediaData);
     
     // Try to get the best available size
-    if (mediaData.source_url) {
-      console.log('✅ Using source_url:', mediaData.source_url);
-      return mediaData.source_url;
-    }
+      if (mediaData.source_url) {
+        console.log('✅ Using source_url:', mediaData.source_url);
+        // Use proxy to avoid CORS issues
+        return `/api/proxy-image?url=${encodeURIComponent(mediaData.source_url)}`;
+      }
     
     if (mediaData.media_details && mediaData.media_details.sizes) {
       const sizes = mediaData.media_details.sizes;
       if (sizes.large && sizes.large.source_url) {
         console.log('✅ Using large size:', sizes.large.source_url);
-        return sizes.large.source_url;
+        return `/api/proxy-image?url=${encodeURIComponent(sizes.large.source_url)}`;
       }
       if (sizes.medium_large && sizes.medium_large.source_url) {
         console.log('✅ Using medium_large size:', sizes.medium_large.source_url);
-        return sizes.medium_large.source_url;
+        return `/api/proxy-image?url=${encodeURIComponent(sizes.medium_large.source_url)}`;
       }
       if (sizes.medium && sizes.medium.source_url) {
         console.log('✅ Using medium size:', sizes.medium.source_url);
-        return sizes.medium.source_url;
+        return `/api/proxy-image?url=${encodeURIComponent(sizes.medium.source_url)}`;
       }
     }
     
@@ -1131,15 +1144,15 @@ async function getFeaturedImageUrl(course: any): Promise<string | undefined> {
       }
       if (sizes.large && sizes.large.source_url) {
         console.log('✅ Using large size:', sizes.large.source_url);
-        return sizes.large.source_url;
+        return `/api/proxy-image?url=${encodeURIComponent(sizes.large.source_url)}`;
       }
       if (sizes.medium_large && sizes.medium_large.source_url) {
         console.log('✅ Using medium_large size:', sizes.medium_large.source_url);
-        return sizes.medium_large.source_url;
+        return `/api/proxy-image?url=${encodeURIComponent(sizes.medium_large.source_url)}`;
       }
       if (sizes.medium && sizes.medium.source_url) {
         console.log('✅ Using medium size:', sizes.medium.source_url);
-        return sizes.medium.source_url;
+        return `/api/proxy-image?url=${encodeURIComponent(sizes.medium.source_url)}`;
       }
     }
   }
@@ -1161,12 +1174,13 @@ async function getFeaturedImageUrl(course: any): Promise<string | undefined> {
       console.log('✅ Using featured_media as URL:', course.featured_media);
       return course.featured_media;
     }
-    // If it's a number (media ID), construct a URL (fallback)
-    if (typeof course.featured_media === 'number') {
-      const fallbackUrl = `${TUTOR_API_URL}/wp-content/uploads/${course.featured_media}`;
-      console.log('⚠️ Using fallback URL for media ID:', fallbackUrl);
-      return fallbackUrl;
-    }
+      // If it's a number (media ID), construct a URL (fallback)
+      if (typeof course.featured_media === 'number') {
+        const fallbackUrl = `${TUTOR_API_URL}/wp-content/uploads/${course.featured_media}`;
+        console.log('⚠️ Using fallback URL for media ID:', fallbackUrl);
+        // Use proxy to avoid CORS issues
+        return `/api/proxy-image?url=${encodeURIComponent(fallbackUrl)}`;
+      }
   }
   
   // Try to get from _links or other WordPress fields

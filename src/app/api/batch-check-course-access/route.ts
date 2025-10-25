@@ -16,11 +16,11 @@ export async function POST(request: NextRequest) {
     // Use WordPress/TutorLMS integration instead of Supabase
     const accessMap: { [key: number]: boolean } = {};
     
-    // Check each course individually using the existing check-course-access logic
-    for (const courseId of courseIds) {
+    // Check all courses in parallel for better performance
+    const checkPromises = courseIds.map(async (courseId) => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'}/api/check-course-access?userId=${userId}&courseId=${courseId}`,
+          `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/check-course-access?userId=${userId}&courseId=${courseId}`,
           {
             method: 'GET',
             headers: {
@@ -31,16 +31,24 @@ export async function POST(request: NextRequest) {
 
         if (response.ok) {
           const data = await response.json();
-          accessMap[courseId] = data.hasAccess || false;
+          return { courseId, hasAccess: data.hasAccess || false };
         } else {
           console.warn(`⚠️ Failed to check access for course ${courseId}:`, response.status);
-          accessMap[courseId] = false;
+          return { courseId, hasAccess: false };
         }
       } catch (error) {
         console.warn(`⚠️ Error checking access for course ${courseId}:`, error);
-        accessMap[courseId] = false;
+        return { courseId, hasAccess: false };
       }
-    }
+    });
+    
+    // Wait for all checks to complete in parallel
+    const results = await Promise.all(checkPromises);
+    
+    // Build the access map
+    results.forEach(({ courseId, hasAccess }) => {
+      accessMap[courseId] = hasAccess;
+    });
 
     console.log('✅ Batch access check complete:', Object.values(accessMap).filter(Boolean).length, 'courses accessible');
 

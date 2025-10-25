@@ -37,8 +37,8 @@ export default function Footer() {
     <footer className="bg-muted/50 border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
-        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
+        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Company Info - Colonne de gauche */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
@@ -47,33 +47,56 @@ export default function Footer() {
               <span className="text-xl font-bold text-foreground">HelvetiForma</span>
             </Link>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              Formation professionnelle en comptabilité suisse. 
+              Formation professionnelle. 
               Développez vos compétences avec des experts reconnus.
             </p>
           </div>
 
-          {/* Footer Links */}
-          {navigation.footer.map((section) => (
-            <div key={section.title}>
+          {/* Footer Links - Colonnes du centre et droite */}
+          {navigation.footer.map((section, index) => (
+            <div key={section.title} className={`lg:col-span-1 ${index === 0 ? 'text-center' : 'text-left'}`}>
               <h3 className="font-semibold text-foreground mb-4">
                 {section.title}
               </h3>
-              <ul className="space-y-3">
-                {section.links.map((link) => (
-                  <li key={link.href}>
+              {index === 1 ? (
+                // Section Contact simplifiée
+                <div className="space-y-3">
+                  <div>
                     <Link
-                      href={link.href}
+                      href="mailto:contact@helvetiforma.ch"
                       className="text-muted-foreground hover:text-foreground transition-colors"
-                      {...(link.external && {
-                        target: '_blank',
-                        rel: 'noopener noreferrer'
-                      })}
                     >
-                      {link.name}
+                      contact@helvetiforma.ch
                     </Link>
-                  </li>
-                ))}
-              </ul>
+                  </div>
+                  <div>
+                    <Link
+                      href="tel:+41793090640"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      +41 79 309 06 40
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                // Section Ressources avec liens
+                <ul className="space-y-3">
+                  {section.links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                        {...(link.external && {
+                          target: '_blank',
+                          rel: 'noopener noreferrer'
+                        })}
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </div>

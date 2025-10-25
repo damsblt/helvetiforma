@@ -119,7 +119,7 @@ export default function CourseLearnPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Formation non trouvée</h1>
           <p className="text-gray-600 mb-6">Cette formation n'existe pas ou a été supprimée.</p>
           <Link
-            href="/courses"
+            href="/e-learning"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -149,7 +149,7 @@ export default function CourseLearnPage() {
           
           <div className="space-y-3">
             <Link
-              href={`/courses/${course.slug}`}
+              href={`/e-learning/${course.slug}`}
               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -171,7 +171,7 @@ export default function CourseLearnPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                href={`/courses/${course.slug}`}
+                href={`/e-learning/${course.slug}`}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />

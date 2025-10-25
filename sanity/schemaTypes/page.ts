@@ -217,6 +217,14 @@ export default defineType({
               name: 'ctaLink',
               type: 'string',
               title: 'CTA Button Link',
+              description: 'Enter the URL path (e.g., /concept, /formations) or full URL (e.g., http://localhost:3000/concept)',
+              validation: (Rule: any) => Rule.custom((link: string) => {
+                if (!link) return true
+                if (link.includes('href=')) {
+                  return 'Please enter only the URL without "href=". Example: /concept or http://localhost:3000/concept'
+                }
+                return true
+              })
             },
           ],
           preview: {

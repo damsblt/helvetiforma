@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-09-30.clover',
-})
+import { stripe, STRIPE_CONFIG } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -19,7 +15,7 @@ export async function POST(request: NextRequest) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      STRIPE_CONFIG.webhookSecret!
     )
   } catch (err) {
     console.error('Webhook signature verification failed:', err)
@@ -41,7 +37,7 @@ export async function POST(request: NextRequest) {
           
           // Enroll user in course
           try {
-            const enrollmentResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/tutor-lms/enrollments`, {
+            const enrollmentResponse = await fetch(`${STRIPE_CONFIG.baseUrl}/api/tutor-lms/enrollments`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

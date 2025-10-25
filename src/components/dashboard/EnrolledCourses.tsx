@@ -98,7 +98,7 @@ export default function EnrolledCourses({ userId }: EnrolledCoursesProps) {
         <h3 className="text-xl font-semibold text-gray-700 mb-2">Aucune formation inscrite</h3>
         <p className="text-gray-500 mb-6">Vous n'êtes inscrit à aucune formation pour le moment.</p>
         <Link
-          href="/courses"
+          href="/e-learning"
           className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           Découvrir les formations
@@ -171,7 +171,7 @@ export default function EnrolledCourses({ userId }: EnrolledCoursesProps) {
 
             {/* Action Button */}
             <Link
-              href={`/courses/${course.slug}/learn`}
+              href={`/e-learning/${course.slug}/learn`}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               {course.progress_percentage && course.progress_percentage > 0 ? (

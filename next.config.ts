@@ -9,12 +9,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'cms.helvetiforma.ch',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
         hostname: 'api.helvetiforma.ch',
         port: '',
         pathname: '/**',

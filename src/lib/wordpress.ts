@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { decodeHtmlEntitiesServer } from '@/utils/htmlDecode';
+import { cleanWordPressContent } from '@/utils/wordpressContent';
+import { getWooCommerceCoursePrices, wooCommercePricesCache } from './tutor-lms';
 
 const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://api.helvetiforma.ch';
 
@@ -108,12 +111,26 @@ async function formatWordPressPost(post: any): Promise<WordPressPost> {
   }
 
   // Formater l'article selon notre interface (sans WooCommerce pour l'instant)
+  const decodedBody = decodeHtmlEntitiesServer(post.content.rendered)
+  console.log('🔍 Contenu avant nettoyage (premiers 200 caractères):', decodedBody.substring(0, 200));
+  
+  const cleanedBody = cleanWordPressContent(decodedBody)
+  console.log('🔍 Contenu après nettoyage (premiers 200 caractères):', cleanedBody.substring(0, 200));
+  
+  // Récupérer les PDFs depuis le champ ACF
+  const pdfAttachments = await extractPdfsFromACF(post.acf);
+  console.log('🔍 PDFs récupérés depuis ACF:', pdfAttachments.length);
+  
+  // Nettoyer aussi l'extrait pour supprimer les balises <p>
+  const decodedExcerpt = decodeHtmlEntitiesServer(post.excerpt.rendered);
+  const cleanedExcerpt = cleanWordPressContent(decodedExcerpt);
+  
   const formattedPost = {
     _id: post.id,
-    title: post.title.rendered,
+    title: decodeHtmlEntitiesServer(post.title.rendered),
     slug: post.slug,
-    excerpt: post.excerpt.rendered,
-    body: post.content.rendered,
+    excerpt: cleanedExcerpt,
+    body: cleanedBody,
     publishedAt: post.date,
     accessLevel: post.acf?.access_level || post.acf?.access || 'public',
     price: price,
@@ -121,6 +138,7 @@ async function formatWordPressPost(post: any): Promise<WordPressPost> {
     featured_image: featuredImageUrl || undefined,
     category: post.categories?.[0] ? 'Category' : null,
     tags: post.tags || [],
+    pdfAttachments: pdfAttachments, // Ajouter les PDFs extraits
     // Ajouter les métadonnées ACF et meta
     acf: post.acf || {},
     meta: post.meta || {},
@@ -128,8 +146,110 @@ async function formatWordPressPost(post: any): Promise<WordPressPost> {
     woocommerce: null
   };
 
-  console.log('✅ formatWordPressPost - Article formaté:', formattedPost.title, 'Prix:', formattedPost.price, 'Image:', formattedPost.image);
+  console.log('✅ formatWordPressPost - Article formaté:', formattedPost.title, 'Prix:', formattedPost.price, 'Image:', formattedPost.image, 'PDFs:', pdfAttachments.length);
   return formattedPost;
+}
+
+// Fonction pour extraire les PDFs depuis le champ ACF
+async function extractPdfsFromACF(acf: any): Promise<Array<{
+  title: string;
+  url: string;
+  isPremium: boolean;
+  fileSize?: string;
+  description?: string;
+}>> {
+  if (!acf) {
+    console.log('🔍 Aucune donnée ACF trouvée');
+    return [];
+  }
+
+  const pdfs: Array<{
+    title: string;
+    url: string;
+    isPremium: boolean;
+    fileSize?: string;
+    description?: string;
+  }> = [];
+
+  // Vérifier le champ pdf (ID du fichier)
+  if (acf.pdf && typeof acf.pdf === 'number') {
+    console.log('🔍 PDF ID trouvé dans ACF:', acf.pdf);
+    
+    try {
+      // Récupérer les détails du fichier depuis l'API WordPress
+      const response = await wordpressClient.get(`/wp/v2/media/${acf.pdf}`);
+      const mediaData = response.data;
+      
+      if (mediaData && mediaData.source_url) {
+        const filename = mediaData.filename || mediaData.title?.rendered || 'Document PDF';
+        const title = filename.replace(/\.pdf$/i, '');
+        
+        // Calculer la taille du fichier
+        let fileSize = '';
+        if (mediaData.media_details && mediaData.media_details.filesize) {
+          const bytes = mediaData.media_details.filesize;
+          if (bytes > 1024 * 1024) {
+            fileSize = `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+          } else if (bytes > 1024) {
+            fileSize = `${(bytes / 1024).toFixed(1)} KB`;
+          } else {
+            fileSize = `${bytes} B`;
+          }
+        }
+        
+        pdfs.push({
+          title: title,
+          url: mediaData.source_url,
+          isPremium: true, // Par défaut, tous les PDFs ACF sont premium
+          fileSize: fileSize,
+          description: `Document PDF: ${title}`
+        });
+        
+        console.log('🔍 PDF ACF ajouté:', { title, url: mediaData.source_url, fileSize });
+      }
+    } catch (error) {
+      console.error('❌ Erreur récupération détails PDF:', error);
+    }
+  }
+
+  // Vérifier le champ pdf_attachments (nouveau format)
+  if (acf.pdf_attachments && Array.isArray(acf.pdf_attachments)) {
+    console.log('🔍 Champ pdf_attachments trouvé:', acf.pdf_attachments.length, 'éléments');
+    
+    for (const pdf of acf.pdf_attachments) {
+      if (pdf.pdf_file && pdf.pdf_file.url) {
+        const title = pdf.pdf_title || pdf.title || 'Document PDF';
+        const description = pdf.pdf_description || pdf.description || `Document PDF: ${title}`;
+        
+        let fileSize = '';
+        if (pdf.pdf_file.filesize) {
+          const bytes = pdf.pdf_file.filesize;
+          if (bytes > 1024 * 1024) {
+            fileSize = `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+          } else if (bytes > 1024) {
+            fileSize = `${(bytes / 1024).toFixed(1)} KB`;
+          } else {
+            fileSize = `${bytes} B`;
+          }
+        }
+        
+        const isPremium = pdf.is_premium === true || pdf.is_premium === '1' || pdf.is_premium === 1;
+        
+        pdfs.push({
+          title: title,
+          url: pdf.pdf_file.url,
+          isPremium: isPremium,
+          fileSize: fileSize,
+          description: description
+        });
+        
+        console.log('🔍 PDF ACF ajouté:', { title, url: pdf.pdf_file.url, isPremium, fileSize });
+      }
+    }
+  }
+
+  console.log('🔍 PDFs ACF extraits:', pdfs.length, pdfs.map(p => p.title));
+  return pdfs;
 }
 
 // Récupérer un article par slug
@@ -287,7 +407,9 @@ async function getFeaturedImageUrl(mediaId: number): Promise<string | null> {
   try {
     const response = await wordpressClient.get(`/wp/v2/media/${mediaId}`);
     if (response.data && response.data.source_url) {
-      return response.data.source_url;
+      // Use proxy-image API to avoid CORS issues
+      const imageUrl = response.data.source_url;
+      return `/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
     }
   } catch (error) {
     console.error('❌ Erreur récupération image featured:', error);
@@ -440,7 +562,169 @@ export async function getUserPurchasedArticles(userId: string): Promise<WordPres
   }
 }
 
-// Fonctions TutorLMS (placeholders)
+// WordPress Courses API Functions
+export async function getWordPressCourses(params: {
+  per_page?: number;
+  page?: number;
+  search?: string;
+  category?: string;
+  level?: string;
+  status?: 'publish' | 'draft' | 'private';
+  featured?: boolean;
+} = {}): Promise<any[]> {
+  try {
+    console.log('🔍 Fetching courses from WordPress API...');
+    
+    const response = await wordpressClient.get('/wp/v2/courses', {
+      params: {
+        per_page: params.per_page || 50,
+        page: params.page || 1,
+        search: params.search,
+        status: params.status || 'publish',
+        _embed: true, // Include embedded resources like featured images
+        ...(params.category && { 'course-category': params.category }),
+        ...(params.level && { 'course-tag': params.level }),
+        ...(params.featured && { featured: true })
+      }
+    });
+    
+    console.log('✅ WordPress API response:', response.status, response.data?.length || 0, 'courses');
+    return response.data || [];
+    
+  } catch (error) {
+    console.error('❌ Error fetching WordPress courses:', error);
+    return [];
+  }
+}
+
+// Format WordPress course data to match TutorCourse interface
+export function formatWordPressCourse(course: any): any {
+  // Get featured image URL from embedded media
+  let featuredImage = '';
+  if (course._embedded && course._embedded['wp:featuredmedia'] && course._embedded['wp:featuredmedia'][0]) {
+    const media = course._embedded['wp:featuredmedia'][0];
+    featuredImage = media.source_url || media.media_details?.sizes?.large?.source_url || media.media_details?.sizes?.medium?.source_url || '';
+  }
+
+  // Get categories from embedded terms
+  let categories: any[] = [];
+  if (course._embedded && course._embedded['wp:term']) {
+    const terms = course._embedded['wp:term'];
+    categories = terms.flat().filter((term: any) => term.taxonomy === 'course-category');
+  }
+
+  // Get tags from embedded terms
+  let tags: any[] = [];
+  if (course._embedded && course._embedded['wp:term']) {
+    const terms = course._embedded['wp:term'];
+    tags = terms.flat().filter((term: any) => term.taxonomy === 'course-tag');
+  }
+
+  // Clean HTML from text fields
+  const cleanHtmlText = (text: string) => {
+    if (!text) return '';
+    return text.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim();
+  };
+
+  return {
+    id: course.id,
+    title: cleanHtmlText(course.title?.rendered || course.title || ''),
+    content: course.content?.rendered || course.content || '',
+    excerpt: cleanHtmlText(course.excerpt?.rendered || course.excerpt || ''),
+    slug: course.slug,
+    status: course.status || 'publish',
+    author: course.author || 0,
+    featured_image: featuredImage,
+    course_price: 0, // Will be set by WooCommerce integration
+    course_level: 'beginner', // Default level
+    course_duration: '',
+    course_benefits: [],
+    course_requirements: [],
+    course_curriculum: [],
+    course_instructors: [],
+    enrolled_count: 0,
+    rating: 0,
+    reviews_count: 0,
+    is_enrolled: false,
+    is_completed: false,
+    progress_percentage: 0,
+    created_at: course.date || new Date().toISOString(),
+    updated_at: course.modified || new Date().toISOString(),
+    categories: categories,
+    tags: tags,
+  };
+}
+
+export async function getWordPressCourse(courseId: string | number): Promise<any | null> {
+  try {
+    console.log('🔍 Fetching course from WordPress API:', courseId);
+    
+    const response = await wordpressClient.get(`/wp/v2/courses/${courseId}`, {
+      params: { _embed: true }
+    });
+    
+    console.log('✅ WordPress API course response:', response.status);
+    return response.data;
+    
+  } catch (error) {
+    console.error('❌ Error fetching WordPress course:', error);
+    return null;
+  }
+}
+
+// Complete WordPress courses function with WooCommerce integration
+export async function getWordPressCoursesWithPrices(params: {
+  per_page?: number;
+  page?: number;
+  search?: string;
+  category?: string;
+  level?: string;
+  status?: 'publish' | 'draft' | 'private';
+  featured?: boolean;
+} = {}): Promise<any[]> {
+  try {
+    console.log('🔍 Fetching courses from WordPress API with prices...');
+    
+    // Fetch courses from WordPress
+    const courses = await getWordPressCourses(params);
+    
+    if (courses.length === 0) {
+      console.log('📚 No courses found from WordPress API');
+      return [];
+    }
+    
+    // Fetch WooCommerce prices
+    console.log('💰 Fetching WooCommerce prices...');
+    await getWooCommerceCoursePrices();
+    
+    // Format courses with prices
+    console.log('🔄 Processing courses with prices...');
+    const formattedCourses = courses.map(course => {
+      const formatted = formatWordPressCourse(course);
+      
+      // Add WooCommerce price if available
+      const title = formatted.title.toLowerCase();
+      const slug = formatted.slug;
+      
+      if (wooCommercePricesCache[title]) {
+        formatted.course_price = wooCommercePricesCache[title];
+      } else if (wooCommercePricesCache[slug]) {
+        formatted.course_price = wooCommercePricesCache[slug];
+      }
+      
+      return formatted;
+    });
+    
+    console.log('✅ WordPress courses processed:', formattedCourses.length);
+    return formattedCourses;
+    
+  } catch (error) {
+    console.error('❌ Error fetching WordPress courses with prices:', error);
+    return [];
+  }
+}
+
+// Fonctions TutorLMS (placeholders - kept for compatibility)
 export async function getTutorCourses() {
   try {
     const response = await wordpressClient.get('/tutor/v1/courses');

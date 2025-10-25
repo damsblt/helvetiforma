@@ -1,16 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, Star, Clock, Users, ChevronDown } from 'lucide-react';
-import { TutorCourse, TutorCategory, getTutorCourses, getTutorCategories, searchTutorCourses } from '@/lib/tutor-lms';
+import { TutorCourse, TutorCategory, getTutorCategories } from '@/lib/tutor-lms';
+import { getWordPressCoursesWithPrices } from '@/lib/wordpress';
 import CourseCard from '@/components/courses/CourseCard';
 import CourseFilters from '@/components/courses/CourseFilters';
 import CourseSearch from '@/components/courses/CourseSearch';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function CoursesPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [courses, setCourses] = useState<TutorCourse[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<TutorCourse[]>([]);
   const [categories, setCategories] = useState<TutorCategory[]>([]);
@@ -18,67 +19,62 @@ export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
   const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
+  const hasLoadedData = useRef(false);
 
-  // Load courses and categories
+  // Load courses and categories immediately
   useEffect(() => {
+    let isMounted = true;
+    
     const loadData = async () => {
+      console.log('🔄 [Courses Page] useEffect triggered', { authLoading, hasLoadedData: hasLoadedData.current });
+      
+      // Prevent duplicate calls
+      if (hasLoadedData.current) {
+        console.log('⏳ [Courses Page] Data already loaded, skipping');
+        return;
+      }
+      
+      console.log('🔄 [Courses Page] Starting data load...');
+      
       try {
         setLoading(true);
         const [coursesData, categoriesData] = await Promise.all([
-          getTutorCourses({ per_page: 50 }),
+          getWordPressCoursesWithPrices({ per_page: 50 }),
           getTutorCategories()
         ]);
         
-        // If user is logged in, batch check enrollment status for all courses at once
-        if (user && coursesData.length > 0) {
-          try {
-            const courseIds = coursesData.map(course => course.id);
-            const response = await fetch('/api/batch-check-course-access', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                userId: user.id,
-                courseIds: courseIds
-              })
-            });
-            
-            const { accessMap } = await response.json();
-            
-            const coursesWithEnrollment = coursesData.map(course => ({
-              ...course,
-              is_enrolled: accessMap[course.id] || false
-            }));
-            
-            setCourses(coursesWithEnrollment);
-            setFilteredCourses(coursesWithEnrollment);
-          } catch (error) {
-            console.error('Error checking enrollments:', error);
-            setCourses(coursesData);
-            setFilteredCourses(coursesData);
-          }
-        } else {
-          setCourses(coursesData);
-          setFilteredCourses(coursesData);
-        }
+        // Skip enrollment check on courses list page for better performance
+        // Enrollment will be checked when user tries to access the course
+        console.log('⚡ Skipping enrollment check for better performance');
+        console.log('📚 Loaded courses:', coursesData.length);
+        console.log('📁 Loaded categories:', categoriesData.length);
+        setCourses(coursesData);
+        setFilteredCourses(coursesData);
         
         setCategories(categoriesData);
+        hasLoadedData.current = true; // Set after successful data load
       } catch (error) {
         console.error('Error loading courses:', error);
+        hasLoadedData.current = true; // Set even on error to prevent infinite loading
       } finally {
+        console.log('✅ [Courses Page] Data loading complete, setting loading to false');
         setLoading(false);
       }
     };
 
     loadData();
-  }, [user]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency array - load only once on mount
 
   // Filter and search courses
   useEffect(() => {
+    console.log('🔄 Filtering courses. Total courses:', courses.length);
     let filtered = [...courses];
 
     // Search filter
@@ -127,6 +123,7 @@ export default function CoursesPage() {
       }
     });
 
+    console.log('✅ Filtered courses:', filtered.length);
     setFilteredCourses(filtered);
   }, [courses, searchQuery, selectedCategory, selectedLevel, priceRange, sortBy]);
 
@@ -134,7 +131,8 @@ export default function CoursesPage() {
     setSearchQuery(query);
     if (query.length > 2) {
       try {
-        const searchResults = await searchTutorCourses(query, {
+        const searchResults = await getWordPressCoursesWithPrices({
+          search: query,
           category: selectedCategory,
           level: selectedLevel,
         });
@@ -149,7 +147,7 @@ export default function CoursesPage() {
     setSearchQuery('');
     setSelectedCategory('');
     setSelectedLevel('');
-    setPriceRange({ min: 0, max: 1000 });
+    setPriceRange({ min: 0, max: 10000 });
     setSortBy('newest');
   };
 
@@ -157,10 +155,16 @@ export default function CoursesPage() {
     searchQuery,
     selectedCategory,
     selectedLevel,
-    priceRange.min > 0 || priceRange.max < 1000
+    priceRange.min > 0 || priceRange.max < 10000
   ].filter(Boolean).length;
 
-  if (loading) {
+  console.log('🔍 Render state:', { loading, coursesCount: courses.length, filteredCount: filteredCourses.length });
+
+  // Show skeleton only if we haven't loaded any data yet
+  const isInitialLoading = loading && courses.length === 0 && categories.length === 0;
+  
+  if (isInitialLoading) {
+    console.log('⏳ Still loading...', { loading, coursesCount: courses.length });
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -180,6 +184,8 @@ export default function CoursesPage() {
       </div>
     );
   }
+
+  console.log('✅ Rendering content with', filteredCourses.length, 'courses');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -260,10 +266,16 @@ export default function CoursesPage() {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {filteredCourses.length} formation{filteredCourses.length !== 1 ? 's' : ''} trouvée{filteredCourses.length !== 1 ? 's' : ''}
-                </h2>
-                {activeFiltersCount > 0 && (
+                {loading ? (
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Chargement des formations...
+                  </h2>
+                ) : (
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {filteredCourses.length} formation{filteredCourses.length !== 1 ? 's' : ''} trouvée{filteredCourses.length !== 1 ? 's' : ''}
+                  </h2>
+                )}
+                {!loading && activeFiltersCount > 0 && (
                   <p className="text-sm text-gray-600 mt-1">
                     Filtres actifs: {activeFiltersCount}
                   </p>
@@ -271,7 +283,19 @@ export default function CoursesPage() {
               </div>
             </div>
 
-            {filteredCourses.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="w-24 h-24 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Chargement des formations...
+                </h3>
+                <p className="text-gray-600">
+                  Veuillez patienter pendant que nous récupérons les formations
+                </p>
+              </div>
+            ) : filteredCourses.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                   <Search className="w-12 h-12 text-gray-400" />

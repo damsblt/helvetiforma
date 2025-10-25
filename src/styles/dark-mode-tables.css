@@ -1,0 +1,138 @@
+/* Global WordPress Table Dark Mode Override */
+/* This file ensures WordPress tables are properly styled in dark mode */
+
+/* Ultra-specific selectors to override Tailwind prose styles */
+.dark .prose .wp-block-table table,
+.dark .prose-invert .wp-block-table table,
+.dark .prose .wp-block-table table,
+.dark .prose-invert .wp-block-table table,
+.dark .wp-block-table table,
+.dark .prose table,
+.dark .prose-invert table {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .prose .wp-block-table th,
+.dark .prose-invert .wp-block-table th,
+.dark .prose .wp-block-table th,
+.dark .prose-invert .wp-block-table th,
+.dark .wp-block-table th,
+.dark .prose th,
+.dark .prose-invert th {
+  background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+  color: #f1f5f9 !important;
+  border-color: #475569 !important;
+}
+
+.dark .prose .wp-block-table td,
+.dark .prose-invert .wp-block-table td,
+.dark .prose .wp-block-table td,
+.dark .prose-invert .wp-block-table td,
+.dark .wp-block-table td,
+.dark .prose td,
+.dark .prose-invert td {
+  color: #f1f5f9 !important;
+  border-color: #475569 !important;
+}
+
+.dark .prose .wp-block-table tr:nth-child(even),
+.dark .prose-invert .wp-block-table tr:nth-child(even),
+.dark .prose .wp-block-table tr:nth-child(even),
+.dark .prose-invert .wp-block-table tr:nth-child(even),
+.dark .wp-block-table tr:nth-child(even),
+.dark .prose tr:nth-child(even),
+.dark .prose-invert tr:nth-child(even) {
+  background-color: #334155 !important;
+}
+
+.dark .prose .wp-block-table tr:nth-child(even) td,
+.dark .prose-invert .wp-block-table tr:nth-child(even) td,
+.dark .prose .wp-block-table tr:nth-child(even) td,
+.dark .prose-invert .wp-block-table tr:nth-child(even) td,
+.dark .wp-block-table tr:nth-child(even) td,
+.dark .prose tr:nth-child(even) td,
+.dark .prose-invert tr:nth-child(even) td {
+  background-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .prose .wp-block-table tr:hover,
+.dark .prose-invert .wp-block-table tr:hover,
+.dark .prose .wp-block-table tr:hover,
+.dark .prose-invert .wp-block-table tr:hover,
+.dark .wp-block-table tr:hover,
+.dark .prose tr:hover,
+.dark .prose-invert tr:hover {
+  background-color: #475569 !important;
+}
+
+.dark .prose .wp-block-table tr:hover td,
+.dark .prose-invert .wp-block-table tr:hover td,
+.dark .prose .wp-block-table tr:hover td,
+.dark .prose-invert .wp-block-table tr:hover td,
+.dark .wp-block-table tr:hover td,
+.dark .prose tr:hover td,
+.dark .prose-invert tr:hover td {
+  background-color: #475569 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Force all text elements in tables to be visible */
+.dark .prose .wp-block-table *,
+.dark .prose-invert .wp-block-table *,
+.dark .prose .wp-block-table *,
+.dark .prose-invert .wp-block-table *,
+.dark .wp-block-table *,
+.dark .prose *,
+.dark .prose-invert * {
+  color: #f1f5f9 !important;
+}
+
+.dark .prose .wp-block-table strong,
+.dark .prose-invert .wp-block-table strong,
+.dark .prose .wp-block-table strong,
+.dark .prose-invert .wp-block-table strong,
+.dark .wp-block-table strong,
+.dark .prose strong,
+.dark .prose-invert strong {
+  color: #f1f5f9 !important;
+  font-weight: 700 !important;
+}
+
+.dark .prose .wp-block-table a,
+.dark .prose-invert .wp-block-table a,
+.dark .prose .wp-block-table a,
+.dark .prose-invert .wp-block-table a,
+.dark .wp-block-table a,
+.dark .prose a,
+.dark .prose-invert a {
+  color: #60a5fa !important;
+}
+
+.dark .prose .wp-block-table a:hover,
+.dark .prose-invert .wp-block-table a:hover,
+.dark .prose .wp-block-table a:hover,
+.dark .prose-invert .wp-block-table a:hover,
+.dark .wp-block-table a:hover,
+.dark .prose a:hover,
+.dark .prose-invert a:hover {
+  color: #93c5fd !important;
+}
+
+/* Additional ultra-specific overrides */
+.dark .prose .wp-block-table table td,
+.dark .prose-invert .wp-block-table table td,
+.dark .prose table td,
+.dark .prose-invert table td {
+  color: #f1f5f9 !important;
+  background-color: transparent !important;
+}
+
+.dark .prose .wp-block-table table th,
+.dark .prose-invert .wp-block-table table th,
+.dark .prose table th,
+.dark .prose-invert table th {
+  color: #f1f5f9 !important;
+  background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+}

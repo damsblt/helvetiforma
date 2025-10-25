@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { decodeHtmlEntitiesServer } from '@/utils/htmlDecode'
+import { cleanWordPressContent } from '@/utils/wordpressContent'
 
 const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL
 const WORDPRESS_AUTH = Buffer.from(
@@ -61,13 +63,16 @@ export async function GET(request: NextRequest) {
           }
 
           // Format the post data
+          const decodedBody = decodeHtmlEntitiesServer(post.content.rendered)
+          const cleanedBody = cleanWordPressContent(decodedBody)
+          
           return {
             _id: post.id,
             id: post.id,
-            title: post.title.rendered,
+            title: decodeHtmlEntitiesServer(post.title.rendered),
             slug: { current: post.slug },
-            excerpt: post.excerpt.rendered,
-            body: post.content.rendered,
+            excerpt: decodeHtmlEntitiesServer(post.excerpt.rendered),
+            body: cleanedBody,
             publishedAt: post.date,
             accessLevel: (acfData as any).access || (acfData as any).access_level || 'public',
             price: parseFloat((acfData as any).price) || 0,
@@ -78,13 +83,16 @@ export async function GET(request: NextRequest) {
           }
         } catch (error) {
           console.error(`Error processing post ${post.id}:`, error)
+          const decodedBody = decodeHtmlEntitiesServer(post.content.rendered)
+          const cleanedBody = cleanWordPressContent(decodedBody)
+          
           return {
             _id: post.id,
             id: post.id,
-            title: post.title.rendered,
+            title: decodeHtmlEntitiesServer(post.title.rendered),
             slug: { current: post.slug },
-            excerpt: post.excerpt.rendered,
-            body: post.content.rendered,
+            excerpt: decodeHtmlEntitiesServer(post.excerpt.rendered),
+            body: cleanedBody,
             publishedAt: post.date,
             accessLevel: 'public',
             price: 0,

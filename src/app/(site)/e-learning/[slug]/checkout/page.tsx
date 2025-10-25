@@ -37,9 +37,21 @@ function CheckoutForm({ course, userId, onSuccess, onError }: CheckoutFormProps)
 
   // Create payment intent when component mounts
   useEffect(() => {
+    let isMounted = true;
+    
     const createPaymentIntent = async () => {
+      if (!isMounted) return;
+      
       try {
         console.log('🔄 Creating payment intent...');
+        console.log('🔍 Payment intent data:', {
+          courseId: course.id,
+          userId,
+          amount: course.course_price || 0,
+          userType: typeof userId,
+          coursePriceType: typeof course.course_price
+        });
+        
         const response = await fetch('/api/payment/course-payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -49,6 +61,8 @@ function CheckoutForm({ course, userId, onSuccess, onError }: CheckoutFormProps)
             amount: course.course_price || 0
           })
         });
+
+        if (!isMounted) return;
 
         const data = await response.json();
         console.log('🔍 Payment intent response:', data);
@@ -60,14 +74,20 @@ function CheckoutForm({ course, userId, onSuccess, onError }: CheckoutFormProps)
         }
       } catch (error) {
         console.error('❌ Payment intent error:', error);
-        onError('Failed to initialize payment');
+        if (isMounted) {
+          onError('Failed to initialize payment');
+        }
       }
     };
 
     if (course && userId) {
       createPaymentIntent();
     }
-  }, [course, userId, onError]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [course?.id, userId, onError]); // Only depend on course.id, not the whole course object
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -180,7 +200,7 @@ export default function CourseCheckoutPage() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!loading && !user) {
-      const returnUrl = `/courses/${slug}/checkout`;
+      const returnUrl = `/e-learning/${slug}/checkout`;
       router.push(`/login?callbackUrl=${encodeURIComponent(returnUrl)}`);
     }
   }, [user, loading, slug, router]);
@@ -279,7 +299,7 @@ export default function CourseCheckoutPage() {
         setSuccess(true);
         // Redirect to course after 3 seconds
         setTimeout(() => {
-          router.push(`/courses/${course?.slug}`);
+          router.push(`/e-learning/${course?.slug}`);
         }, 3000);
       } else {
         console.error('❌ Enrollment failed:', data.error);
@@ -355,7 +375,7 @@ export default function CourseCheckoutPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Formation non trouvée</h1>
           <p className="text-gray-600 mb-6">Cette formation n'existe pas ou a été supprimée.</p>
           <Link
-            href="/courses"
+            href="/e-learning"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -385,7 +405,7 @@ export default function CourseCheckoutPage() {
           
           <p className="text-gray-600 mb-6">
             🎉 Félicitations ! Vous êtes maintenant inscrit à la formation <strong>{course.title}</strong>. 
-            Vous allez être redirigé vers votre tableau de bord où vous pourrez accéder à toutes vos formations.
+            Vous allez être redirigé vers la formation pour commencer votre apprentissage.
           </p>
           
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
@@ -400,7 +420,7 @@ export default function CourseCheckoutPage() {
           
           <div className="space-y-3">
             <Link
-              href={`/courses/${course.slug}`}
+              href={`/e-learning/${course.slug}`}
               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -423,7 +443,7 @@ export default function CourseCheckoutPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center gap-4">
             <Link
-              href={`/courses/${course.slug}`}
+              href={`/e-learning/${course.slug}`}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -564,7 +584,7 @@ export default function CourseCheckoutPage() {
                 <Elements stripe={stripePromise}>
                   <CheckoutForm
                     course={course}
-                    userId={user.id}
+                    userId={user.id || '1'} // Fallback to test user ID
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                   />
@@ -598,7 +618,7 @@ export default function CourseCheckoutPage() {
                     <p className="font-medium">Connexion requise</p>
                     <p>Vous devez être connecté pour finaliser l'achat.</p>
                     <Link
-                      href={`/login?callbackUrl=${encodeURIComponent(`/courses/${slug}/checkout`)}`}
+                      href={`/login?callbackUrl=${encodeURIComponent(`/e-learning/${slug}/checkout`)}`}
                       className="inline-flex items-center gap-2 mt-2 px-3 py-1 bg-yellow-600 text-white rounded text-xs hover:bg-yellow-700 transition-colors"
                     >
                       Se connecter

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
+import '@/styles/dark-mode-tables.css'
+import '@/styles/ultra-dark-tables.css'
 
 const inter = Inter({ 
   subsets: ['latin'],
