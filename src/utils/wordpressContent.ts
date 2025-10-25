@@ -45,7 +45,7 @@ export function cleanWordPressContent(html: string): string {
   cleaned = cleaned.replace(/class="[^"]*wp-block-[^"]*"/g, (match) => {
       // Keep the wp-block classes but clean up others
       return match.replace(/class="([^"]*)"/g, (_, classes) => {
-        const classList = classes.split(' ').filter(cls => 
+        const classList = classes.split(' ').filter((cls: string) => 
           cls.startsWith('wp-block-') || 
           cls === 'has-fixed-layout' ||
           cls === 'has-alpha-channel-opacity' ||
