@@ -41,7 +41,7 @@ export default function ContactForm() {
       setFormData(prev => ({
         ...prev,
         subject: `Inscription au webinaire: ${webinar}`,
-        message: `Bonjour,\n\nJe souhaite m'inscrire au webinaire "${webinar}" organisé par HelvetiForma.\n\nPouvez-vous m'envoyer une invitation par email ?\n\nInformations sur la session :\n- Titre: ${webinar}\n- Date et heure : ${webinarDateTime || '[date and time]'}\n- Emplacement : ${webinarLocation || '[location]'}${priceInfo}\n\nCordialement`,
+        message: `Bonjour,\n\nJe souhaite m'inscrire au webinaire "${webinar}" organisé par HelvetiForma.\n\nPouvez-vous m'envoyer les informations nécessaires ?\n\nInformations sur la session :\n- Titre: ${webinar}\n- Date et heure : ${webinarDateTime || '[date and time]'}\n- Emplacement : ${webinarLocation || '[location]'}${priceInfo}\n\nCordialement`,
         interest: 'sessions'
       }))
     }

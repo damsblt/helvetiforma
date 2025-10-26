@@ -69,14 +69,6 @@ export default function Footer() {
                       contact@helvetiforma.ch
                     </Link>
                   </div>
-                  <div>
-                    <Link
-                      href="tel:+41793090640"
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      +41 79 309 06 40
-                    </Link>
-                  </div>
                 </div>
               ) : (
                 // Section Ressources avec liens

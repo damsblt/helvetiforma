@@ -62,6 +62,15 @@ export async function POST(request: NextRequest) {
         })
       }
       
+      // Handle application password errors specifically
+      if (userResponse.message?.includes('application password') || userResponse.message?.includes('mot de passe d\'application')) {
+        console.error('❌ WordPress Application Password Error:', userResponse.message)
+        return NextResponse.json({
+          success: false,
+          error: 'Erreur de configuration du serveur. Veuillez réessayer plus tard.'
+        })
+      }
+      
       return NextResponse.json({
         success: false,
         error: userResponse.message || 'Erreur lors de l\'inscription'
@@ -75,6 +84,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: false,
           error: 'Un utilisateur avec cet email existe déjà'
+        })
+      }
+      
+      // Handle application password errors in catch block too
+      if (error.message?.includes('application password') || error.message?.includes('mot de passe d\'application')) {
+        console.error('❌ WordPress Application Password Error in catch:', error.message)
+        return NextResponse.json({
+          success: false,
+          error: 'Erreur de configuration du serveur. Veuillez réessayer plus tard.'
         })
       }
       

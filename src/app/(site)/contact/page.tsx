@@ -1,15 +1,8 @@
 import { getPageBySlug } from '@/lib/sanity'
-import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 import HeroSection from '@/components/sections/HeroSection'
-import ContactInfoSection from '@/components/sections/ContactInfoSection'
-import FeatureCardsSection from '@/components/sections/FeatureCardsSection'
-import TeamSection from '@/components/sections/TeamSection'
-import FAQSection from '@/components/sections/FAQSection'
-import AnimatedRichTextSection from '@/components/sections/AnimatedRichTextSection'
 import AnimatedContactForm from '@/components/sections/AnimatedContactForm'
-import ContactPageScrollHandler from '@/components/ContactPageScrollHandler'
+import FeatureCardsSection from '@/components/sections/FeatureCardsSection'
 
 // Revalidate every 10 seconds for fresh Sanity content
 export const revalidate = 10
@@ -66,11 +59,13 @@ export default async function ContactPage() {
   
   const pageContent = content || defaultContent
 
+  // Find the "Pourquoi nous contacter ?" section (featureCards)
+  const whyContactSection = pageContent.sections?.find(
+    section => section._type === 'featureCards' && section.title === 'Pourquoi nous contacter ?'
+  )
+
   return (
     <div className="min-h-screen">
-      {/* Scroll Handler */}
-      <ContactPageScrollHandler />
-      
       {/* Hero Section */}
       <HeroSection 
         hero={{
@@ -80,23 +75,15 @@ export default async function ContactPage() {
           cta_primary: pageContent.hero?.ctaPrimary,
         }} 
       />
-      
-      {/* Contact Information Section */}
-      {pageContent.sections?.find(section => section._type === 'contactInfoSection') && (
-        <section id="contact-info" className="py-16 px-4 bg-muted/30">
-          <div className="max-w-7xl mx-auto">
-            {(() => {
-              const contactSection = pageContent.sections.find(section => section._type === 'contactInfoSection')
-              return contactSection && contactSection.contactItems ? (
-                <ContactInfoSection
-                  title={contactSection.title}
-                  subtitle={contactSection.subtitle}
-                  contactItems={contactSection.contactItems}
-                />
-              ) : null
-            })()}
-          </div>
-        </section>
+
+      {/* Why Contact Section */}
+      {whyContactSection && (
+        <FeatureCardsSection
+          title={whyContactSection.title}
+          subtitle={whyContactSection.subtitle}
+          cards={whyContactSection.cards}
+          columns={whyContactSection.columns || 2}
+        />
       )}
 
       {/* Contact Form Section - Centered Full Width */}
@@ -105,37 +92,6 @@ export default async function ContactPage() {
           <AnimatedContactForm />
         </div>
       </section>
-      
-      {/* Dynamic Sections from Sanity CMS */}
-      {pageContent.sections?.filter(section => section._type !== 'contactInfoSection').map((section, index) => {
-        // Rich Text Section
-        if (section._type === 'richTextSection' && section.content) {
-          // Add ID to first section for scrolling
-          const sectionId = index === 0 ? 'contact-info' : undefined
-          
-          return (
-            <div key={section._key} id={sectionId}>
-              <AnimatedRichTextSection section={section} />
-            </div>
-          )
-        }
-        
-        // Feature Cards Section
-        if (section._type === 'featureCards' && section.cards) {
-          return (
-            <div key={section._key} className="mb-8">
-              <FeatureCardsSection
-                title={section.title || ''}
-                subtitle={section.subtitle}
-                cards={section.cards}
-                columns={section.columns || 3}
-              />
-            </div>
-          )
-        }
-        
-        return null
-      })}
     </div>
   )
 }

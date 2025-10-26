@@ -36,6 +36,23 @@ export default function ListIconSection({
   ctaText,
   ctaLink,
 }: ListIconSectionProps) {
+  // Helper function to convert full URLs to relative paths
+  const normalizeUrl = (url: string | undefined): string => {
+    if (!url) return ''
+    // If it's a full URL (http/https), extract just the path
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      try {
+        const urlObj = new URL(url)
+        return urlObj.pathname
+      } catch (e) {
+        return url
+      }
+    }
+    return url
+  }
+
+  const normalizedCtaLink = normalizeUrl(ctaLink)
+
   return (
     <section className="py-20 bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4">
@@ -65,9 +82,9 @@ export default function ListIconSection({
               </div>
             )}
 
-            {ctaText && ctaLink && (
+            {ctaText && normalizedCtaLink && (
               <Link
-                href={ctaLink}
+                href={normalizedCtaLink}
                 className="inline-flex items-center text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-lg group"
               >
                 {ctaText}

@@ -3,7 +3,6 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import DevWrapper from '@/components/DevWrapper'
 import { AuthProvider } from '@/contexts/AuthContext'
 
 const inter = Inter({ 
@@ -88,20 +87,18 @@ export default function RootLayout({
     <html lang="fr" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen bg-background font-sans antialiased">
         <AuthProvider>
-          <DevWrapper>
-            <div className="relative flex min-h-screen flex-col">
-              {/* Header Navigation */}
-              <Header />
-              
-              {/* Main Content */}
-              <main className="flex-1 pt-16">
-                {children}
-              </main>
-              
-              {/* Footer */}
-              <Footer />
-            </div>
-          </DevWrapper>
+          <div className="relative flex min-h-screen flex-col">
+            {/* Header Navigation */}
+            <Header />
+            
+            {/* Main Content */}
+            <main className="flex-1 pt-16">
+              {children}
+            </main>
+            
+            {/* Footer */}
+            <Footer />
+          </div>
         </AuthProvider>
       </body>
     </html>
