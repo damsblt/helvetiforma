@@ -253,7 +253,25 @@ export default defineType({
               name: 'content',
               type: 'array',
               title: 'Content',
-              of: [{type: 'block'}],
+              of: [
+                {
+                  type: 'block',
+                  lists: [
+                    {title: 'Numérotation', value: 'number'},
+                    {title: 'Liste à puces', value: 'bullet'}
+                  ],
+                  styles: [
+                    {title: 'Paragraphe', value: 'normal'},
+                    {title: 'H3', value: 'h3'}
+                  ],
+                  marks: {
+                    decorators: [
+                      {title: 'Gras', value: 'strong'},
+                      {title: 'Italique', value: 'em'}
+                    ]
+                  }
+                }
+              ],
             },
             {
               name: 'backgroundColor',
