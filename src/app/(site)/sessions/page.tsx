@@ -7,6 +7,9 @@ import AnimatedRichTextSection from '@/components/sections/AnimatedRichTextSecti
 import AnimatedWebinarsHeader from '@/components/sections/AnimatedWebinarsHeader'
 import SessionsClient from './SessionsClient'
 
+// Revalidate every 10 seconds to ensure content updates are reflected
+export const revalidate = 10
+
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const content = await getPageBySlug('sessions')
