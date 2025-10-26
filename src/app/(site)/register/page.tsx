@@ -3,9 +3,10 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import RegisterForm from '@/components/auth/RegisterForm'
 
-export default function RegisterPage() {
+function RegisterContent() {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
   
@@ -47,5 +48,17 @@ export default function RegisterPage() {
           </div>
         </motion.div>
       </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="animate-pulse">Chargement...</div>
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   )
 }
