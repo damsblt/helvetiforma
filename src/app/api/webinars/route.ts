@@ -51,18 +51,13 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching webinars:', error)
-    // Return mock data as fallback
-    const { getTeamsWebinars } = await import('@/lib/microsoft')
-    const mockWebinars = await getTeamsWebinars({
-      limit: 50,
-    })
-    
+    // Don't hide the error - return it so we can debug
     return NextResponse.json({
-      success: true,
-      data: mockWebinars,
-      count: mockWebinars.length,
-      source: 'mock-data',
-    })
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      source: 'error',
+      message: 'Failed to fetch webinars from Microsoft Teams. Check console for details.',
+    }, { status: 500 })
   }
 }
 

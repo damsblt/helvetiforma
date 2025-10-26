@@ -253,10 +253,10 @@ export default function CalendrierClient() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Aucun webinaire disponible
+            Aucunes sessions disponibles
           </h3>
           <p className="text-gray-600 dark:text-white">
-            De nouveaux webinaires seront bientôt disponibles. Revenez plus tard !
+            De nouvelles sessions seront bientôt disponibles. Revenez plus tard !
           </p>
         </div>
       )}

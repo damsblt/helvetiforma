@@ -69,6 +69,14 @@ export default function Footer() {
                       contact@helvetiforma.ch
                     </Link>
                   </div>
+                  <div>
+                    <Link
+                      href="/contact"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Formulaire de contact
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 // Section Ressources avec liens

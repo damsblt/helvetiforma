@@ -43,9 +43,25 @@ export default function EnrolledCourses({ userId }: EnrolledCoursesProps) {
         console.log('🔍 EnrolledCourses: Response status:', response.status)
         
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+          let errorData: any = {};
+          
+          try {
+            // Clone the response so we can read it without consuming the stream
+            const clonedResponse = response.clone();
+            const responseText = await clonedResponse.text();
+            if (responseText && responseText.trim()) {
+              errorData = JSON.parse(responseText);
+            }
+          } catch (parseError) {
+            console.error('❌ EnrolledCourses: Failed to parse error response:', parseError);
+            errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+          }
+          
           console.error('❌ EnrolledCourses: API error:', errorData)
-          throw new Error(errorData.message || errorData.error || 'Failed to fetch enrolled courses')
+          
+          const errorMessage = errorData.error || errorData.message || 
+                              `Failed to fetch enrolled courses (${response.status})`;
+          throw new Error(errorMessage);
         }
 
         const data = await response.json()

@@ -190,38 +190,95 @@ export async function GET(request: NextRequest) {
     console.log('🔍 Student Courses API: TutorLMS response status:', response.status);
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Student Courses API: TutorLMS error:', response.status, response.statusText, errorText);
+      let errorText = '';
+      let errorJson = null;
+      
+      try {
+        errorText = await response.text();
+        console.error('❌ Student Courses API: TutorLMS error:', response.status, response.statusText, errorText);
+        
+        // Try to parse as JSON if it's not empty
+        if (errorText && errorText.trim()) {
+          errorJson = JSON.parse(errorText);
+        }
+      } catch (parseError) {
+        console.error('❌ Student Courses API: Failed to parse error response:', parseError);
+      }
       
       // If it's a 500 error related to user not found or no enrollments, try fallback approach
-      if (response.status === 500 && errorText.includes('count()')) {
+      if (response.status === 500 && errorText && errorText.includes('count()')) {
         console.log('⚠️ Student Courses API: TutorLMS API failed, trying fallback approach...');
         
-        // Fallback: Get all courses and check enrollment status
+        // Fallback: Get actual enrolled courses for this user
         try {
-          const fallbackResponse = await fetch(`${TUTOR_API_URL}/wp-json/wp/v2/courses?per_page=50&_embed=true`);
+          // First, get all courses
+          const allCoursesResponse = await fetch(`${TUTOR_API_URL}/wp-json/wp/v2/courses?per_page=50&_embed=true`);
           
-          if (!fallbackResponse.ok) {
-            console.log('❌ Fallback API also failed:', fallbackResponse.status);
+          if (!allCoursesResponse.ok) {
+            console.log('❌ Fallback: Cannot fetch courses:', allCoursesResponse.status);
             return NextResponse.json({ courses: [] });
           }
           
-          const fallbackData = await fallbackResponse.json();
-          console.log('✅ Fallback API: Got', fallbackData.length, 'courses');
+          const allCourses = await allCoursesResponse.json();
+          console.log('✅ Fallback: Got', allCourses.length, 'total courses');
           
-          // For now, return all courses as "enrolled" for testing
-          // In a real implementation, you would check actual enrollment status
-          const enrolledCourses = fallbackData.map((course: any) => ({
-            ...course,
-            course_completed_percentage: '0%',
-            enrolled_at: new Date().toISOString(),
-          }));
+          // Get user's actual enrollments
+          const enrollmentsResponse = await fetch(
+            `${TUTOR_API_URL}/wp-json/tutor/v1/enrollments?user_id=${userId}`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authHeader,
+              },
+            }
+          );
           
-          console.log('🔍 Fallback: Using', enrolledCourses.length, 'courses as enrolled');
+          let enrolledCourseIds: number[] = [];
+          let enrollmentsData: any = null;
           
-          // Continue with the normal processing
+          if (enrollmentsResponse.ok) {
+            enrollmentsData = await enrollmentsResponse.json();
+            console.log('✅ Fallback: Got enrollments data:', enrollmentsData);
+            
+            // Extract course IDs from enrollments
+            if (enrollmentsData.data && Array.isArray(enrollmentsData.data)) {
+              enrolledCourseIds = enrollmentsData.data.map((enrollment: any) => 
+                enrollment.course_id || enrollment.ID
+              ).filter((id: any) => id);
+            } else if (Array.isArray(enrollmentsData)) {
+              enrolledCourseIds = enrollmentsData.map((enrollment: any) => 
+                enrollment.course_id || enrollment.ID
+              ).filter((id: any) => id);
+            }
+            
+            console.log('🔍 Fallback: Found enrolled course IDs:', enrolledCourseIds);
+          } else {
+            console.warn('⚠️ Fallback: Could not fetch enrollments:', enrollmentsResponse.status);
+            // Return empty array if we can't verify enrollments
+            return NextResponse.json({ courses: [] });
+          }
+          
+          // Filter courses to only include enrolled ones
+          const enrolledCourses = allCourses.filter((course: any) => 
+            enrolledCourseIds.includes(course.id)
+          );
+          
+          console.log('✅ Fallback: Found', enrolledCourses.length, 'enrolled courses');
+          
+          if (enrolledCourses.length === 0) {
+            return NextResponse.json({ courses: [] });
+          }
+          
+          // Format the enrolled courses
           const courses = await Promise.all(enrolledCourses.map(async (course: any) => {
-            const progressStr = course.course_completed_percentage || '0%';
+            // Get enrollment info for this course
+            const enrollmentInfo = enrollmentsData?.data?.find((e: any) => 
+              (e.course_id || e.ID) === course.id
+            ) || enrollmentsData?.find((e: any) => 
+              (e.course_id || e.ID) === course.id
+            );
+            
+            const progressStr = enrollmentInfo?.course_completed_percentage || '0%';
             const progressNum = parseInt(progressStr.replace('%', '')) || 0;
             
             const featuredImage = await getFeaturedImageUrl(course);
@@ -234,7 +291,7 @@ export async function GET(request: NextRequest) {
               excerpt: course.excerpt?.rendered || course.excerpt || '',
               featured_image: featuredImage,
               progress_percentage: progressNum,
-              enrolled_at: course.enrolled_at || new Date().toISOString(),
+              enrolled_at: enrollmentInfo?.enrolled_at || enrollmentInfo?.post_date || new Date().toISOString(),
               course_level: course.course_level || course.level || undefined,
             };
           }));
@@ -248,10 +305,17 @@ export async function GET(request: NextRequest) {
         }
       }
       
+      // Return a properly formatted error response
+      const errorMessage = errorJson?.message || errorJson?.error || 
+                           (errorText && errorText.trim() ? errorText : `HTTP ${response.status}: ${response.statusText}`) ||
+                           'Failed to fetch enrolled courses';
+      
       return NextResponse.json(
         { 
-          error: `Failed to fetch enrolled courses: ${response.statusText}`,
-          details: errorText
+          error: errorMessage,
+          status: response.status,
+          statusText: response.statusText,
+          ...(errorText && { details: errorText })
         },
         { status: response.status }
       );

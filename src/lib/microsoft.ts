@@ -69,10 +69,10 @@ export async function getTeamsWebinars(params?: {
   accessToken?: string
 }): Promise<TeamsWebinar[]> {
   try {
-    // Si pas de token, retourner des données simulées
+    // Require access token
     if (!params?.accessToken) {
-      console.log('No access token provided, returning mock data')
-      return getMockWebinars(params)
+      console.error('No access token provided for getTeamsWebinars')
+      throw new Error('Access token is required to fetch Teams webinars')
     }
 
     const graphClient = createGraphClient(params.accessToken)
@@ -80,8 +80,10 @@ export async function getTeamsWebinars(params?: {
     // Start from beginning of today to include events that might have already started
     const today = new Date()
     today.setHours(0, 0, 0, 0) // Start of today
+    // Extend default range to 1 year to include future events like those in 2026
+    const defaultEndDate = new Date(today.getFullYear() + 2, 0, 1) // January 1st of 2 years from now
     const startTime = params?.startDate?.toISOString() || today.toISOString()
-    const endTime = params?.endDate?.toISOString() || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    const endTime = params?.endDate?.toISOString() || defaultEndDate.toISOString()
 
     // Use specific user's calendar from environment variable
     // When using application permissions, use /users/{userId}/calendar/events
@@ -91,14 +93,23 @@ export async function getTeamsWebinars(params?: {
       throw new Error('MICROSOFT_CALENDAR_USER environment variable is required')
     }
     
-    const events = await graphClient
+    let allEvents: any[] = []
+    let pageIterator = await graphClient
       .api(`/users/${calendarUser}/calendar/events`)
       .filter(`start/dateTime ge '${startTime}' and end/dateTime le '${endTime}'`)
       .select('id,subject,body,start,end,location,attendees,onlineMeeting,webLink')
-      .top(params?.limit || 50)
+      .top(1000) // Set a high limit but still reasonable for performance
       .get()
 
-    return events.value
+    // Add first page results
+    allEvents = [...(pageIterator.value || [])]
+
+    // Microsoft Graph API automatically paginates if there are more results
+    // The response includes a @odata.nextLink if there are more pages, but
+    // with top(1000) we should get most calendars in one request
+    // For exceptionally large calendars, we'd need to implement full pagination
+
+    return allEvents
       .filter((event: any) => {
         // Filtrer uniquement les événements dont le titre commence par "HF"
         const title = event.subject || ''
@@ -138,7 +149,7 @@ export async function getTeamsWebinars(params?: {
       })
   } catch (error) {
     console.error('Error fetching Teams webinars:', error)
-    return getMockWebinars(params)
+    throw error // Re-throw to let API handle it
   }
 }
 
@@ -147,11 +158,10 @@ export async function getTeamsWebinars(params?: {
  */
 export async function getTeamsWebinar(id: string, accessToken?: string): Promise<TeamsWebinar | null> {
   try {
-    // Si pas de token, retourner des données simulées
+    // Require access token
     if (!accessToken) {
-      console.log('No access token provided for getTeamsWebinar, returning mock data')
-      const mockWebinars = getMockWebinars()
-      return mockWebinars.find(w => w.id === id) || null
+      console.error('No access token provided for getTeamsWebinar')
+      throw new Error('Access token is required to fetch Teams webinar')
     }
 
     const graphClient = createGraphClient(accessToken)
@@ -207,7 +217,7 @@ export async function getTeamsWebinar(id: string, accessToken?: string): Promise
     }
   } catch (error) {
     console.error(`Error fetching Teams webinar:`, error)
-    return null
+    throw error // Re-throw to let API handle it
   }
 }
 
@@ -387,72 +397,6 @@ export async function getUserWebinarRegistrations(userEmail: string): Promise<We
   }
 }
 
-/**
- * Données simulées pour le développement
- */
-function getMockWebinars(params?: { startDate?: Date; endDate?: Date; limit?: number }): TeamsWebinar[] {
-  const now = new Date()
-  const webinars: TeamsWebinar[] = [
-    {
-      id: 'webinar1',
-      title: 'HF - Introduction à la Comptabilité Suisse',
-      description: 'Découvrez les bases de la comptabilité selon les normes suisses. Ce webinaire vous donnera un aperçu complet des principes fondamentaux.',
-      startDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // Dans 7 jours
-      endDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000), // 2h plus tard
-      meetingUrl: 'https://teams.microsoft.com/l/meetup-join/example1',
-      attendees: ['user1@example.com', 'user2@example.com'],
-      maxAttendees: 100,
-      registrationCount: 23,
-      status: 'scheduled',
-      isPublic: true,
-      tags: ['comptabilité', 'débutant'],
-    },
-    {
-      id: 'webinar2',
-      title: 'HF - Gestion des Salaires : Nouveautés 2024',
-      description: 'Webinaire spécialisé sur les dernières évolutions en matière de gestion des salaires en Suisse. Idéal pour les professionnels RH.',
-      startDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000), // Dans 14 jours
-      endDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000 + 1.5 * 60 * 60 * 1000), // 1.5h plus tard
-      meetingUrl: 'https://teams.microsoft.com/l/meetup-join/example2',
-      attendees: ['user3@example.com'],
-      maxAttendees: 50,
-      registrationCount: 12,
-      status: 'scheduled',
-      isPublic: true,
-      tags: ['salaires', 'rh', 'intermédiaire'],
-    },
-    {
-      id: 'webinar3',
-      title: 'HF - Session Q&A avec les Experts',
-      description: 'Session interactive de questions-réponses avec nos formateurs experts. Apportez vos questions sur la comptabilité et la gestion d\'entreprise.',
-      startDate: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000), // Dans 21 jours
-      endDate: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000 + 1 * 60 * 60 * 1000), // 1h plus tard
-      meetingUrl: 'https://teams.microsoft.com/l/meetup-join/example3',
-      attendees: [],
-      maxAttendees: 30,
-      registrationCount: 8,
-      status: 'scheduled',
-      isPublic: true,
-      tags: ['qa', 'interactif', 'experts'],
-    },
-  ]
-
-  // Filtrer par dates si spécifiées
-  let filteredWebinars = webinars
-  if (params?.startDate) {
-    filteredWebinars = filteredWebinars.filter(w => w.startDate >= params.startDate!)
-  }
-  if (params?.endDate) {
-    filteredWebinars = filteredWebinars.filter(w => w.endDate <= params.endDate!)
-  }
-
-  // Limiter le nombre de résultats
-  if (params?.limit) {
-    filteredWebinars = filteredWebinars.slice(0, params.limit)
-  }
-
-  return filteredWebinars
-}
 
 /**
  * Détecte si un email est un compte Microsoft personnel
