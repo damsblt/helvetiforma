@@ -81,7 +81,7 @@ export default async function ContactPage() {
         <FeatureCardsSection
           title={whyContactSection.title}
           subtitle={whyContactSection.subtitle}
-          cards={whyContactSection.cards}
+          cards={whyContactSection.cards || []}
           columns={whyContactSection.columns || 2}
         />
       )}
