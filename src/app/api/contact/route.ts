@@ -104,7 +104,7 @@ Date: ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Zurich' })}
     // Send email
     const mailOptions = {
       from: `"HelvetiForma Contact Form" <${process.env.EMAIL_SERVER_USER}>`,
-      to: 'contact@helvetiforma.ch',
+      to: 'info@helvetiforma.ch',
       replyTo: formData.email,
       subject: `[Contact Form] ${formData.subject}`,
       text: textContent,

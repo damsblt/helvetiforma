@@ -134,7 +134,7 @@ export default function ContactForm() {
           Message envoyé !
         </h3>
         <p className="text-green-700 dark:text-green-300 mb-6">
-          Votre message a été envoyé avec succès à contact@helvetiforma.ch. Nous vous répondrons dans les plus brefs délais.
+          Votre message a été envoyé avec succès à <strong>info@helvetiforma.ch</strong>. Nous vous répondrons dans les plus brefs délais.
         </p>
         <button
           onClick={() => setSubmitStatus('idle')}
