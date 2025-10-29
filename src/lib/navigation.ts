@@ -35,7 +35,7 @@ export const navigationConfig: NavigationConfig = {
     {
       title: 'Contact',
       links: [
-        { name: 'Email', href: 'mailto:contact@helvetiforma.ch' },
+        { name: 'Email', href: 'mailto:info@helvetiforma.ch' },
         { name: 'Téléphone', href: 'tel:+41234567890' },
         { name: 'Adresse', href: '#' },
       ],

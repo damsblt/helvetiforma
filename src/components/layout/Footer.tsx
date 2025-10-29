@@ -63,10 +63,10 @@ export default function Footer() {
                 <div className="space-y-3">
                   <div>
                     <Link
-                      href="mailto:contact@helvetiforma.ch"
+                      href="mailto:info@helvetiforma.ch"
                       className="text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      contact@helvetiforma.ch
+                      info@helvetiforma.ch
                     </Link>
                   </div>
                   <div>
