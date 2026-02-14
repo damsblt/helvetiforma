@@ -37,11 +37,12 @@ export default function ContactForm() {
     
     if (webinar) {
       setIsWebinarRegistration(true)
+      const eventName = webinar.toUpperCase().startsWith('HF') ? webinar : `HF - ${webinar}`
       const priceInfo = webinarPrice ? `\n- Prix : ${webinarPrice}` : ''
       setFormData(prev => ({
         ...prev,
-        subject: `Inscription au webinaire: ${webinar}`,
-        message: `Bonjour,\n\nJe souhaite m'inscrire au webinaire "${webinar}" organisé par HelvetiForma.\n\nPouvez-vous m'envoyer les informations nécessaires ?\n\nInformations sur la session :\n- Titre: ${webinar}\n- Date et heure : ${webinarDateTime || '[date and time]'}\n- Emplacement : ${webinarLocation || '[location]'}${priceInfo}\n\nCordialement`,
+        subject: `Formation : ${webinar}`,
+        message: `Bonjour,\n\nJe souhaite obtenir plus d'informations concernant la formation "${eventName}" organisé par HelvetiForma. Pouvez-vous m'envoyer la brochure descriptive et les conditions générales ?\n\nInformations sur la session :\n- Titre: ${webinar}\n- Date et heure : ${webinarDateTime || '[date and time]'}\n- Emplacement : ${webinarLocation || '[location]'}${priceInfo}\n\nCordialement`,
         interest: 'sessions'
       }))
     }
@@ -159,10 +160,10 @@ export default function ContactForm() {
             <span className="text-blue-500 text-xl">📅</span>
             <div>
               <h3 className="text-blue-800 dark:text-blue-400 font-semibold">
-                Inscription à une session
+                Obtenir des informations sur une session
               </h3>
               <p className="text-blue-700 dark:text-blue-300 text-sm">
-                Le formulaire a été pré-rempli pour votre inscription. Remplissez vos informations personnelles et envoyez votre demande.
+                Le formulaire a été pré-rempli. Remplissez vos informations personnelles et envoyez votre demande.
               </p>
             </div>
           </div>

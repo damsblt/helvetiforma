@@ -4,20 +4,13 @@ import type { NextRequest } from 'next/server'
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // Only protect admin routes - calendar is now public
-  if (pathname.startsWith('/admin')) {
-    // For now, allow access to admin routes
-    // In production, you might want to add NextAuth check here
-    return NextResponse.next()
-  }
-
+  // No specific route protection needed for now
   return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    // Only protect admin routes
-    '/admin/:path*',
+    // No specific routes to match
   ],
 }
 

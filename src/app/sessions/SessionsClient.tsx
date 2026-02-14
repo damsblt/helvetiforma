@@ -1,11 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 // Removed Supabase import - using NextAuth instead
 import { TeamsWebinar } from '@/types/microsoft'
 
 export default function CalendrierClient() {
+  const searchParams = useSearchParams()
+  const demoMode = searchParams.get('demo') === 'true'
+
   // Removed Supabase client - using NextAuth instead
   const [session, setSession] = useState<any>(null)
   const [webinars, setWebinars] = useState<TeamsWebinar[]>([])
@@ -16,12 +20,13 @@ export default function CalendrierClient() {
 
   useEffect(() => {
     fetchWebinars()
-  }, [])
+  }, [demoMode])
 
   const fetchWebinars = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/webinars')
+      const url = demoMode ? '/api/webinars?demo=true' : '/api/webinars'
+      const response = await fetch(url)
       const data = await response.json()
       
       if (data.success) {
@@ -376,10 +381,10 @@ export default function CalendrierClient() {
                     {registering === webinar.id ? (
                       <div className="flex items-center justify-center gap-2">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span>S'inscrire...</span>
+                        <span>Obtenir plus d'infos...</span>
                       </div>
                     ) : (
-                      <span>S'inscrire</span>
+                      <span>Obtenir plus d'infos</span>
                     )}
                   </button>
                 </div>

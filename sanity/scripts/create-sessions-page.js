@@ -36,7 +36,7 @@ const sessionsPageData = {
     {
       _type: 'richTextSection',
       _key: 'how-to-participate',
-      title: 'Comment participer aux webinaires ?',
+      title: 'Comment obtenir des infos sur les Sessions ?',
       subtitle: 'Suivez ces étapes simples pour rejoindre nos sessions',
       backgroundColor: 'lightblue',
       content: [
@@ -49,7 +49,7 @@ const sessionsPageData = {
             {
               _type: 'span',
               _key: 'span1',
-              text: 'Choisissez votre webinaire et cliquez sur "Demander l\'accès"',
+              text: 'Choisissez votre formation et cliquez sur "Obtenir plus d\'infos"',
               marks: ['strong'],
             },
           ],
@@ -63,7 +63,7 @@ const sessionsPageData = {
             {
               _type: 'span',
               _key: 'span2',
-              text: 'Entrez votre email et nom dans la popup',
+              text: 'Remplissez le formulaire de contact pré-rempli avec vos informations personnelles',
               marks: ['strong'],
             },
           ],
@@ -77,35 +77,7 @@ const sessionsPageData = {
             {
               _type: 'span',
               _key: 'span3',
-              text: 'Remplissez le formulaire de contact pré-rempli',
-              marks: ['strong'],
-            },
-          ],
-        },
-        {
-          _type: 'block',
-          _key: 'step4',
-          style: 'normal',
-          listItem: 'number',
-          children: [
-            {
-              _type: 'span',
-              _key: 'span4',
-              text: 'Notre équipe vous enverra l\'invitation Teams par email',
-              marks: ['strong'],
-            },
-          ],
-        },
-        {
-          _type: 'block',
-          _key: 'step5',
-          style: 'normal',
-          listItem: 'number',
-          children: [
-            {
-              _type: 'span',
-              _key: 'span5',
-              text: 'Rejoignez le webinaire via Microsoft Teams le jour J',
+              text: 'Cliquez sur "Envoyer le message"',
               marks: ['strong'],
             },
           ],
@@ -118,7 +90,7 @@ const sessionsPageData = {
             {
               _type: 'span',
               _key: 'span6',
-              text: 'Note : Notre équipe traite chaque demande d\'inscription manuellement pour garantir la qualité et la sécurité des sessions. Vous recevrez votre invitation Teams par email dans les 24 heures.',
+              text: 'Note : Notre équipe traite chaque demande manuellement pour garantir la qualité et la sécurité des sessions. Nous vous répondrons dans les plus brefs délais.',
               marks: [],
             },
           ],

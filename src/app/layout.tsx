@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
-import '@/styles/dark-mode-tables.css'
-import '@/styles/ultra-dark-tables.css'
+import './globals.css'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -19,6 +21,61 @@ export const metadata: Metadata = {
     template: '%s | HelvetiForma',
   },
   description: 'Formations certifiées en comptabilité et gestion d\'entreprise pour professionnels suisses. Cours en ligne, webinaires interactifs et accompagnement personnalisé.',
+  keywords: ['formation', 'comptabilité', 'suisse', 'certification', 'webinaire', 'e-learning'],
+  authors: [{ name: 'HelvetiForma' }],
+  creator: 'HelvetiForma',
+  publisher: 'HelvetiForma',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  alternates: {
+    canonical: '/',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/apple-touch-icon.png',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_CH',
+    url: '/',
+    title: 'HelvetiForma - Formation Professionnelle en Suisse',
+    description: 'Formations certifiées en comptabilité et gestion d\'entreprise pour professionnels suisses.',
+    siteName: 'HelvetiForma',
+    images: [
+      {
+        url: '/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'HelvetiForma - Formation Professionnelle en Suisse',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HelvetiForma - Formation Professionnelle en Suisse',
+    description: 'Formations certifiées en comptabilité et gestion d\'entreprise pour professionnels suisses.',
+    images: ['/images/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 }
 
 export default function RootLayout({
@@ -29,7 +86,20 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen bg-background font-sans antialiased">
-        {children}
+        <AuthProvider>
+          <div className="relative flex min-h-screen flex-col">
+            {/* Header Navigation */}
+            <Header />
+            
+            {/* Main Content */}
+            <main className="flex-1 pt-16">
+              {children}
+            </main>
+            
+            {/* Footer */}
+            <Footer />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   )
